@@ -3,11 +3,17 @@ name: review-pr
 description: Review the current PokéJudge branch or diff before creating a pull request
 ---
 
+---
+
+name: review-pr
+description: Review the current PokéJudge milestone branch before creating a pull request
+-----------------------------------------------------------------------------------------
+
 Review the current code changes as if you are a senior engineer performing a pull request review before merge.
 
 This is a **review-only** step.
 
-Do not modify code, tests, documentation, configuration, or project files.
+Do not modify code, tests, documentation, configuration, project files, or git history.
 
 ## Context
 
@@ -15,13 +21,26 @@ Read:
 
 1. `docs/PRD.md`
 2. The current milestone plan in `.project-plans/`, when relevant
-3. The current git branch and diff
-4. Any tests associated with the changed code
-5. Relevant surrounding code needed to understand the impact of the changes
+3. The current git branch
+4. The diff between the current branch and its intended base branch
+5. Any tests associated with the changed code
+6. Relevant surrounding code needed to understand the impact of the changes
 
-Focus primarily on what changed in the current branch.
+Focus primarily on what changed in the current milestone branch.
 
-Do not perform a broad rewrite review of the entire repository unless a change directly affects existing code.
+Do not perform a broad review of the entire repository unless a change directly affects existing code.
+
+## Branch check
+
+Before reviewing:
+
+1. Confirm the current branch is not `main` or `master`.
+2. Confirm the branch appears to correspond to the current milestone plan.
+3. Determine the intended base branch, normally `main`.
+4. Review the complete diff between the current branch and the base branch, not only uncommitted changes.
+5. Check whether unrelated changes appear to be mixed into the milestone branch.
+6. If the branch name, branch contents, or diff appear unrelated to the current milestone, stop and tell me rather than reviewing potentially mixed work.
+7. Do not switch branches, rewrite history, rebase, merge, or force-push.
 
 ## Review priorities
 
@@ -41,16 +60,16 @@ Do not prioritize stylistic preferences over functional issues.
 
 Look for:
 
-- Bugs
-- Incorrect assumptions
-- Broken control flow
-- Edge cases
-- Null handling problems
-- Incorrect async behavior
-- Resource-management issues
-- Incorrect library/API usage
-- State-management bugs
-- Error-handling gaps
+* Bugs
+* Incorrect assumptions
+* Broken control flow
+* Edge cases
+* Null handling problems
+* Incorrect async behavior
+* Resource-management issues
+* Incorrect library or API usage
+* State-management bugs
+* Error-handling gaps
 
 Focus on issues that could cause incorrect behavior, not theoretical possibilities with little practical impact.
 
@@ -58,29 +77,30 @@ Focus on issues that could cause incorrect behavior, not theoretical possibiliti
 
 Check for:
 
-- API keys or credentials committed to source
-- Secrets accidentally logged
-- Sensitive configuration
-- Unsafe handling of user-controlled content
-- Prompt injection concerns where applicable
-- Unsafe assumptions about retrieved AI context
-- Excessive information in errors/logging
+* API keys or credentials committed to source
+* Secrets accidentally logged
+* Sensitive configuration
+* Unsafe handling of user-controlled content
+* Prompt injection concerns where applicable
+* Unsafe assumptions about retrieved AI context
+* Excessive information in errors or logs
 
-Only apply AI-security concerns that are relevant to the capabilities currently implemented.
+Only apply AI-security concerns relevant to capabilities currently implemented.
 
-Do not criticize the code for lacking defenses belonging to future milestones.
+Do not criticize the code for lacking defenses intentionally deferred to future milestones.
 
 ## 3. Scope and architecture
 
 Check whether the changes:
 
-- Stay within the approved milestone scope
-- Introduce functionality belonging to future milestones
-- Add unnecessary abstractions
-- Add unnecessary dependencies
-- Create architectural complexity without a concrete need
-- Conflict with the modular-monolith approach in the PRD
-- Quietly change an approved design decision
+* Stay within the approved milestone scope
+* Introduce functionality belonging to future milestones
+* Include unrelated work
+* Add unnecessary abstractions
+* Add unnecessary dependencies
+* Create architectural complexity without a concrete need
+* Conflict with the modular-monolith approach in the PRD
+* Quietly change an approved design decision
 
 Do not penalize intentionally simple code for not resembling the final architecture.
 
@@ -90,19 +110,19 @@ For AI-related changes, review only concepts currently introduced by the project
 
 Depending on the milestone, inspect things such as:
 
-- System instructions vs. user content
-- Prompt construction
-- Context passed to the model
-- Structured output schemas
-- Model-generated vs. application-owned state
-- Assumptions the model is allowed to make
-- Retrieval logic
-- Chunking
-- Embeddings
-- Grounding
-- Citations
-- Source Support
-- Evaluation behavior
+* System instructions vs. user content
+* Prompt construction
+* Context passed to the model
+* Structured output schemas
+* Model-generated vs. application-owned state
+* Assumptions the model is allowed to make
+* Retrieval logic
+* Chunking
+* Embeddings
+* Grounding
+* Citations
+* Source Support
+* Evaluation behavior
 
 Ask:
 
@@ -114,10 +134,10 @@ Call out hidden dependencies on model behavior where relevant.
 
 Review whether tests:
 
-- Cover important deterministic behavior introduced by the changes
-- Test meaningful behavior rather than implementation details
-- Include relevant failure/edge cases
-- Would actually fail if the underlying feature broke
+* Cover important deterministic behavior introduced by the changes
+* Test meaningful behavior rather than implementation details
+* Include relevant failure and edge cases
+* Would actually fail if the underlying feature broke
 
 Do not require tests for every trivial line.
 
@@ -125,9 +145,9 @@ For probabilistic AI behavior, do not pretend ordinary unit tests can prove mode
 
 Distinguish between:
 
-- deterministic unit/integration tests
-- manual AI experiments
-- evaluation tests
+* Deterministic unit or integration tests
+* Manual AI experiments
+* Evaluation tests
 
 based on the current milestone.
 
@@ -139,10 +159,10 @@ Do not flag an intentional limitation as a defect solely because a future AI tec
 
 Instead, ask:
 
-- Is the limitation intentional?
-- Is it documented in the milestone plan?
-- Is it safe within the current development scope?
-- Does it preserve the learning objective?
+* Is the limitation intentional?
+* Is it documented in the milestone plan?
+* Is it safe within the current development scope?
+* Does it preserve the learning objective?
 
 If yes, classify it as an expected limitation rather than a PR defect.
 
@@ -150,9 +170,9 @@ If yes, classify it as an expected limitation rather than a PR defect.
 
 Where appropriate:
 
-- Build the solution
-- Run relevant tests
-- Inspect failures
+* Build the solution
+* Run relevant tests
+* Inspect failures
 
 Do not fix failures.
 
@@ -186,9 +206,12 @@ Avoid inflating severity.
 
 Briefly state:
 
-- What changed
-- Overall impression
-- Build/test status
+* Milestone being reviewed
+* Current branch
+* Base branch
+* What changed
+* Overall impression
+* Build/test status
 
 ### 🚫 Blockers
 
@@ -196,10 +219,10 @@ List merge-blocking issues.
 
 For each include:
 
-- File and location
-- Problem
-- Why it matters
-- Recommended direction
+* File and location
+* Problem
+* Why it matters
+* Recommended direction
 
 If none, say `None`.
 
@@ -229,26 +252,28 @@ Explicitly mention any hidden reliance on model behavior, ungrounded assumptions
 
 Summarize:
 
-- Existing coverage
-- Missing important coverage
-- Build/test results
-- Whether additional manual AI experiments are appropriate
+* Existing coverage
+* Missing important coverage
+* Build/test results
+* Whether additional manual AI experiments are appropriate
 
 ### 📦 Scope Check
 
 Answer:
 
-- Did the branch stay within milestone scope?
-- Did it implement anything from future milestones?
-- Did it introduce unnecessary architecture or dependencies?
+* Does this branch correspond to the current milestone?
+* Does the diff contain only work appropriate to this milestone?
+* Did unrelated changes get mixed into the branch?
+* Did it implement anything from future milestones?
+* Did it introduce unnecessary architecture or dependencies?
 
 ### Final Verdict
 
 Choose exactly one:
 
-- `Approve`
-- `Approve With Minor Comments`
-- `Request Changes`
+* `Approve`
+* `Approve With Minor Comments`
+* `Request Changes`
 
 Give a concise explanation.
 

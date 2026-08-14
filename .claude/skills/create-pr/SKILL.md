@@ -7,7 +7,7 @@ Create a pull request for the current completed and reviewed PokéJudge mileston
 
 Invoking this skill means the implementation and PR review have been accepted by the user.
 
-Do not modify application code, tests, documentation, or the milestone plan.
+Do not modify application code, tests, documentation, configuration, or the milestone plan.
 
 Do not merge the pull request.
 
@@ -18,7 +18,7 @@ Read:
 1. `docs/PRD.md`
 2. The current milestone plan in `.project-plans/`
 3. The current git branch and commit history
-4. The diff between the current branch and its target branch
+4. The complete diff between the current branch and its intended target branch
 5. Relevant build/test results when available
 
 Use the actual implementation and approved milestone plan as the source of truth.
@@ -30,15 +30,27 @@ Do not claim work was completed unless it exists in the branch.
 Before creating the PR:
 
 1. Confirm the current branch is not `main` or `master`.
-2. Check for uncommitted changes.
-3. If meaningful uncommitted changes exist, stop and tell me what remains uncommitted. Do not commit them automatically.
-4. Confirm the branch contains commits not present on the target branch.
-5. Determine the appropriate target branch, normally `main`.
-6. Check whether the branch has been pushed to the remote.
+2. Confirm the current branch appears to correspond to the current milestone plan.
+3. Determine the appropriate target branch, normally `main`.
+4. Inspect the complete diff between the current milestone branch and the target branch.
+5. Confirm the diff does not contain:
+
+   * Unrelated work
+   * Changes belonging to another milestone
+   * Accidental local files
+   * Secrets or credentials
+6. Check for uncommitted changes.
+7. If meaningful uncommitted changes exist, stop and tell me what remains uncommitted. Do not commit them automatically.
+8. Confirm the branch contains commits not present on the target branch.
+9. Check whether the branch has been pushed to the remote.
+
+If the branch name, branch contents, or diff appear unrelated to the current milestone, stop and tell me rather than creating the PR.
+
+If unrelated changes are present, stop and report them.
+
+Do not rewrite history, force push, rebase, squash, or merge commits automatically.
 
 If the branch only needs to be pushed before creating the PR, you may push it.
-
-Do not rewrite history, force push, rebase, or squash commits automatically.
 
 ## Pull request title
 
@@ -67,7 +79,7 @@ Milestone stuff
 
 ## Pull request description
 
-Write the PR description so another engineer — or a recruiter reviewing the repository — can quickly understand both:
+Write the PR description so another engineer or recruiter reviewing the repository can quickly understand both:
 
 1. What was built
 2. What was learned
@@ -98,14 +110,14 @@ Summarize important behaviors, limitations, or failure modes intentionally obser
 
 Examples may include:
 
-- Hallucination
-- Reliance on pretrained knowledge
-- Prompt sensitivity
-- Structured-output behavior
-- Poor retrieval
-- Chunking tradeoffs
-- Grounding limitations
-- Model uncertainty
+* Hallucination
+* Reliance on pretrained knowledge
+* Prompt sensitivity
+* Structured-output behavior
+* Poor retrieval
+* Chunking tradeoffs
+* Grounding limitations
+* Model uncertainty
 
 Only include observations actually relevant to this milestone.
 
@@ -119,14 +131,14 @@ When useful, briefly identify which future concept is expected to address them.
 
 ### Validation
 
-Include the relevant validation performed, such as:
+Include the relevant validation actually performed, such as:
 
-- Build status
-- Automated tests
-- Manual AI experiments
-- Evaluation runs
+* Build status
+* Automated tests
+* Manual AI experiments
+* Evaluation runs
 
-Do not claim validation that was not actually performed.
+Do not claim validation that was not performed.
 
 ### Next Step
 
@@ -160,13 +172,13 @@ That is part of the learning story, not something to hide.
 
 The PR should:
 
-- Be concise
-- Be technically accurate
-- Avoid marketing language
-- Avoid exaggerated claims about AI capabilities
-- Avoid unnecessary implementation detail
-- Clearly distinguish implemented behavior from future plans
-- Use terminology consistent with `docs/PRD.md`
+* Be concise
+* Be technically accurate
+* Avoid marketing language
+* Avoid exaggerated claims about AI capabilities
+* Avoid unnecessary implementation detail
+* Clearly distinguish implemented behavior from future plans
+* Use terminology consistent with `docs/PRD.md`
 
 Write it as an engineer documenting their work for other engineers.
 
@@ -174,7 +186,7 @@ Write it as an engineer documenting their work for other engineers.
 
 If GitHub CLI is installed and authenticated:
 
-1. Push the current branch if necessary.
+1. Push the current milestone branch if necessary.
 2. Create the pull request using the generated title and description.
 3. Target the appropriate base branch.
 4. Do not merge it.
@@ -189,12 +201,12 @@ If GitHub CLI is unavailable or authentication prevents PR creation:
 
 Report:
 
-- PR title
-- Source branch
-- Target branch
-- PR URL, if successfully created
-- Whether the branch was pushed
-- Any issues encountered
+* PR title
+* Source branch
+* Target branch
+* PR URL, if successfully created
+* Whether the branch was pushed
+* Any issues encountered
 
 Do not begin another milestone.
 
