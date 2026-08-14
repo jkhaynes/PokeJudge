@@ -1,7 +1,7 @@
 ---
 
 name: review-milestone
-description: Review the implemented PokéJudge milestone against its plan, PRD, and learning objectives
+description: Use this skill when the user wants to review, validate, or check the milestone that was just implemented against its plan and learning objectives.
 ------------------------------------------------------------------------------------------------------
 
 Review the milestone that was just implemented.

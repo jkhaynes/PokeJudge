@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review the current PokéJudge branch or diff before creating a pull request
+description: Use this skill when the user wants to review the current milestone branch or changes before opening a pull request, including requests like "review my changes", "review this branch", or "is this ready for a PR?".
 ---
 
 ---

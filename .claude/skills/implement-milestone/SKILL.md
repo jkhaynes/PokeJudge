@@ -1,7 +1,7 @@
 ---
 
 name: implement-milestone
-description: Implement the approved PokéJudge milestone plan
+description: Use this skill when the user wants to start, begin, implement, build, or work on the next/current approved PokéJudge milestone, including requests like "let's do the next milestone", "start the next milestone", "implement this milestone", or "let's build it".
 ------------------------------------------------------------
 
 Read `docs/PRD.md` and the current milestone plan in `.project-plans/`.

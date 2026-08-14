@@ -1,6 +1,7 @@
 ---
 name: next-milestone
-description: Plan the next PokéJudge milestone without implementing it
+# next-milestone
+description: Use this skill when the user wants to plan, design, or prepare the next PokéJudge milestone before coding, including requests like "plan the next milestone", "what's next", or "let's plan the next milestone".
 ---
 
 Read `PRD.md` and identify the next milestone in the roadmap.

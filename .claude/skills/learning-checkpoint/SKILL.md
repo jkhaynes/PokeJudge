@@ -1,7 +1,7 @@
 ---
 
 name: learning-checkpoint
-description: Validate understanding of the AI concepts learned in the completed PokéJudge milestone
+description: Use this skill when the user wants to review what they learned, be quizzed on the completed milestone, or verify their understanding before moving on.
 ---------------------------------------------------------------------------------------------------
 
 Run a learning checkpoint for the milestone that was just implemented and reviewed.

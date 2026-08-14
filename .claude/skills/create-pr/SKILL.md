@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Create a polished pull request for the completed PokéJudge milestone
+description: Use this skill when the user wants to create, open, or prepare a pull request for the completed and reviewed milestone.
 ---
 
 Create a pull request for the current completed and reviewed PokéJudge milestone.
