@@ -212,13 +212,9 @@ Use the project's intended local secret-management approach.
 
 Before finishing, verify that no secret-bearing files have accidentally become tracked or staged.
 
-### 9. Keep local planning files out of source control
+### 9. Planning documents are part of the repository
 
-`.project-plans/` must remain local.
-
-Do not stage or commit files from `.project-plans/`.
-
-Do not add milestone plans to the repository.
+`.project-plans/` is committed to source control, alongside the application code — these are the project's learning record, not scratch notes. Do not treat writes to `.project-plans/` as something to hide from git status; they are expected to eventually be staged and committed like any other project file. This skill itself does not stage or commit anything (see "Stop condition" below) — that remains a separate, explicit step.
 
 ## Validation
 
@@ -233,7 +229,6 @@ After implementation:
 
    * Expected implementation files changed
    * No secrets are staged
-   * `.project-plans/` remains untracked/excluded
    * No unrelated files were modified unintentionally
 
 Do not implement future features while fixing current milestone issues.
@@ -296,7 +291,7 @@ Report:
 
 Do not commit or push automatically unless the approved milestone plan explicitly instructs you to do so.
 
-3. This summary file lives in `.project-plans/`, so it stays local and untracked — the same rule from "Keep local planning files out of source control" applies to it. Do not stage or commit it.
+3. This summary file lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step.
 4. After writing the file, reply in the console with only a short pointer, not the full content: the milestone name, the file path, and 2-3 sentences on the single most important thing to know (e.g. whether build/tests passed, and the one finding most worth their attention). Tell me to open the file for the full report.
 
 ## Stop condition

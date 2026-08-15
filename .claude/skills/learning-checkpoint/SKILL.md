@@ -85,7 +85,7 @@ As the quiz proceeds, keep track of each question asked, my raw answer, and the 
 1. A `## Q&A Transcript` section: for each question, in order, include the question text, my raw answer verbatim, and the feedback given (correct/mostly correct/needs clarification, what was missed, the polished explanation, and the memory trick if one was given). Include follow-up questions as part of the same numbered item they belong to, not as separate top-level entries.
 2. The Final Assessment itself (all sections from "Final assessment" below), appended after the transcript.
 
-This file lives in `.project-plans/`, so it stays local and untracked like the other milestone artifacts; do not stage or commit it. If a checkpoint file already exists for this milestone (e.g. from a prior run), overwrite it with the current one rather than appending.
+This file lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step. If a checkpoint file already exists for this milestone (e.g. from a prior run), overwrite it with the current one rather than appending.
 
 The Final Assessment is still also given directly in the console as normal — recording it to the file is in addition to that, not a replacement for it.
 

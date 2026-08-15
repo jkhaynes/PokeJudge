@@ -116,7 +116,7 @@ Do not recommend abstractions, patterns, additional projects, or infrastructure 
 
 Write the review to a document instead of printing it all to the console — it is too long to read comfortably as chat output.
 
-1. Write the review to `.project-plans/milestone-<N>/review.md`, alongside that milestone's `plan.md` and `implementation-summary.md`. This file is the one designated exception to "do not modify files" below — it is the skill's own output artifact, not application code, tests, documentation, or the milestone plan. It lives in `.project-plans/`, so it stays local and untracked like the plan itself; do not stage or commit it.
+1. Write the review to `.project-plans/milestone-<N>/review.md`, alongside that milestone's `plan.md` and `implementation-summary.md`. This file is the one designated exception to "do not modify files" below — it is the skill's own output artifact, not application code, tests, documentation, or the milestone plan. It lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step.
 2. If a review file already exists for this milestone (e.g. from a prior run), overwrite it with the current review rather than appending — the file should always reflect the latest review, not a history of past ones.
 3. Write that file with the following sections:
 

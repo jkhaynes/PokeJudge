@@ -283,7 +283,7 @@ Choose exactly one:
 
 Give a concise explanation.
 
-4. This file lives in `.project-plans/`, so it stays local and untracked like the other milestone artifacts; do not stage or commit it.
+4. This file lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step.
 5. After writing the file, reply in the console with only a short pointer, not the full content: the milestone name, the file path, and the Final Verdict with a one-sentence reason. Tell me to open the file for the full review.
 
 Do not modify files other than the review document specified above.

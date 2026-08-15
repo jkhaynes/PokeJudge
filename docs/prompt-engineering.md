@@ -53,7 +53,7 @@ They are designed around a few core principles:
 * Verify that I understand the code before moving forward
 * Document both what was built and what was learned
 
-Generated milestone plans are stored locally in `.project-plans/` and are not committed.
+Generated milestone plans, along with their implementation summaries, reviews, and learning-checkpoint transcripts, are stored in `.project-plans/` and are committed to the repository — the full planning and learning record stays visible alongside the code, for learning and portfolio purposes.
 
 ---
 
@@ -260,7 +260,7 @@ docs/
 ├── prompt-engineering.md
 └── reviews/
 
-.project-plans/   # local only
+.project-plans/
 └── milestone-<N>/
     ├── plan.md
     ├── implementation-summary.md
@@ -270,7 +270,7 @@ docs/
     └── ... (ad hoc supporting docs, e.g. baseline-run-output.md)
 ```
 
-The reusable Claude skills are committed to GitHub. Temporary milestone plans remain local.
+The reusable Claude skills and the `.project-plans/` milestone documents are both committed to GitHub, so the full planning, implementation, review, and learning record is visible alongside the code.
 
 ---
 
