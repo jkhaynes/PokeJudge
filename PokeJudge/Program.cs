@@ -1,16 +1,17 @@
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using PokeJudge.AI;
+using PokeJudge.Clarification;
 
 // ---------------------------------------------------------------------------
-// Milestone 1 — First LLM Interaction
+// Milestone 2 — Judge-Focused Prompting, Clarification, Structured Responses
 //
-// The smallest possible working slice: read a scenario, send it to an LLM
-// through a minimal ILlmClient abstraction, print the raw response, then
-// deliberately try (and fail) to extract a reliable yes/no signal from that
-// free text using naive string handling. See .project-plans for the plan
-// this implements.
+// Grows Milestone 1's single raw LLM call into a multi-turn clarification
+// loop: assess sufficiency against a hand-authored mock corpus + known
+// facts (structured output, not parsed free text), ask clarifying questions
+// when insufficient, classify the judge's free-text answers into confirmed
+// facts vs. hypotheses, and re-assess until sufficient or a turn cap is hit.
+// See .project-plans for the plan this implements.
 // ---------------------------------------------------------------------------
 
 var config = new ConfigurationBuilder()
@@ -28,138 +29,82 @@ if (string.IsNullOrWhiteSpace(apiKey))
 var modelId = config["Gemini:Model"] ?? "gemini-flash-lite-latest";
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
+var loop = new ClarificationLoop(llmClient);
 
-// A handful of hand-written judge scenarios to run the raw call against.
-var scenarios = new[]
+Console.WriteLine("=== PokeJudge AI — Milestone 2 Clarification Loop ===\n");
+Console.WriteLine("Select a scenario:");
+for (var i = 0; i < MockCorpus.Scenarios.Count; i++)
 {
-    "During a League Challenge, a player realizes on their next turn that they forgot to take a Prize card after knocking out their opponent's Pokemon two turns ago. What should the judge do?",
-    "A player used an Ability that says it can only be used once per turn, but the judge suspects it may have been used twice in the same turn. The player disagrees. How should this be resolved?",
-    "A player's opponent points out, mid-game, that the player's deck has 61 cards instead of 60. What should the judge do?",
-};
-
-Console.WriteLine("=== Part 1: Raw LLM responses ===\n");
-
-foreach (var scenario in scenarios)
-{
-    Console.WriteLine($"--- Scenario ---\n{scenario}\n");
-    var response = await llmClient.CompleteAsync(scenario);
-    Console.WriteLine($"--- Raw response ---\n{response}\n");
+    Console.WriteLine($"  {i + 1}. {MockCorpus.Scenarios[i].Title}");
 }
 
-// ---------------------------------------------------------------------------
-// Naive extraction exercise
-//
-// Goal: from the model's free-text response, extract a single yes/no signal:
-// "is this scenario clear enough to rule on?" using only naive string
-// handling (Contains/regex) — no structured output. Run it repeatedly across
-// the same scenario and observe whether the naive parser stays consistent.
-// This is expected to be unreliable; that unreliability is the point, and is
-// the evidence trail for Milestone 2's structured-output requirement.
-// ---------------------------------------------------------------------------
-
-Console.WriteLine("=== Part 2: Naive sufficiency-signal extraction ===\n");
-
-const string sufficiencyPrompt =
-    "A judge is asking about the following Pokemon TCG tournament scenario:\n\n" +
-    "\"{0}\"\n\n" +
-    "Is the information given sufficient to make a ruling, or are more details needed? " +
-    "Answer in a sentence or two.";
-
-const int repeatsPerScenario = 4;
-
-foreach (var scenario in scenarios)
+Console.Write("\nEnter scenario number: ");
+var selectionInput = Console.ReadLine();
+if (!int.TryParse(selectionInput, out var selection) || selection < 1 || selection > MockCorpus.Scenarios.Count)
 {
-    Console.WriteLine($"--- Scenario ---\n{scenario}\n");
+    Console.Error.WriteLine("Invalid selection.");
+    return 1;
+}
 
-    for (var i = 1; i <= repeatsPerScenario; i++)
+var scenario = MockCorpus.Scenarios[selection - 1];
+
+Console.WriteLine($"\n--- Scenario: {scenario.Title} ---\n{scenario.Description}\n");
+
+var outcome = await loop.RunAsync(
+    scenario,
+    askJudge: question =>
     {
-        var prompt = string.Format(sufficiencyPrompt, scenario);
-        var response = await llmClient.CompleteAsync(prompt);
-        var naiveVerdict = NaiveSufficiencyParser.Parse(response);
+        Console.WriteLine($"\n[Clarifying question — re: {question.RelatedSnippetId}] {question.Question}");
+        Console.Write("Your answer: ");
+        return Task.FromResult(Console.ReadLine() ?? string.Empty);
+    },
+    onAssessment: result =>
+    {
+        Console.WriteLine(result.IsSufficient
+            ? "\n[Assessment] Sufficient — drafting ruling..."
+            : $"\n[Assessment] Insufficient — {result.Questions.Count} clarifying question(s) needed.");
+    });
 
-        Console.WriteLine($"[Run {i}] Naive parser verdict: {naiveVerdict}");
-        Console.WriteLine($"[Run {i}] Raw response: {response}\n");
-    }
+Console.WriteLine("\n=== Result ===");
+Console.WriteLine($"Turns used: {outcome.TurnsUsed}");
+
+Console.WriteLine("\nConfirmed facts:");
+if (outcome.State.ConfirmedFacts.Count == 0)
+{
+    Console.WriteLine("  (none)");
+}
+foreach (var fact in outcome.State.ConfirmedFacts)
+{
+    Console.WriteLine($"  - {fact}");
 }
 
-Console.WriteLine(
-    "Observe the runs above: does the naive parser's verdict stay consistent " +
-    "for semantically similar answers, or does phrasing variation cause it to " +
-    "misclassify sufficiency?");
+Console.WriteLine("\nHypotheses (unconfirmed):");
+if (outcome.State.Hypotheses.Count == 0)
+{
+    Console.WriteLine("  (none)");
+}
+foreach (var hypothesis in outcome.State.Hypotheses)
+{
+    Console.WriteLine($"  - {hypothesis}");
+}
+
+if (outcome.Sufficient)
+{
+    Console.WriteLine($"\nDraft ruling: {outcome.Draft!.RecommendedAction}");
+    Console.WriteLine($"Supporting snippet IDs: {string.Join(", ", outcome.Draft.SupportingSnippetIds)}");
+}
+else
+{
+    Console.WriteLine("\nTurn cap reached without a sufficient ruling.");
+}
 
 return 0;
 
 // ---------------------------------------------------------------------------
-// Minimal provider abstraction. One method, one implementation. Deliberately
-// not adding retry policies, streaming, or configuration layers here — those
-// aren't needed yet.
-// ---------------------------------------------------------------------------
-interface ILlmClient
-{
-    Task<string> CompleteAsync(string prompt);
-}
-
-sealed class GeminiLlmClient : ILlmClient
-{
-    private static readonly HttpClient Http = new();
-
-    private readonly string _apiKey;
-    private readonly string _modelId;
-
-    public GeminiLlmClient(string apiKey, string modelId)
-    {
-        _apiKey = apiKey;
-        _modelId = modelId;
-    }
-
-    public async Task<string> CompleteAsync(string prompt)
-    {
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_modelId}:generateContent";
-
-        using var request = new HttpRequestMessage(HttpMethod.Post, url)
-        {
-            Content = JsonContent.Create(new
-            {
-                contents = new[]
-                {
-                    new { parts = new[] { new { text = prompt } } }
-                }
-            })
-        };
-        request.Headers.Add("x-goog-api-key", _apiKey);
-
-        var httpResponse = await Http.SendAsync(request);
-        if (!httpResponse.IsSuccessStatusCode)
-        {
-            var errorBody = await httpResponse.Content.ReadAsStringAsync();
-            throw new HttpRequestException(
-                $"Gemini API request failed ({(int)httpResponse.StatusCode} {httpResponse.StatusCode}): {errorBody}");
-        }
-
-        using var responseStream = await httpResponse.Content.ReadAsStreamAsync();
-        using var responseJson = await JsonDocument.ParseAsync(responseStream);
-
-        if (!responseJson.RootElement.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
-        {
-            throw new HttpRequestException(
-                $"Gemini API returned no candidates (likely blocked or filtered): {responseJson.RootElement}");
-        }
-
-        return candidates[0]
-            .GetProperty("content")
-            .GetProperty("parts")[0]
-            .GetProperty("text")
-            .GetString() ?? string.Empty;
-    }
-}
-
-// Marker type purely to anchor AddUserSecrets<T> to this assembly.
-sealed class LlmClientMarker;
-
-// ---------------------------------------------------------------------------
-// Deliberately naive: substring/regex checks against free text. This is the
-// thing Milestone 1 is supposed to demonstrate as unreliable — do not
-// "improve" it into something more robust. That's Milestone 2's job.
+// Milestone 1 artifact, intentionally preserved: naive substring/regex
+// checks against free text, locked in by PokeJudge.Tests/NaiveSufficiencyParserTests.cs
+// as evidence for why Milestone 2 introduces schema-constrained structured
+// output instead. Not called from the flow above — do not "improve" it.
 // ---------------------------------------------------------------------------
 static class NaiveSufficiencyParser
 {
