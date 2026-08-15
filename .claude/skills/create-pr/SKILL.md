@@ -16,7 +16,7 @@ Do not merge the pull request.
 Read:
 
 1. `docs/PRD.md`
-2. The current milestone plan in `.project-plans/`
+2. The current milestone's plan, implementation summary, and review at `.project-plans/milestone-<N>/` (`plan.md`, `implementation-summary.md`, `review.md`)
 3. The current git branch and commit history
 4. The complete diff between the current branch and its intended target branch
 5. Relevant build/test results when available

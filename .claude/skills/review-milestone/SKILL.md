@@ -13,7 +13,7 @@ This is a **review only**. Do not modify application code, tests, documentation,
 Read:
 
 1. `docs/PRD.md` as the source of truth for the overall project and milestone roadmap.
-2. The current milestone plan in `.project-plans/`.
+2. The current milestone plan at `.project-plans/milestone-<N>/plan.md`.
 3. The implementation associated with that milestone.
 4. Relevant git changes so you understand what was actually added or modified.
 
@@ -114,7 +114,11 @@ Do not recommend abstractions, patterns, additional projects, or infrastructure 
 
 ## Output
 
-Return the review using these sections:
+Write the review to a document instead of printing it all to the console — it is too long to read comfortably as chat output.
+
+1. Write the review to `.project-plans/milestone-<N>/review.md`, alongside that milestone's `plan.md` and `implementation-summary.md`. This file is the one designated exception to "do not modify files" below — it is the skill's own output artifact, not application code, tests, documentation, or the milestone plan. It lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step.
+2. If a review file already exists for this milestone (e.g. from a prior run), overwrite it with the current review rather than appending — the file should always reflect the latest review, not a history of past ones.
+3. Write that file with the following sections:
 
 ### Milestone Review
 
@@ -177,8 +181,10 @@ Choose exactly one:
 
 Then give a concise reason.
 
+4. After writing the file, reply in the console with only a short pointer, not the full content: the milestone name, the file path, and the Final Verdict with its one-line reason. Tell me to open the file for the full review.
+
 Do not begin the next milestone.
 
-Do not modify files.
+Do not modify files other than the review document specified above.
 
 Do not automatically fix issues discovered during the review.

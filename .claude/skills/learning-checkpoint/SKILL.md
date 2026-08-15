@@ -8,14 +8,14 @@ Run a learning checkpoint for the milestone that was just implemented and review
 
 This skill exists to verify that I understand **how and why the implementation works**, not merely that the code runs.
 
-Do not modify any files.
+Do not modify any files, except for the checkpoint transcript this skill itself produces (see "Recording the transcript" below) — that is this skill's own designated output artifact, not application code or documentation.
 
 ## Context
 
 Read:
 
 1. `docs/PRD.md`
-2. The current milestone plan in `.project-plans/`
+2. The current milestone's plan, implementation summary, and review at `.project-plans/milestone-<N>/` (`plan.md`, `implementation-summary.md`, `review.md`)
 3. The milestone implementation
 4. The most relevant code for the AI concepts introduced in this milestone
 
@@ -75,6 +75,19 @@ After each answer:
 Do not immediately give the answer before I attempt the question.
 
 If my answer reveals a misconception, ask a short follow-up question when that would help confirm understanding.
+
+## Recording the transcript
+
+The quiz stays fully interactive in the console exactly as described above — ask one question at a time, wait for my real answer, give feedback before moving on. Do not batch questions or withhold them for the sake of the document.
+
+As the quiz proceeds, keep track of each question asked, my raw answer, and the feedback given for that answer (including any follow-up question and answer, if one occurred). Once the quiz is complete and you've produced the Final Assessment, write the complete record to `.project-plans/milestone-<N>/learning-checkpoint.md`, alongside that milestone's `plan.md`, `implementation-summary.md`, and `review.md`. Structure it as:
+
+1. A `## Q&A Transcript` section: for each question, in order, include the question text, my raw answer verbatim, and the feedback given (correct/mostly correct/needs clarification, what was missed, the polished explanation, and the memory trick if one was given). Include follow-up questions as part of the same numbered item they belong to, not as separate top-level entries.
+2. The Final Assessment itself (all sections from "Final assessment" below), appended after the transcript.
+
+This file lives in `.project-plans/`, which is committed to the repository — but this skill does not stage or commit it itself; that remains a separate, explicit step. If a checkpoint file already exists for this milestone (e.g. from a prior run), overwrite it with the current one rather than appending.
+
+The Final Assessment is still also given directly in the console as normal — recording it to the file is in addition to that, not a replacement for it.
 
 ## Include implementation-specific understanding
 
