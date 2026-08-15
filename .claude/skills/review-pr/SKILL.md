@@ -13,14 +13,14 @@ Review the current code changes as if you are a senior engineer performing a pul
 
 This is a **review-only** step.
 
-Do not modify code, tests, documentation, configuration, project files, or git history.
+Do not modify code, tests, documentation, configuration, project files, or git history, except for the review document this skill itself produces (see "Output format" below) — that is this skill's own designated output artifact.
 
 ## Context
 
 Read:
 
 1. `docs/PRD.md`
-2. The current milestone plan in `.project-plans/`, when relevant
+2. The current milestone's plan, implementation summary, and review at `.project-plans/milestone-<N>/` (`plan.md`, `implementation-summary.md`, `review.md`), when relevant
 3. The current git branch
 4. The diff between the current branch and its intended base branch
 5. Any tests associated with the changed code
@@ -202,6 +202,12 @@ Avoid inflating severity.
 
 ## Output format
 
+Write the review to a document instead of printing it all to the console — it is too long to read comfortably as chat output.
+
+1. Write the review to `.project-plans/milestone-<N>/pr-review.md`, alongside that milestone's `plan.md`, `implementation-summary.md`, and `review.md`.
+2. If a PR review file already exists for this milestone (e.g. from a prior run), overwrite it with the current review rather than appending — the file should always reflect the latest review, not a history of past ones.
+3. Write that file with the following sections:
+
 ### PR Review Summary
 
 Briefly state:
@@ -277,7 +283,10 @@ Choose exactly one:
 
 Give a concise explanation.
 
-Do not modify files.
+4. This file lives in `.project-plans/`, so it stays local and untracked like the other milestone artifacts; do not stage or commit it.
+5. After writing the file, reply in the console with only a short pointer, not the full content: the milestone name, the file path, and the Final Verdict with a one-sentence reason. Tell me to open the file for the full review.
+
+Do not modify files other than the review document specified above.
 
 Do not create the pull request.
 

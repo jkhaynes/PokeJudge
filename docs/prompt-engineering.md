@@ -261,6 +261,13 @@ docs/
 └── reviews/
 
 .project-plans/   # local only
+└── milestone-<N>/
+    ├── plan.md
+    ├── implementation-summary.md
+    ├── review.md
+    ├── pr-review.md
+    ├── learning-checkpoint.md
+    └── ... (ad hoc supporting docs, e.g. baseline-run-output.md)
 ```
 
 The reusable Claude skills are committed to GitHub. Temporary milestone plans remain local.

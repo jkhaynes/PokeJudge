@@ -15,7 +15,7 @@ Before writing or modifying any application code:
    - Steps in implementation order
    - Expected limitations or failures we should intentionally observe
    - What I should understand by the end of the milestone
-3. Save the plan under `.project-plans/`.
+3. Save the plan to `.project-plans/milestone-<N>/plan.md`, where `<N>` is the milestone number (e.g. `.project-plans/milestone-1/plan.md`). Create the `milestone-<N>` folder if it does not already exist. All files related to this milestone (the plan, and later the implementation summary and review) live together in this one folder.
 4. Ensure `.project-plans/` remains excluded locally from source control.
 5. Do not implement anything yet.
 

@@ -270,7 +270,7 @@ Requirements for ingested content:
 
 ## 14. Milestone Roadmap
 
-The roadmap below follows the learning milestones from the originating brief, with product deliverables per milestone made explicit. Each milestone closes with a short reflection log entry (a few sentences, in the developer's own words): what AI concept was introduced, and why the previous milestone's approach made it necessary. This operationalizes the learning/portfolio success criteria in section 17 and doubles as source material for the Milestone 11 write-up.
+The roadmap below follows the learning milestones from the originating brief, with product deliverables per milestone made explicit.
 
 **Milestone 2 uses a mock corpus, not pretrained knowledge:** at Milestone 2, no real retrieval exists yet. Rather than letting the sufficiency/clarification logic guess at materiality from the model's pretrained Pokémon knowledge (which section 8 says the final system must never rely on), Milestone 2 supplies a small, hand-authored mock corpus — 2–4 short policy snippets per scenario, including deliberately irrelevant or partial ones alongside the material one — as supplied context. The sufficiency engine reasons only over this supplied text, exactly as it will reason over real retrieved passages later. This keeps materiality genuinely text-derived from Milestone 2 onward (no contradiction with section 7 FR3), and it exercises the real skill (judging whether retrieved-shaped context settles a material fact) rather than trivializing it. Milestone 6 replaces the mock corpus with real retrieval behind the same interface — a swap of the context source, not a rewrite of the sufficiency/clarification logic.
 
@@ -352,7 +352,7 @@ A simple hand-authored representation of branching scenarios (e.g., a small tree
 - The Source Support classification (Strong / Partial / Insufficient) reflects observable retrieval, citation, and fact-sufficiency criteria — not an unvalidated model confidence score — and correctly downgrades to `Insufficient` when it should.
 
 **Learning/portfolio:**
-- Each milestone leaves the developer able to explain, in their own words, the AI concept it introduced and the tradeoffs involved — captured as the short reflection log entry described in section 14.
+- Each milestone leaves the developer able to explain, in their own words, the AI concept it introduced and the tradeoffs involved.
 - The final project demonstrates a working RAG pipeline, structured multi-turn interaction, grounded citation behavior, and a real evaluation methodology — documented clearly enough for a portfolio reviewer to follow the reasoning.
 - The project can articulate, with evidence, why numerical confidence was postponed and what it would take to justify exposing one — demonstrating that reliability signals should be validated against measured behavior rather than assumed from model output.
 

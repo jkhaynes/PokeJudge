@@ -4,7 +4,7 @@ name: implement-milestone
 description: Use this skill when the user wants to start, begin, implement, build, or work on the next/current approved PokéJudge milestone, including requests like "let's do the next milestone", "start the next milestone", "implement this milestone", or "let's build it".
 ------------------------------------------------------------
 
-Read `docs/PRD.md` and the current milestone plan in `.project-plans/`.
+Read `docs/PRD.md` and the current milestone plan at `.project-plans/milestone-<N>/plan.md`.
 
 Invoking this skill means the current milestone plan has been reviewed and approved by the user.
 
@@ -49,10 +49,44 @@ Before making code changes, briefly summarize:
 * The primary AI concept being learned
 * Which files you expect to create or modify
 * Any intentional limitation or experiment that must remain observable
+* Which pieces of the planned work are deterministic, non-LLM logic (see "What counts as testable" below) — these are what you'll write tests for first
 
 Then begin implementation.
 
 Do not ask for another approval after this summary. Invoking this skill is the approval to implement the existing plan.
+
+## Test-driven implementation flow
+
+This project follows test-first development for anything that qualifies as deterministic logic. Follow red → green, then close with a deliberate coverage check:
+
+### What counts as testable
+
+The line: given the same input, does this specific piece of logic always produce the same output, or does its output depend on what a model returns at call time?
+
+* **If deterministic** — it gets a unit test, including any behavior the plan expects to be flawed, partial, or incomplete at this stage. What the logic is *for* doesn't change this — only whether its own output varies with live model behavior.
+* **If not deterministic** — its result depends on an actual model call, or on anything else that can vary between runs — it is not unit-testable. It belongs to manual experimentation or a later milestone's evaluation harness, not a unit test.
+
+### 1. Red — write the tests first
+
+Before writing the implementation:
+
+1. From the milestone plan, list every piece of deterministic logic the plan calls for (see criteria above), including anything the plan expects to behave imperfectly or incorrectly at this stage.
+2. Write unit tests for that logic based on what the plan says it should do — and, where the plan calls out expected imperfect behavior, what it should (incorrectly) do instead.
+3. Confirm the tests fail (or fail to compile) because the implementation doesn't exist yet — this is expected at this point, not an error to fix.
+
+Do not write tests for non-deterministic logic at this stage — there's nothing fixed to assert yet.
+
+### 2. Green — implement to make the tests pass
+
+Write the implementation following the rest of this document's requirements (scope, architecture, learning-first philosophy, etc. below), aiming to make the tests written in step 1 pass without weakening or rewriting them to fit whatever you happened to build. If a test describing an expected imperfection stops failing because the implementation turned out more capable than the plan called for, that's a scope signal — see "Do not silently redesign the milestone" below, not a reason to loosen the test.
+
+Then implement everything else the milestone needs that isn't unit-testable.
+
+### 3. Final test-coverage review
+
+After the implementation otherwise works end-to-end, do one more pass across the actual diff — not just the original plan — and ask: did anything deterministic emerge during implementation that wasn't anticipated when the tests were written first? This can happen when real-world details only become visible once the implementation exists — an unanticipated edge case, an error-handling branch added while wiring things together, a helper that wasn't in the plan but turned out to be needed.
+
+Add tests for anything found in this pass. This step is a deliberate gap-check on top of writing tests first, not a substitute for it — the goal is that test-writing happens twice: once from the plan before code exists, and once against the real diff before the milestone is called done.
 
 ## Implementation requirements
 
@@ -168,18 +202,7 @@ If a limitation is intentionally part of the milestone, keep it observable so it
 
 ### 7. Tests
 
-Add appropriate tests for deterministic application behavior where useful.
-
-Do not create misleading unit tests that imply probabilistic LLM behavior has been proven correct.
-
-Distinguish appropriately between:
-
-* Unit tests
-* Integration tests
-* Manual AI experiments
-* Evaluation tests
-
-based on what the current milestone has introduced.
+Tests for deterministic logic are written first, per "Test-driven implementation flow" above — not as a final checklist item. This section is just the reminder of the boundary: unit tests cover deterministic, non-LLM logic only; do not create misleading unit tests that imply probabilistic LLM behavior has been proven correct. Manual AI experiments, integration tests, and evaluation tests remain the right tool for anything whose output depends on live model behavior, based on what the current milestone has introduced.
 
 ### 8. Secrets and configuration
 
@@ -202,10 +225,11 @@ Do not add milestone plans to the repository.
 After implementation:
 
 1. Build the relevant solution/project.
-2. Run the relevant automated tests.
+2. Run the automated tests and confirm the tests written in the Red step now pass (green), unchanged in intent from when they were written.
 3. Fix implementation errors that are within the approved milestone scope.
 4. Re-run validation after fixes.
-5. Inspect git status to confirm:
+5. Do the "Final test-coverage review" pass described above and add any tests it surfaces.
+6. Inspect git status to confirm:
 
    * Expected implementation files changed
    * No secrets are staged
@@ -216,7 +240,10 @@ Do not implement future features while fixing current milestone issues.
 
 ## Completion summary
 
-When implementation and validation are complete, report:
+When implementation and validation are complete, write the full completion summary to a document instead of printing it all to the console — it is too long to read comfortably as chat output.
+
+1. Write the summary to `.project-plans/milestone-<N>/implementation-summary.md`, alongside that milestone's `plan.md`.
+2. Write that file with the following sections:
 
 ### Milestone Implemented
 
@@ -231,7 +258,7 @@ Briefly summarize the meaningful implementation changes.
 Report:
 
 * Build result
-* Test result
+* Test result, noting which tests were written first (Red step) versus added during the final coverage-review pass
 * Any other validation performed
 
 Do not claim validation that was not actually run.
@@ -268,6 +295,9 @@ Report:
 * Whether any unexpected files are present
 
 Do not commit or push automatically unless the approved milestone plan explicitly instructs you to do so.
+
+3. This summary file lives in `.project-plans/`, so it stays local and untracked — the same rule from "Keep local planning files out of source control" applies to it. Do not stage or commit it.
+4. After writing the file, reply in the console with only a short pointer, not the full content: the milestone name, the file path, and 2-3 sentences on the single most important thing to know (e.g. whether build/tests passed, and the one finding most worth their attention). Tell me to open the file for the full report.
 
 ## Stop condition
 
