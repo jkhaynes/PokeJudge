@@ -361,3 +361,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Milestone 3 ingestion: local-only real source documents and pipeline output.
+# These are copyrighted third-party material (official Play! Pokemon documents) --
+# never committed. See .project-plans/milestone-3/plan.md "Copyright / redistribution
+# hygiene". Automated tests use small hand-crafted fixtures instead, not these files.
+docs/*.pdf
+PokeJudge/Ingestion/Output/
