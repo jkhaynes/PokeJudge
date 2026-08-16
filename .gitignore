@@ -368,3 +368,6 @@ FodyWeavers.xsd
 # hygiene". Automated tests use small hand-crafted fixtures instead, not these files.
 docs/*.pdf
 PokeJudge/Ingestion/Output/
+
+# Milestone 4 chunking/embeddings: derived from the same copyrighted documents.
+PokeJudge/Chunking/Output/
