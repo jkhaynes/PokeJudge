@@ -1,6 +1,7 @@
 namespace PokeJudge.AI;
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 // Deliberately the counterpart to Milestone 1's NaiveSufficiencyParser: this
 // deserializes schema-constrained model output straight into typed records
@@ -12,7 +13,11 @@ public static class StructuredResponseParser
 {
     private static readonly JsonSerializerOptions Options = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        // RulingResult.SourceSupport is a C# enum backed by the exact string
+        // values constrained by RulingResultSchema's "enum" field (Milestone 6) --
+        // without this, System.Text.Json expects a number, not "Strong"/"Partial"/"Insufficient".
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public static T Parse<T>(string rawJsonText)
