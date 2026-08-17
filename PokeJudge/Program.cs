@@ -5,6 +5,7 @@ using PokeJudge.AI;
 using PokeJudge.Chunking;
 using PokeJudge.Clarification;
 using PokeJudge.Ingestion;
+using PokeJudge.Retrieval;
 
 // ---------------------------------------------------------------------------
 // Milestone 2 — Judge-Focused Prompting, Clarification, Structured Responses
@@ -32,8 +33,20 @@ using PokeJudge.Ingestion;
 // already embedded in a prior run), writing the result to another local,
 // gitignored JSON file for Milestone 5 to eventually index. This mode does
 // need the Gemini API key (embedding is a real model call), unlike `ingest`.
-// Everything below both checks is the unchanged Milestone 2 clarification
-// loop, still the default mode.
+//
+// Milestone 5 — Vector Search
+//
+// Adds `dotnet run -- search <query text>` and `dotnet run -- eval`. Both
+// load every already-chunked/embedded document into an in-process,
+// brute-force cosine-similarity vector store (no vector database -- see
+// .project-plans/milestone-5/plan.md for why that's the right choice at this
+// scale). `search` embeds a raw query and prints the top-5 most similar
+// chunks; `eval` runs a small hand-authored set of judge-scenario queries
+// against known-correct sections and reports hit/miss -- a deterministic
+// check involving the embedding call but zero chat/completion model calls,
+// demonstrating retrieval quality is measurable independent of generation
+// quality. Everything below all these checks is the unchanged Milestone 2
+// clarification loop, still the default mode.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -58,6 +71,16 @@ var modelId = config["Gemini:Model"] ?? "gemini-flash-lite-latest";
 if (args.Length > 0 && args[0] == "chunk")
 {
     return await RunChunking(args, apiKey);
+}
+
+if (args.Length > 0 && args[0] == "search")
+{
+    return await RunSearch(args, apiKey);
+}
+
+if (args.Length > 0 && args[0] == "eval")
+{
+    return await RunRetrievalEval(apiKey);
 }
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
@@ -262,7 +285,7 @@ static async Task<int> RunChunking(string[] args, string apiKey)
     Console.WriteLine($"Document: {ingestedDocument.Metadata.Title} ({ingestedDocument.Sections.Count} sections)");
     Console.WriteLine($"Already embedded: {alreadyEmbedded.Count} chunk(s)\n");
 
-    IEmbeddingClient embeddingClient = new GeminiEmbeddingClient(apiKey, "gemini-embedding-001", outputDimensionality: 768);
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
     // batchSize kept well under the free tier's observed ~100-item-per-minute
     // embedding quota (a single 100-item batch was rejected outright) so at least
     // one batch reliably succeeds and gets saved before any 429.
@@ -309,6 +332,146 @@ static async Task<int> RunChunking(string[] args, string apiKey)
 
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Milestone 5 vector search mode. Loads every already-chunked/embedded
+// document into an in-process vector store -- brute-force cosine similarity,
+// no vector database (see .project-plans/milestone-5/plan.md for why that's
+// the right choice at this scale).
+// ---------------------------------------------------------------------------
+static async Task<int> RunSearch(string[] args, string apiKey)
+{
+    if (args.Length < 2)
+    {
+        Console.Error.WriteLine("Usage: dotnet run -- search <query text>");
+        return 1;
+    }
+
+    var query = string.Join(" ", args.Skip(1));
+    var chunks = LoadAllEmbeddedChunks();
+
+    if (chunks.Count == 0)
+    {
+        Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
+        return 1;
+    }
+
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
+    var queryVectors = await embeddingClient.EmbedBatchAsync(new[] { query });
+    var store = CreateVectorStore(chunks);
+    var results = store.Search(queryVectors[0], topK: 5);
+
+    Console.WriteLine("=== PokeJudge AI — Milestone 5 Vector Search ===\n");
+    Console.WriteLine($"Query: {query}");
+    Console.WriteLine($"Searched {chunks.Count} chunks across all embedded documents.\n");
+
+    foreach (var result in results)
+    {
+        Console.WriteLine($"[{result.Score:F4}] {result.Chunk.Chunk.ChunkId}");
+        Console.WriteLine(result.Chunk.Chunk.Text.Length > 200 ? result.Chunk.Chunk.Text[..200] + "..." : result.Chunk.Chunk.Text);
+        Console.WriteLine();
+    }
+
+    return 0;
+}
+
+// Runs the hand-authored retrieval evaluation set (RetrievalEvalSet) against
+// the same in-process vector store -- deterministic hit/miss checking with
+// zero chat/completion model calls, demonstrating retrieval quality is
+// measurable independent of generation quality.
+static async Task<int> RunRetrievalEval(string apiKey)
+{
+    var chunks = LoadAllEmbeddedChunks();
+    if (chunks.Count == 0)
+    {
+        Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
+        return 1;
+    }
+
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
+    var store = CreateVectorStore(chunks);
+
+    var queries = RetrievalEvalSet.Cases.Select(c => c.Query).ToList();
+    var queryVectors = await embeddingClient.EmbedBatchAsync(queries);
+
+    Console.WriteLine("=== PokeJudge AI — Milestone 5 Retrieval Evaluation ===\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {RetrievalEvalSet.Cases.Count} eval case(s).\n");
+
+    var hits = 0;
+    for (var i = 0; i < RetrievalEvalSet.Cases.Count; i++)
+    {
+        var evalCase = RetrievalEvalSet.Cases[i];
+        var results = store.Search(queryVectors[i], topK: 5);
+        var evalResult = RetrievalEvaluator.Evaluate(evalCase, results);
+
+        if (evalResult.Hit)
+        {
+            hits++;
+        }
+
+        Console.WriteLine(evalResult.Hit
+            ? $"[HIT rank {evalResult.Rank}] \"{evalCase.Query}\" (expected {evalCase.ExpectedSectionId})"
+            : $"[MISS] \"{evalCase.Query}\" (expected {evalCase.ExpectedSectionId})");
+
+        foreach (var result in results.Take(3))
+        {
+            Console.WriteLine($"    [{result.Score:F4}] {result.Chunk.Chunk.ChunkId}");
+        }
+        Console.WriteLine();
+    }
+
+    Console.WriteLine($"Result: {hits}/{RetrievalEvalSet.Cases.Count} hit within top 5.");
+
+    return 0;
+}
+
+static List<EmbeddedChunk> LoadAllEmbeddedChunks()
+{
+    var outputDirectory = Path.Combine(GetProjectDirectory(), "Chunking", "Output");
+    var chunks = new List<EmbeddedChunk>();
+
+    if (!Directory.Exists(outputDirectory))
+    {
+        return chunks;
+    }
+
+    foreach (var file in Directory.GetFiles(outputDirectory, "*.chunks.json"))
+    {
+        var document = JsonSerializer.Deserialize<ChunkedDocument>(File.ReadAllText(file));
+        if (document is not null)
+        {
+            chunks.AddRange(document.Chunks);
+        }
+    }
+
+    return chunks;
+}
+
+// InMemoryVectorStore's constructor fails loudly (by design) if any chunk has
+// a corrupted/invalid embedding, naming the chunk. This wraps that with a
+// friendly console message before re-throwing, matching the guidance pattern
+// already used for chunk's rate-limit handling -- the full exception still
+// surfaces for deeper debugging, it's just not the *only* thing shown.
+static InMemoryVectorStore CreateVectorStore(List<EmbeddedChunk> chunks)
+{
+    try
+    {
+        return new InMemoryVectorStore(chunks);
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.Error.WriteLine($"Could not build the vector store: {ex.Message}");
+        throw;
+    }
+}
+
+// Single source of truth for the embedding model/dimensionality used across
+// every embedding call site (RunChunking, RunSearch, RunRetrievalEval) -- keeping
+// this in one place means chunk-time and query-time embeddings can't silently
+// drift into incompatible vector spaces if the model or dimensionality changes
+// at one call site but not the others.
+static IEmbeddingClient CreateEmbeddingClient(string apiKey) =>
+    new GeminiEmbeddingClient(apiKey, "gemini-embedding-001", outputDimensionality: 768);
 
 // Resolves to this .cs file's own directory (PokeJudge/) at compile time, so
 // output paths (ingestion, chunking) are anchored to the project regardless of
