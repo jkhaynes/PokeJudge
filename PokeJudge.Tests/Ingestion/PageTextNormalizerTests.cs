@@ -35,6 +35,35 @@ public class PageTextNormalizerTests
     }
 
     [Fact]
+    public void StripPageNumberHeader_LeadingLineEndsInExpectedPageNumber_Strips()
+    {
+        var result = PageTextNormalizer.StripPageNumberHeader(
+            "THE POKEMON TRADING CARD GAME: WEB RULEBOOK | 2026 15\nBody text here.", 15);
+
+        Assert.Equal("Body text here.", result);
+    }
+
+    [Fact]
+    public void StripPageNumberHeader_LeadingLineEndsInADifferentNumber_LeavesTextUnchanged()
+    {
+        const string text = "THE POKEMON TRADING CARD GAME: WEB RULEBOOK | 2026 7\nBody text here.";
+
+        var result = PageTextNormalizer.StripPageNumberHeader(text, 15);
+
+        Assert.Equal(text, result);
+    }
+
+    [Fact]
+    public void StripPageNumberHeader_NoLeadingHeaderLine_LeavesTextUnchanged()
+    {
+        const string text = "Body text here.";
+
+        var result = PageTextNormalizer.StripPageNumberHeader(text, 15);
+
+        Assert.Equal(text, result);
+    }
+
+    [Fact]
     public void CollapseWhitespace_RunsOfSpaces_CollapseToSingleSpace()
     {
         var result = PageTextNormalizer.CollapseWhitespace("Hello   world");

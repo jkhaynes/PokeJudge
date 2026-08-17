@@ -39,6 +39,40 @@ public static class PageTextNormalizer
         return rest.TrimStart('\n', '\r', ' ', '\t');
     }
 
+    // Strips a running page HEADER ending in the page number (e.g. "THE POKEMON
+    // TRADING CARD GAME: WEB RULEBOOK | 2026 15") -- a different artifact from
+    // StripPageNumberFooter's bare-page-number-only first line. Observed in the
+    // Pokemon TCG Rulebook, where every page repeats a title/year/page-number header
+    // as its first line; left in place it pollutes both TOC parsing (a heading-wrap
+    // continuation line getting confused for header noise) and chunked body text with
+    // repeated boilerplate. Only used by the named-heading ingestion path today --
+    // the three existing numbered documents don't have this artifact.
+    public static string StripPageNumberHeader(string pageText, int expectedPageNumber)
+    {
+        var newlineIndex = pageText.IndexOf('\n');
+
+        string firstLine;
+        string rest;
+
+        if (newlineIndex >= 0)
+        {
+            firstLine = pageText[..newlineIndex];
+            rest = pageText[(newlineIndex + 1)..];
+        }
+        else
+        {
+            firstLine = pageText;
+            rest = string.Empty;
+        }
+
+        if (!firstLine.TrimEnd().EndsWith(" " + expectedPageNumber, StringComparison.Ordinal))
+        {
+            return pageText;
+        }
+
+        return rest.TrimStart('\n', '\r', ' ', '\t');
+    }
+
     public static string CollapseWhitespace(string text)
     {
         // Normalize line endings first: real PDF extraction produces \r\n, and a
