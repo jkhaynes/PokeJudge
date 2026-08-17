@@ -219,10 +219,17 @@ return 0;
 // ---------------------------------------------------------------------------
 static int RunIngestion(string[] args)
 {
-    var knownDocuments = new Dictionary<string, (string Title, int TitlePageNumber, (int Start, int End) TocPageRange)>(StringComparer.OrdinalIgnoreCase)
+    var knownDocuments = new Dictionary<string, (string Title, int TitlePageNumber, (int Start, int End) TocPageRange, bool NamedHeadings)>(StringComparer.OrdinalIgnoreCase)
     {
-        ["PPTRH"] = ("Play! Pokemon Tournament Rules Handbook", 1, (2, 3)),
-        ["TCGTH"] = ("Pokemon TCG Tournament Handbook", 1, (2, 3)),
+        ["PPTRH"] = ("Play! Pokemon Tournament Rules Handbook", 1, (2, 3), false),
+        ["TCGTH"] = ("Pokemon TCG Tournament Handbook", 1, (2, 3), false),
+        ["PPG"] = ("Play! Pokemon Penalty Guidelines", 1, (2, 3), false),
+        // Different layout from the other three: single-page TOC (body starts page 3, not 4),
+        // its own "LAST UPDATED: <Month> <Year>" title-page phrasing rather than
+        // "LAST REVISION: <Month> <Day>, <Year>" (see DocumentMetadataParser), and unnumbered
+        // headings ("Special Conditions", not "5.1 Procedural Error") -- routed through
+        // IngestionPipeline.RunNamedHeadings instead of Run; see NamedHeadingSectionSplitter.
+        ["TCGRULES"] = ("Pokemon Trading Card Game Rulebook", 1, (2, 2), true),
     };
 
     if (args.Length < 3)
@@ -247,7 +254,7 @@ static int RunIngestion(string[] args)
         return 1;
     }
 
-    var (documentTitle, titlePageNumber, tocPageRange) = known;
+    var (documentTitle, titlePageNumber, tocPageRange, namedHeadings) = known;
 
     Console.WriteLine("=== PokeJudge AI — Milestone 3 Document Ingestion ===\n");
     Console.WriteLine($"Extracting: {path}\n");
@@ -270,8 +277,10 @@ static int RunIngestion(string[] args)
     Console.WriteLine(normalizedSample);
     Console.WriteLine();
 
-    var document = new IngestionPipeline().Run(
-        pageTexts, titlePageNumber, tocPageRange, bodyPageRange, documentTitle, documentCode);
+    var pipeline = new IngestionPipeline();
+    var document = namedHeadings
+        ? pipeline.RunNamedHeadings(pageTexts, titlePageNumber, tocPageRange, bodyPageRange, documentTitle, documentCode)
+        : pipeline.Run(pageTexts, titlePageNumber, tocPageRange, bodyPageRange, documentTitle, documentCode);
 
     Console.WriteLine($"--- Sectioned & cited: {document.Sections.Count} sections extracted ---");
     Console.WriteLine($"Document: {document.Metadata.Title} (revision: {document.Metadata.Version})\n");

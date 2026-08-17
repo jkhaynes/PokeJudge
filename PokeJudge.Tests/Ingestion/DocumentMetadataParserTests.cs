@@ -16,6 +16,17 @@ public class DocumentMetadataParserTests
     }
 
     [Fact]
+    public void ExtractEffectiveDate_LastUpdatedLinePresent_ExtractsDate()
+    {
+        const string titlePageText =
+            "POKEMON TRADING CARD GAME RULES / LAST UPDATED: JULY 2026";
+
+        var result = DocumentMetadataParser.ExtractEffectiveDate(titlePageText);
+
+        Assert.Equal("JULY 2026", result);
+    }
+
+    [Fact]
     public void ExtractEffectiveDate_NoRevisionLine_ThrowsRatherThanGuessing()
     {
         const string titlePageText = "1 Some Other Document With No Revision Line";

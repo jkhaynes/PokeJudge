@@ -59,6 +59,44 @@ public class SectionSplitterTests
     }
 
     [Fact]
+    public void Split_LaterHeadingTextAppearsEarlierAsOrdinaryProse_StillOrdersSectionsCorrectly()
+    {
+        // "5.2 VG" also occurs, coincidentally, inside 5.1's own body text (as a cross-
+        // reference), before 5.2's real heading. A naive IndexOf-from-zero search would
+        // lock onto that earlier occurrence for the second entry and misorder the split.
+        const string bodyText =
+            "5.1 Procedural Error\nSee also 5.2 VG for a related example.\n5.2 VG\nThe VG section body text.";
+
+        var tocEntries = new List<TocEntry> { new("5.1", "Procedural Error", 16), new("5.2", "VG", 23) };
+
+        var sections = SectionSplitter.Split(bodyText, tocEntries, Source, "TEST");
+
+        Assert.Equal("See also 5.2 VG for a related example.", sections[0].Text);
+        Assert.Equal("The VG section body text.", sections[1].Text);
+    }
+
+    [Fact]
+    public void Split_HeadingWrapsAcrossALineBreakInTheBody_StillLocatesIt()
+    {
+        // A long heading can text-wrap onto two lines in the source PDF with no hyphen,
+        // so RejoinHyphenatedLineWraps won't have rejoined it -- the real failure observed
+        // ingesting the Play! Pokemon Penalty Guidelines document.
+        const string bodyText =
+            "5 Base Infractions, Recommended Starting\nPenalties\nBody text for section 5.\n5.1 Procedural Error\nBody text for 5.1.";
+
+        var tocEntries = new List<TocEntry>
+        {
+            new("5", "Base Infractions, Recommended Starting Penalties", 16),
+            new("5.1", "Procedural Error", 16),
+        };
+
+        var sections = SectionSplitter.Split(bodyText, tocEntries, Source, "TEST");
+
+        Assert.Equal("Body text for section 5.", sections[0].Text);
+        Assert.Equal("Body text for 5.1.", sections[1].Text);
+    }
+
+    [Fact]
     public void Split_EmptyTocEntries_ReturnsEmptyList()
     {
         var sections = SectionSplitter.Split("Some body text.", new List<TocEntry>(), Source, "TEST");
