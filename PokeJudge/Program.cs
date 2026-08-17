@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using PokeJudge.AI;
 using PokeJudge.Chunking;
 using PokeJudge.Clarification;
+using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
 using PokeJudge.Retrieval;
 
@@ -57,8 +58,17 @@ using PokeJudge.Retrieval;
 // runs against the complete accumulated scenario and RulingGenerator produces
 // a structured ruling -- recommendation, explanation, repair steps, penalty
 // guidance, cited chunk IDs, and a first-pass, model-assigned Source Support
-// label (Strong/Partial/Insufficient), not yet checked against deterministic
-// criteria (that's Milestone 7). See .project-plans/milestone-6/plan.md.
+// label (Strong/Partial/Insufficient).
+//
+// Milestone 7 — Citations and Grounding
+//
+// RulingGenerator's Source Support label is no longer trusted as-is. GroundingValidator
+// runs after it -- deterministic checks (retrieval non-empty, citation existence, fact
+// sufficiency) plus one more LLM call classifying whether each cited passage actually
+// supports its claim -- and SourceSupportAssigner combines both into a validated label.
+// The console prints both: the model's own unvalidated opinion and the validated
+// signal, so any divergence is visible rather than buried. See
+// .project-plans/milestone-7/plan.md and grounding-analysis.md.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -110,8 +120,9 @@ IRetriever retriever = new VectorStoreRetriever(defaultFlowEmbeddingClient, defa
 
 var loop = new ClarificationLoop(llmClient, retriever);
 var rulingGenerator = new RulingGenerator(llmClient);
+var groundingValidator = new GroundingValidator(llmClient);
 
-Console.WriteLine("=== PokeJudge AI — Milestone 6 RAG ===\n");
+Console.WriteLine("=== PokeJudge AI — Milestone 7 Citations and Grounding ===\n");
 Console.Write("Describe the scenario: ");
 var scenarioDescription = Console.ReadLine() ?? string.Empty;
 
@@ -188,8 +199,14 @@ var finalChunks = lastRetrievedChunks!;
 
 var ruling = await rulingGenerator.GenerateAsync(scenarioDescription, outcome.State, finalChunks);
 
+// PRD SS11's Grounding Validation & Source Support Assignment step -- checks
+// the ruling's own Source Support label against retrieval/citation/fact data,
+// rather than trusting it as generated (Milestone 7).
+var grounding = await groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
+
 Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
-Console.WriteLine($"Source Support: {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
+Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
+Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
 Console.WriteLine($"\nExplanation: {ruling.Explanation}");
 
 if (ruling.RepairSteps.Count > 0)
@@ -207,6 +224,22 @@ if (ruling.PenaltyGuidance is not null)
 }
 
 Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
+
+Console.WriteLine("\nCitation grounding breakdown:");
+if (grounding.Assessment.Citations.Count == 0)
+{
+    Console.WriteLine("  (no citations to assess)");
+}
+foreach (var citation in grounding.Assessment.Citations)
+{
+    Console.WriteLine($"  [{citation.ChunkId}] {citation.SupportLevel}");
+}
+if (grounding.Assessment.ConflictDetected)
+{
+    Console.WriteLine("  Conflict detected among cited passages.");
+}
+Console.WriteLine($"  Deterministic checks: retrieval non-empty={grounding.RetrievalNonEmpty}, " +
+    $"all citations exist={grounding.AllCitationsExist}, facts were sufficient={grounding.FactsWereSufficient}");
 
 return 0;
 

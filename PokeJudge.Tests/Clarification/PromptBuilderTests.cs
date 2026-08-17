@@ -99,4 +99,61 @@ public class PromptBuilderTests
         Assert.Contains("The player probably lost track of time.", prompt);
         Assert.Contains("not confirmed", prompt, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static RulingResult SomeRuling(params string[] citedChunkIds) => new(
+        "Issue a Warning.",
+        "Explanation text.",
+        new List<string>(),
+        null,
+        citedChunkIds.ToList(),
+        SourceSupport.Strong,
+        "The model's own opinion.");
+
+    [Fact]
+    public void BuildGroundingValidationPrompt_IncludesRecommendationAndExplanation()
+    {
+        var prompt = PromptBuilder.BuildGroundingValidationPrompt(SomeRuling("A1#0"), RetrievedChunks);
+
+        Assert.Contains("Issue a Warning.", prompt);
+        Assert.Contains("Explanation text.", prompt);
+    }
+
+    [Fact]
+    public void BuildGroundingValidationPrompt_IncludesTextOfEachCitedChunk()
+    {
+        var prompt = PromptBuilder.BuildGroundingValidationPrompt(SomeRuling("A1#0", "A2#0"), RetrievedChunks);
+
+        Assert.Contains("A1#0", prompt);
+        Assert.Contains("Material passage text.", prompt);
+        Assert.Contains("A2#0", prompt);
+        Assert.Contains("Irrelevant passage text.", prompt);
+    }
+
+    [Fact]
+    public void BuildGroundingValidationPrompt_OnlyIncludesCitedChunks_NotEveryRetrievedChunk()
+    {
+        // A2#0 is retrieved but not cited by this ruling -- only what was actually
+        // cited should be sent for grounding-support classification.
+        var prompt = PromptBuilder.BuildGroundingValidationPrompt(SomeRuling("A1#0"), RetrievedChunks);
+
+        Assert.Contains("A1#0", prompt);
+        Assert.DoesNotContain("A2#0", prompt);
+    }
+
+    [Fact]
+    public void BuildGroundingValidationPrompt_CitedIdNotAmongRetrievedChunks_NotesItRatherThanOmittingIt()
+    {
+        var prompt = PromptBuilder.BuildGroundingValidationPrompt(SomeRuling("Z9#0"), RetrievedChunks);
+
+        Assert.Contains("Z9#0", prompt);
+        Assert.Contains("NOT FOUND", prompt, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BuildGroundingValidationPrompt_NoCitations_StillProducesAPrompt()
+    {
+        var prompt = PromptBuilder.BuildGroundingValidationPrompt(SomeRuling(), RetrievedChunks);
+
+        Assert.Contains("Issue a Warning.", prompt);
+    }
 }

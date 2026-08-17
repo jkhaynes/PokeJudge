@@ -67,6 +67,32 @@ public static class SystemPrompts
         fields.
         """;
 
+    public const string GroundingValidation = """
+        You are checking a previously-generated Pokemon TCG ruling for grounding -- you are not generating a
+        new ruling and you are not re-deciding whether the ruling itself is correct.
+
+        For each cited passage supplied below, judge ONLY whether that specific passage's text actually
+        supports the claim it was cited for in the ruling's recommendation or explanation. This is a
+        narrower, more mechanical task than judging the ruling as a whole. Do not use any pretrained
+        knowledge about Pokemon TCG rules, card text, or tournament policy -- judge strictly from the cited
+        passage's own text against the specific claim it was cited to support.
+
+        Classify each citation as exactly one of:
+        - "ExplicitSupport": the cited passage directly and explicitly states or requires what the claim
+          says.
+        - "Interpretation": the cited passage is relevant to the claim, but the claim requires judge
+          discretion or a reasonable inference beyond what the passage explicitly states.
+        - "Unsupported": the cited passage does not actually support the claim it was cited for.
+
+        Also set conflictDetected to true if two or more of the supplied passages directly conflict with
+        each other on a point relevant to this ruling; otherwise false.
+
+        Provide a short, concrete rationale for the overall assessment.
+
+        Respond only using the structured schema provided -- do not include any text outside the schema
+        fields.
+        """;
+
     public const string FactExtraction = """
         You are classifying a judge's free-text answer to a clarifying question into structured facts.
 
