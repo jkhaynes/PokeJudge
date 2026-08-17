@@ -2,6 +2,7 @@ namespace PokeJudge.Tests.AI;
 
 using System.Text.Json;
 using PokeJudge.AI;
+using PokeJudge.Grounding;
 using PokeJudge.StructuredState;
 
 public class StructuredResponseParserTests
@@ -100,6 +101,48 @@ public class StructuredResponseParserTests
 
         Assert.Null(result.PenaltyGuidance);
         Assert.Equal(SourceSupport.Partial, result.SourceSupport);
+    }
+
+    [Fact]
+    public void Parse_GroundingAssessmentJson_DeserializesCitationSupportLevelEnumsAndConflictFlag()
+    {
+        const string json = """
+            {
+              "citations": [
+                { "chunkId": "A1#0", "supportLevel": "ExplicitSupport" },
+                { "chunkId": "A2#0", "supportLevel": "Interpretation" }
+              ],
+              "conflictDetected": true,
+              "rationale": "One citation requires judge discretion; two passages conflict."
+            }
+            """;
+
+        var result = StructuredResponseParser.Parse<GroundingAssessment>(json);
+
+        Assert.Equal(2, result.Citations.Count);
+        Assert.Equal("A1#0", result.Citations[0].ChunkId);
+        Assert.Equal(CitationSupportLevel.ExplicitSupport, result.Citations[0].SupportLevel);
+        Assert.Equal(CitationSupportLevel.Interpretation, result.Citations[1].SupportLevel);
+        Assert.True(result.ConflictDetected);
+    }
+
+    [Fact]
+    public void Parse_GroundingAssessmentJson_UnsupportedCitationAndNoConflict_DeserializesCorrectly()
+    {
+        const string json = """
+            {
+              "citations": [
+                { "chunkId": "A1#0", "supportLevel": "Unsupported" }
+              ],
+              "conflictDetected": false,
+              "rationale": "The cited passage does not address the claim."
+            }
+            """;
+
+        var result = StructuredResponseParser.Parse<GroundingAssessment>(json);
+
+        Assert.Equal(CitationSupportLevel.Unsupported, result.Citations[0].SupportLevel);
+        Assert.False(result.ConflictDetected);
     }
 
     [Fact]

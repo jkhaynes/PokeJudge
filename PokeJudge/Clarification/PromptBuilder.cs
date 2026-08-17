@@ -73,6 +73,40 @@ public static class PromptBuilder
         return sb.ToString();
     }
 
+    public static string BuildGroundingValidationPrompt(RulingResult ruling, IReadOnlyList<ScoredChunk> retrievedChunks)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("Ruling recommendation:");
+        sb.AppendLine(ruling.Recommendation);
+        sb.AppendLine();
+
+        sb.AppendLine("Ruling explanation:");
+        sb.AppendLine(ruling.Explanation);
+        sb.AppendLine();
+
+        sb.AppendLine("Cited passages (judge only whether each one supports the claim it was cited for):");
+        if (ruling.CitedChunkIds.Count == 0)
+        {
+            sb.AppendLine("(none cited)");
+        }
+        else
+        {
+            foreach (var chunkId in ruling.CitedChunkIds)
+            {
+                var match = retrievedChunks.FirstOrDefault(c => c.Chunk.Chunk.ChunkId == chunkId);
+                sb.AppendLine(match is null
+                    ? $"[{chunkId}] (NOT FOUND among the retrieved passages supplied to the ruling)"
+                    : $"[{match.Chunk.Chunk.ChunkId}] ({match.Chunk.Chunk.SectionId}, score {match.Score:F4}) {match.Chunk.Chunk.Text}");
+            }
+        }
+        sb.AppendLine();
+
+        sb.AppendLine("Classify each cited passage's support level and flag any conflict, per the system instructions.");
+
+        return sb.ToString();
+    }
+
     private static void AppendRetrievedChunksOrNone(StringBuilder sb, IReadOnlyList<ScoredChunk> chunks)
     {
         if (chunks.Count == 0)
