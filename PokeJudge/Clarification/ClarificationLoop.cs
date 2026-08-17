@@ -1,20 +1,30 @@
 namespace PokeJudge.Clarification;
 
 using PokeJudge.AI;
+using PokeJudge.Retrieval;
 using PokeJudge.StructuredState;
 
-// The multi-turn loop from the milestone plan: assess sufficiency against
-// the mock corpus + known facts so far; if insufficient, ask the judge's
-// clarifying questions, classify the free-text answers into confirmed facts
-// vs. hypotheses, update state, and re-assess -- until sufficient or a
-// small turn cap. All state lives in GameState, owned by the app; the model
-// is re-supplied the full accumulated context on every call.
+// Milestone 6's rebuilt multi-turn loop: retrieve -> assess -> clarify -> re-retrieve
+// (PRD SS11), replacing Milestone 2's fixed mock corpus with real retrieval. Every
+// turn builds a retrieval query from the scenario description plus facts confirmed
+// so far, retrieves the current top-K chunks, and assesses sufficiency against
+// those -- not a static corpus. All state lives in GameState, owned by the app; the
+// model is re-supplied the full accumulated context (and freshly retrieved
+// passages) on every call.
 public sealed class ClarificationLoop
 {
-    private readonly ILlmClient _llmClient;
-    private readonly int _maxTurns;
+    // Single source of truth for top-K, so the loop's per-turn retrieval and
+    // Program.cs's final retrieval before ruling generation can't silently
+    // drift apart (the same reasoning as Milestone 5's shared embedding-client
+    // constructor -- see .project-plans/milestone-5/pr-review.md).
+    public const int DefaultTopK = 5;
 
-    public ClarificationLoop(ILlmClient llmClient, int maxTurns = 4)
+    private readonly ILlmClient _llmClient;
+    private readonly IRetriever _retriever;
+    private readonly int _maxTurns;
+    private readonly int _topK;
+
+    public ClarificationLoop(ILlmClient llmClient, IRetriever retriever, int maxTurns = 4, int topK = DefaultTopK)
     {
         if (maxTurns <= 0)
         {
@@ -22,30 +32,29 @@ public sealed class ClarificationLoop
         }
 
         _llmClient = llmClient;
+        _retriever = retriever;
         _maxTurns = maxTurns;
+        _topK = topK;
     }
 
     public async Task<ClarificationOutcome> RunAsync(
-        MockScenario scenario,
+        string scenarioDescription,
         Func<ClarifyingQuestion, Task<string>> askJudge,
-        Action<ClarificationResult>? onAssessment = null)
+        Action<ClarificationResult, IReadOnlyList<ScoredChunk>>? onAssessment = null)
     {
         var state = new GameState();
 
         for (var turn = 1; turn <= _maxTurns; turn++)
         {
-            var result = await AssessAsync(scenario, state);
-            onAssessment?.Invoke(result);
+            var query = RetrievalQueryBuilder.Build(scenarioDescription, state.ConfirmedFacts);
+            var retrievedChunks = await _retriever.RetrieveAsync(query, _topK);
+
+            var result = await AssessAsync(scenarioDescription, retrievedChunks, state);
+            onAssessment?.Invoke(result, retrievedChunks);
 
             if (result.IsSufficient)
             {
-                if (result.Draft is null)
-                {
-                    throw new InvalidOperationException(
-                        "Model reported the scenario sufficient but did not include a draft ruling.");
-                }
-
-                return ClarificationOutcome.SufficientAt(state, result.Draft, turn);
+                return ClarificationOutcome.SufficientAt(state, turn);
             }
 
             if (result.Questions.Count == 0)
@@ -67,10 +76,11 @@ public sealed class ClarificationLoop
         return ClarificationOutcome.TurnCapExhausted(state, _maxTurns);
     }
 
-    private Task<ClarificationResult> AssessAsync(MockScenario scenario, GameState state) =>
+    private Task<ClarificationResult> AssessAsync(
+        string scenarioDescription, IReadOnlyList<ScoredChunk> retrievedChunks, GameState state) =>
         _llmClient.CompleteStructuredAsync<ClarificationResult>(
             SystemPrompts.Judge,
-            PromptBuilder.BuildSufficiencyPrompt(scenario, state),
+            PromptBuilder.BuildSufficiencyPrompt(scenarioDescription, retrievedChunks, state),
             ClarificationResultSchema.Schema);
 
     private Task<FactExtractionResult> ExtractFactsAsync(ClarifyingQuestion question, string answer) =>

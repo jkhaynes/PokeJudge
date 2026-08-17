@@ -45,8 +45,20 @@ using PokeJudge.Retrieval;
 // against known-correct sections and reports hit/miss -- a deterministic
 // check involving the embedding call but zero chat/completion model calls,
 // demonstrating retrieval quality is measurable independent of generation
-// quality. Everything below all these checks is the unchanged Milestone 2
-// clarification loop, still the default mode.
+// quality.
+//
+// Milestone 6 — RAG
+//
+// The default mode below is rebuilt: Milestone 2's fixed, hand-authored
+// MockCorpus is gone. The judge now types a free-text scenario description,
+// and ClarificationLoop retrieves real chunks from Milestone 5's vector store
+// every turn (retrieve -> assess -> clarify -> re-retrieve, PRD SS11) instead
+// of reasoning over a static mock corpus. Once sufficient, one more retrieval
+// runs against the complete accumulated scenario and RulingGenerator produces
+// a structured ruling -- recommendation, explanation, repair steps, penalty
+// guidance, cited chunk IDs, and a first-pass, model-assigned Source Support
+// label (Strong/Partial/Insufficient), not yet checked against deterministic
+// criteria (that's Milestone 7). See .project-plans/milestone-6/plan.md.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -84,40 +96,58 @@ if (args.Length > 0 && args[0] == "eval")
 }
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
-var loop = new ClarificationLoop(llmClient);
 
-Console.WriteLine("=== PokeJudge AI — Milestone 2 Clarification Loop ===\n");
-Console.WriteLine("Select a scenario:");
-for (var i = 0; i < MockCorpus.Scenarios.Count; i++)
+var defaultFlowChunks = LoadAllEmbeddedChunks();
+if (defaultFlowChunks.Count == 0)
 {
-    Console.WriteLine($"  {i + 1}. {MockCorpus.Scenarios[i].Title}");
-}
-
-Console.Write("\nEnter scenario number: ");
-var selectionInput = Console.ReadLine();
-if (!int.TryParse(selectionInput, out var selection) || selection < 1 || selection > MockCorpus.Scenarios.Count)
-{
-    Console.Error.WriteLine("Invalid selection.");
+    Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
     return 1;
 }
 
-var scenario = MockCorpus.Scenarios[selection - 1];
+IEmbeddingClient defaultFlowEmbeddingClient = CreateEmbeddingClient(apiKey);
+var defaultFlowVectorStore = CreateVectorStore(defaultFlowChunks);
+IRetriever retriever = new VectorStoreRetriever(defaultFlowEmbeddingClient, defaultFlowVectorStore);
 
-Console.WriteLine($"\n--- Scenario: {scenario.Title} ---\n{scenario.Description}\n");
+var loop = new ClarificationLoop(llmClient, retriever);
+var rulingGenerator = new RulingGenerator(llmClient);
+
+Console.WriteLine("=== PokeJudge AI — Milestone 6 RAG ===\n");
+Console.Write("Describe the scenario: ");
+var scenarioDescription = Console.ReadLine() ?? string.Empty;
+
+if (string.IsNullOrWhiteSpace(scenarioDescription))
+{
+    Console.Error.WriteLine("A scenario description is required.");
+    return 1;
+}
+
+// Captured from onAssessment so the turn that reaches sufficiency doesn't
+// need a second, guaranteed-identical retrieval call before ruling generation
+// -- the loop already retrieved against these exact confirmed facts moments
+// earlier, and RetrievalQueryBuilder.Build is a pure function of them.
+IReadOnlyList<ScoredChunk>? lastRetrievedChunks = null;
 
 var outcome = await loop.RunAsync(
-    scenario,
+    scenarioDescription,
     askJudge: question =>
     {
-        Console.WriteLine($"\n[Clarifying question — re: {question.RelatedSnippetId}] {question.Question}");
+        Console.WriteLine($"\n[Clarifying question — re: {question.RelatedChunkId}] {question.Question}");
         Console.Write("Your answer: ");
         return Task.FromResult(Console.ReadLine() ?? string.Empty);
     },
-    onAssessment: result =>
+    onAssessment: (result, retrievedChunks) =>
     {
+        lastRetrievedChunks = retrievedChunks;
+
+        Console.WriteLine($"\n[Retrieved {retrievedChunks.Count} chunk(s) for this turn]");
+        foreach (var chunk in retrievedChunks)
+        {
+            Console.WriteLine($"  [{chunk.Score:F4}] {chunk.Chunk.Chunk.ChunkId}");
+        }
+
         Console.WriteLine(result.IsSufficient
-            ? "\n[Assessment] Sufficient — drafting ruling..."
-            : $"\n[Assessment] Insufficient — {result.Questions.Count} clarifying question(s) needed.");
+            ? "[Assessment] Sufficient — generating ruling..."
+            : $"[Assessment] Insufficient — {result.Questions.Count} clarifying question(s) needed.");
     });
 
 Console.WriteLine("\n=== Result ===");
@@ -143,15 +173,40 @@ foreach (var hypothesis in outcome.State.Hypotheses)
     Console.WriteLine($"  - {hypothesis}");
 }
 
-if (outcome.Sufficient)
+if (!outcome.Sufficient)
 {
-    Console.WriteLine($"\nDraft ruling: {outcome.Draft!.RecommendedAction}");
-    Console.WriteLine($"Supporting snippet IDs: {string.Join(", ", outcome.Draft.SupportingSnippetIds)}");
+    // PRD SS9: must not issue a ruling when material facts are still flagged missing.
+    Console.WriteLine("\nTurn cap reached without sufficient facts — no ruling produced.");
+    return 0;
 }
-else
+
+// PRD FR7: finalize retrieval against the complete accumulated scenario before generating.
+// The loop's last turn already retrieved against these exact confirmed facts
+// (nothing adds facts between a turn reporting sufficient and RunAsync returning),
+// so reuse that captured result instead of repeating an identical embedding + search call.
+var finalChunks = lastRetrievedChunks!;
+
+var ruling = await rulingGenerator.GenerateAsync(scenarioDescription, outcome.State, finalChunks);
+
+Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
+Console.WriteLine($"Source Support: {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
+Console.WriteLine($"\nExplanation: {ruling.Explanation}");
+
+if (ruling.RepairSteps.Count > 0)
 {
-    Console.WriteLine("\nTurn cap reached without a sufficient ruling.");
+    Console.WriteLine("\nRepair steps:");
+    foreach (var step in ruling.RepairSteps)
+    {
+        Console.WriteLine($"  - {step}");
+    }
 }
+
+if (ruling.PenaltyGuidance is not null)
+{
+    Console.WriteLine($"\nPenalty guidance: {ruling.PenaltyGuidance}");
+}
+
+Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
 
 return 0;
 

@@ -2,11 +2,12 @@ namespace PokeJudge.StructuredState;
 
 using System.Text.Json;
 
-public sealed record ClarifyingQuestion(string Question, string RelatedSnippetId);
+public sealed record ClarifyingQuestion(string Question, string RelatedChunkId);
 
-public sealed record DraftRuling(string RecommendedAction, List<string> SupportingSnippetIds);
-
-public sealed record ClarificationResult(bool IsSufficient, List<ClarifyingQuestion> Questions, DraftRuling? Draft);
+// No embedded draft ruling here -- Milestone 6 makes ruling generation its own
+// explicit step (RulingGenerator), matching PRD SS11's architecture diagram,
+// rather than something the sufficiency call also produces on the side.
+public sealed record ClarificationResult(bool IsSufficient, List<ClarifyingQuestion> Questions);
 
 // Hand-written to mirror ClarificationResult field-for-field, so the shape
 // sent to Gemini and the shape deserialized back are visibly the same thing.
@@ -23,22 +24,10 @@ public static class ClarificationResultSchema
                 "type": "OBJECT",
                 "properties": {
                   "question": { "type": "STRING" },
-                  "relatedSnippetId": { "type": "STRING" }
+                  "relatedChunkId": { "type": "STRING" }
                 },
-                "required": ["question", "relatedSnippetId"]
+                "required": ["question", "relatedChunkId"]
               }
-            },
-            "draft": {
-              "type": "OBJECT",
-              "nullable": true,
-              "properties": {
-                "recommendedAction": { "type": "STRING" },
-                "supportingSnippetIds": {
-                  "type": "ARRAY",
-                  "items": { "type": "STRING" }
-                }
-              },
-              "required": ["recommendedAction", "supportingSnippetIds"]
             }
           },
           "required": ["isSufficient", "questions"]

@@ -13,9 +13,8 @@ public class StructuredResponseParserTests
             {
               "isSufficient": false,
               "questions": [
-                { "question": "Was a Pokemon Knocked Out?", "relatedSnippetId": "A1" }
-              ],
-              "draft": null
+                { "question": "Was a Pokemon Knocked Out?", "relatedChunkId": "A1#0" }
+              ]
             }
             """;
 
@@ -24,21 +23,16 @@ public class StructuredResponseParserTests
         Assert.False(result.IsSufficient);
         Assert.Single(result.Questions);
         Assert.Equal("Was a Pokemon Knocked Out?", result.Questions[0].Question);
-        Assert.Equal("A1", result.Questions[0].RelatedSnippetId);
-        Assert.Null(result.Draft);
+        Assert.Equal("A1#0", result.Questions[0].RelatedChunkId);
     }
 
     [Fact]
-    public void Parse_ClarificationResultJson_SufficientWithDraft_DeserializesCorrectly()
+    public void Parse_ClarificationResultJson_Sufficient_DeserializesCorrectly()
     {
         const string json = """
             {
               "isSufficient": true,
-              "questions": [],
-              "draft": {
-                "recommendedAction": "Issue a Warning.",
-                "supportingSnippetIds": ["A1", "A2"]
-              }
+              "questions": []
             }
             """;
 
@@ -46,9 +40,6 @@ public class StructuredResponseParserTests
 
         Assert.True(result.IsSufficient);
         Assert.Empty(result.Questions);
-        Assert.NotNull(result.Draft);
-        Assert.Equal("Issue a Warning.", result.Draft!.RecommendedAction);
-        Assert.Equal(new[] { "A1", "A2" }, result.Draft.SupportingSnippetIds);
     }
 
     [Fact]
@@ -65,6 +56,50 @@ public class StructuredResponseParserTests
 
         Assert.Equal(new[] { "A Pokemon was Knocked Out." }, result.ConfirmedFacts);
         Assert.Equal(new[] { "The player likely forgot due to time pressure." }, result.Hypotheses);
+    }
+
+    [Fact]
+    public void Parse_RulingResultJson_DeserializesSourceSupportEnumFromString()
+    {
+        const string json = """
+            {
+              "recommendation": "Issue a Warning.",
+              "explanation": "The error was discovered after the player's next turn ended.",
+              "repairSteps": ["Correct the Prize count."],
+              "penaltyGuidance": "Procedural Error -- Warning.",
+              "citedChunkIds": ["A1#0", "A2#0"],
+              "sourceSupport": "Strong",
+              "sourceSupportRationale": "Both retrieved passages directly address the discovery-timing rule."
+            }
+            """;
+
+        var result = StructuredResponseParser.Parse<RulingResult>(json);
+
+        Assert.Equal("Issue a Warning.", result.Recommendation);
+        Assert.Equal(new[] { "Correct the Prize count." }, result.RepairSteps);
+        Assert.Equal(new[] { "A1#0", "A2#0" }, result.CitedChunkIds);
+        Assert.Equal(SourceSupport.Strong, result.SourceSupport);
+    }
+
+    [Fact]
+    public void Parse_RulingResultJson_NullPenaltyGuidance_DeserializesToNull()
+    {
+        const string json = """
+            {
+              "recommendation": "No action needed.",
+              "explanation": "No rule was violated.",
+              "repairSteps": [],
+              "penaltyGuidance": null,
+              "citedChunkIds": ["A1#0"],
+              "sourceSupport": "Partial",
+              "sourceSupportRationale": "Only one of two relevant passages was retrieved."
+            }
+            """;
+
+        var result = StructuredResponseParser.Parse<RulingResult>(json);
+
+        Assert.Null(result.PenaltyGuidance);
+        Assert.Equal(SourceSupport.Partial, result.SourceSupport);
     }
 
     [Fact]
