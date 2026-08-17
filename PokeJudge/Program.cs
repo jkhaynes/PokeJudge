@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using PokeJudge.AI;
+using PokeJudge.Chunking;
 using PokeJudge.Clarification;
 using PokeJudge.Ingestion;
 
@@ -21,9 +22,18 @@ using PokeJudge.Ingestion;
 // `dotnet run -- ingest <path-to-pdf> <document-code>` extracts, normalizes,
 // and sections a real policy PDF into citable IngestedSection records, prints
 // a raw-vs-normalized comparison, and writes the result to a local,
-// gitignored JSON file for Milestone 4 to eventually consume. Everything
-// below this check is the unchanged Milestone 2 clarification loop, still
-// the default mode.
+// gitignored JSON file for Milestone 4 to consume.
+//
+// Milestone 4 — Chunking and Embeddings
+//
+// Adds `dotnet run -- chunk <document-code>`: loads a previously-ingested
+// document, splits its sections into sentence-boundary-aware chunks, and
+// embeds each chunk via Gemini's batch embedding API (skipping chunks
+// already embedded in a prior run), writing the result to another local,
+// gitignored JSON file for Milestone 5 to eventually index. This mode does
+// need the Gemini API key (embedding is a real model call), unlike `ingest`.
+// Everything below both checks is the unchanged Milestone 2 clarification
+// loop, still the default mode.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -44,6 +54,11 @@ if (string.IsNullOrWhiteSpace(apiKey))
 }
 
 var modelId = config["Gemini:Model"] ?? "gemini-flash-lite-latest";
+
+if (args.Length > 0 && args[0] == "chunk")
+{
+    return await RunChunking(args, apiKey);
+}
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
 var loop = new ClarificationLoop(llmClient);
@@ -200,10 +215,105 @@ static int RunIngestion(string[] args)
     return 0;
 }
 
-// Resolves to this .cs file's own directory (PokeJudge/) at compile time, so the
-// ingestion output path is anchored to the project regardless of the process's
-// working directory -- `dotnet run` from inside PokeJudge/ vs. `dotnet run
-// --project PokeJudge` from the repo root previously produced different,
+// ---------------------------------------------------------------------------
+// Milestone 4 chunking + embedding mode. Loads a document Milestone 3's
+// `ingest` mode already produced, chunks and embeds it, and skips any chunk
+// already present in a prior run's output (resumable -- see
+// .project-plans/milestone-4/plan.md's free-tier rate-limit note).
+// ---------------------------------------------------------------------------
+static async Task<int> RunChunking(string[] args, string apiKey)
+{
+    if (args.Length < 2)
+    {
+        Console.Error.WriteLine("Usage: dotnet run -- chunk <document-code>");
+        return 1;
+    }
+
+    var documentCode = args[1].ToUpperInvariant();
+    var ingestedPath = Path.Combine(GetProjectDirectory(), "Ingestion", "Output", $"{documentCode}.json");
+
+    if (!File.Exists(ingestedPath))
+    {
+        Console.Error.WriteLine($"No ingested document found at {ingestedPath}. Run `ingest` first.");
+        return 1;
+    }
+
+    var ingestedDocument = JsonSerializer.Deserialize<IngestedDocument>(File.ReadAllText(ingestedPath))
+        ?? throw new InvalidOperationException("Ingested document deserialized to null.");
+
+    var outputDirectory = Path.Combine(GetProjectDirectory(), "Chunking", "Output");
+    Directory.CreateDirectory(outputDirectory);
+    var outputPath = Path.Combine(outputDirectory, $"{documentCode}.chunks.json");
+
+    var alreadyEmbedded = new Dictionary<string, float[]>();
+    if (File.Exists(outputPath))
+    {
+        var existing = JsonSerializer.Deserialize<ChunkedDocument>(File.ReadAllText(outputPath));
+        if (existing is not null)
+        {
+            foreach (var chunk in existing.Chunks)
+            {
+                alreadyEmbedded[chunk.Chunk.ChunkId] = chunk.Embedding;
+            }
+        }
+    }
+
+    Console.WriteLine("=== PokeJudge AI — Milestone 4 Chunking + Embeddings ===\n");
+    Console.WriteLine($"Document: {ingestedDocument.Metadata.Title} ({ingestedDocument.Sections.Count} sections)");
+    Console.WriteLine($"Already embedded: {alreadyEmbedded.Count} chunk(s)\n");
+
+    IEmbeddingClient embeddingClient = new GeminiEmbeddingClient(apiKey, "gemini-embedding-001", outputDimensionality: 768);
+    // batchSize kept well under the free tier's observed ~100-item-per-minute
+    // embedding quota (a single 100-item batch was rejected outright) so at least
+    // one batch reliably succeeds and gets saved before any 429.
+    var pipeline = new ChunkingPipeline(embeddingClient, batchSize: 25);
+
+    // Persist after every batch, not just at the end -- a rate-limit exception
+    // partway through must not lose already-embedded chunks. Re-running this same
+    // command afterward resumes from whatever was last saved here.
+    void SaveProgress(List<EmbeddedChunk> chunksSoFar)
+    {
+        var snapshot = new ChunkedDocument(ingestedDocument.Metadata, chunksSoFar);
+        File.WriteAllText(outputPath, JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true }));
+        Console.WriteLine($"Progress: {chunksSoFar.Count} chunk(s) embedded, saved to {outputPath} (gitignored, not committed).");
+    }
+
+    List<EmbeddedChunk> embeddedChunks;
+    try
+    {
+        embeddedChunks = await pipeline.RunAsync(ingestedDocument, alreadyEmbedded, onProgress: SaveProgress);
+    }
+    catch (HttpRequestException) when (File.Exists(outputPath))
+    {
+        Console.Error.WriteLine(
+            "Embedding call failed (see exception below) -- progress up to the last completed batch " +
+            $"was already saved to {outputPath}. Re-run this same command to resume.");
+        throw;
+    }
+
+    var sampleSection = ingestedDocument.Sections[0];
+    Console.WriteLine($"--- Sample section: [{sampleSection.SectionId}] {sampleSection.Heading} (full text, {sampleSection.Text.Length} chars) ---");
+    Console.WriteLine(sampleSection.Text);
+    Console.WriteLine();
+
+    var sampleChunks = embeddedChunks.Where(c => c.Chunk.SectionId == sampleSection.SectionId).ToList();
+    Console.WriteLine($"--- Split into {sampleChunks.Count} chunk(s) ---");
+    foreach (var chunk in sampleChunks)
+    {
+        Console.WriteLine($"[{chunk.Chunk.ChunkId}] ({chunk.Chunk.Text.Length} chars, {chunk.Embedding.Length}-dim vector)");
+        Console.WriteLine(chunk.Chunk.Text);
+        Console.WriteLine();
+    }
+
+    SaveProgress(embeddedChunks);
+
+    return 0;
+}
+
+// Resolves to this .cs file's own directory (PokeJudge/) at compile time, so
+// output paths (ingestion, chunking) are anchored to the project regardless of
+// the process's working directory -- `dotnet run` from inside PokeJudge/ vs.
+// `dotnet run --project PokeJudge` from the repo root previously produced different,
 // inconsistent output locations, one of which wasn't covered by .gitignore.
 static string GetProjectDirectory([System.Runtime.CompilerServices.CallerFilePath] string sourceFilePath = "") =>
     Path.GetDirectoryName(sourceFilePath)!;
