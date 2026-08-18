@@ -248,7 +248,7 @@ Do not create separate projects such as `PokeJudge.Api`, `PokeJudge.AI`, `PokeJu
 | Embeddings | Provider embedding API (via same swappable interface) | Introduced at Milestone 4. |
 | Vector store | Start with a simple/local option (e.g., an in-process or lightweight vector store); revisit for a dedicated vector DB only when scale/features require it | Introduced at Milestone 5. |
 | Frontend | React + TypeScript | Deferred to Milestone 10; backend/API-first until then. |
-| Testing | xUnit (or similar) for app logic; separate evaluation harness for AI quality | Introduced incrementally; formal eval harness at Milestone 8, reused (not replaced) by Milestone 9's calibration analysis. |
+| Testing | xUnit (or similar) for app logic; separate evaluation harness for AI quality | Introduced incrementally; formal eval harness at Milestone 8, hardened at Milestone 8.5, reused (not replaced) by Milestone 9's calibration analysis. |
 | Secrets/config | .NET user-secrets locally; environment variables / secret manager in deployment | Applies from Milestone 1 onward. |
 
 Exact package/library choices (e.g., specific PDF library, specific vector store) are intentionally deferred until the milestone that needs them, per the project's "introduce when needed" philosophy. Milestone 9's calibration work is intentionally scoped to simple statistics (bucketing, calibration curves, ECE/Brier score) over the existing eval dataset — it does not require new observability or ML infrastructure. Consistent with the modular monolith principle in section 11, every row above is a logical module within a single .NET solution, not a separate project or service, until a concrete need justifies otherwise.
@@ -285,7 +285,8 @@ The roadmap below follows the learning milestones from the originating brief, wi
 | 6 | RAG | Ruling generation now conditioned on retrieved chunks + accumulated game state, **and** the Milestone 2 clarification logic is rebuilt as the retrieve → assess → clarify → re-retrieve loop from section 11, replacing mock-corpus-based materiality with retrieval-grounded materiality. A first-pass Source Support classification (Strong/Partial/Insufficient) is introduced here as an output of ruling generation. |
 | 7 | Citations and grounding | Responses explicitly cite sources and distinguish explicit policy / reasonable interpretation of policy / insufficient-information cases. (This is about interpreting retrieved *rules*, distinct from the confirmed/unknown/hypothesis split used for *game-state facts*.) Source Support is formalized here: tied to explicit, testable criteria (retrieval success, citation coverage, fact sufficiency, source conflict) rather than the model's free-form judgment. Includes a short written analysis of which grounding checks are deterministic (application logic) versus which genuinely require model judgment, and why an LLM validating its own generation is not fully independent validation. |
 | 8 | Evaluation | Scenario dataset + harness measuring clarification behavior, retrieval quality, ruling quality, and citation/grounding correctness — including hand-authored branching scenarios that score the investigation path (clarifying questions, branch chosen, state updates), not just the final answer. |
-| 9 | Confidence Calibration and Reliability | Exploratory milestone, built on the Milestone 8 eval dataset: investigate whether a model-reported correctness probability is empirically calibrated, and whether combining it with other signals (Source Support, retrieval quality, citation coverage) beats self-reported confidence alone. Product decision at the end: expose a numeric reliability estimate only if it demonstrates real calibration; otherwise Source Support remains the sole judge-facing signal. Not required for a working product. Includes a required written limitations analysis: whether the Milestone 8 dataset's size is actually sufficient to support the chosen calibration statistics (e.g., per-bucket sample counts for ECE/reliability diagrams), and what would be needed for the analysis to be statistically trustworthy. |
+| 8.5 | Evaluation Dataset Hardening | Hardening pass over the Milestone 8 evaluation dataset and harness, not a new evaluation capability: grow from 8 to roughly 20–30 hand-authored scenarios with broader category coverage; add lightweight scenario categorization for later analysis; review and document any changes to the original 8 scenarios' expected trajectories in light of Milestone 8's real-run observations; add support for running a scenario repeatedly so run-to-run variability is observed rather than hidden (each run scored independently by the unchanged, deterministic `ScenarioEvalScorer`); and add a lightweight source-coverage classification (sufficient coverage / retrieval problem / possible source gap / confirmed source gap) for scenarios that repeatedly fail, to separate retrieval/corpus problems from reasoning problems. Does not perform broad source-corpus expansion and does not claim statistical rigor — Milestone 9 still treats findings from this dataset as exploratory. See §15's "Evaluation dataset hardening" subsection for the full requirement set. |
+| 9 | Confidence Calibration and Reliability | Exploratory milestone, built on the Milestone 8.5 hardened eval dataset (including its repeated-run observations): investigate whether a model-reported correctness probability is empirically calibrated, and whether combining it with other signals (Source Support, retrieval quality, citation coverage) beats self-reported confidence alone. Product decision at the end: expose a numeric reliability estimate only if it demonstrates real calibration; otherwise Source Support remains the sole judge-facing signal. Not required for a working product. Includes a required written limitations analysis: whether the Milestone 8.5 dataset's size is actually sufficient to support the chosen calibration statistics (e.g., per-bucket sample counts for ECE/reliability diagrams), and what would be needed for the analysis to be statistically trustworthy. |
 | 10 | Judge-focused application UI | Web UI (React/TS) surfacing scenario, clarifications, known facts, recommendation, Source Support, repair, penalty, reasoning, sources. |
 | 11 | Deployment and portfolio polish | Deployed instance + architecture/design/evaluation write-up. |
 
@@ -333,7 +334,68 @@ For these scenarios, evaluate whether PokéJudge:
 
 A simple hand-authored representation of branching scenarios (e.g., a small tree per scenario) is sufficient initially. This does not require a specialized trajectory-evaluation framework or new infrastructure — it's an extension of the same Milestone 8 harness.
 
-- This dataset also feeds the later Confidence Calibration and Reliability milestone (Milestone 9), which studies whether model-reported correctness probabilities are empirically calibrated. That analysis is exploratory and separate from this milestone's pass/fail quality metrics — Milestone 8 itself does not depend on it.
+- This dataset, once hardened by Milestone 8.5, feeds the later Confidence Calibration and Reliability milestone (Milestone 9), which studies whether model-reported correctness probabilities are empirically calibrated. That analysis is exploratory and separate from this milestone's pass/fail quality metrics — Milestone 8 itself does not depend on it.
+
+### Evaluation dataset hardening (Milestone 8.5)
+
+Milestone 8's real-data run surfaced two problems that make the Milestone 8 dataset, as it stood at the end of
+that milestone, a shakier foundation than Milestone 9's calibration work needs: the dataset is small (8
+scenarios), and at least one scenario (`deck-not-shuffled`) produced three different outcomes across three
+identical live runs, showing that a single observed run is not a stable ground-truth label. A separate case
+(`special-condition`) resolved via an unexpected zero-clarification trajectory while still reaching an
+acceptable final answer — evidence that an eval scenario's originally-authored expected trajectory is not
+necessarily the only valid one, and is itself worth periodic review rather than treated as unquestionable.
+Milestone 8.5 is a hardening pass over the existing harness and dataset, not a new evaluation capability or a
+benchmark-building project:
+
+- **Expand scenario coverage.** Grow from 8 to roughly 20–30 hand-authored scenarios, covering a meaningfully
+  broader spread of the categories above rather than many near-duplicates of the same issue; reuse real
+  failure modes already observed in Milestones 6-8 where applicable.
+- **Add lightweight scenario categorization** (e.g., gameplay error, tournament procedure, deck/setup issue,
+  Prize-related issue, Special Condition / game-state question, alongside the existing branching/outcome
+  split already in the Milestone 8 dataset) so later analysis — including Milestone 9's — can ask whether
+  failures concentrate in a category, or whether clarification/calibration behavior differs by category.
+- **Review, don't blindly trust, the original 8 scenarios' expected trajectories** in light of Milestone 8's
+  real-run observations, distinguishing a genuinely incorrect investigation path from ordinary model
+  non-determinism from a scenario that may simply have more than one valid investigation path than originally
+  authored. Any expectation change must be documented with its rationale.
+- **Support repeated live runs of the same scenario** so run-to-run variability is observed rather than hidden
+  behind a single run's pass/fail — e.g., being able to say "`deck-not-shuffled` succeeded in 2 of 5 observed
+  runs." Each run still produces its own trajectory record and is scored independently by the unchanged,
+  deterministic scorer; repeated runs are recorded separately, never collapsed into one summary verdict. The
+  scorer itself must remain model-independent — repeated runs are handled by generating more trajectory
+  observations for it to score, not by adding model-based reasoning about variability into the scorer itself.
+  Reuse or extend the existing developer-facing scenario-selection tooling where practical, mindful of the
+  free-tier rate limit Milestone 8 already documented.
+- **Add a lightweight source-coverage classification** for scenarios that repeatedly fail or behave
+  unexpectedly, to distinguish a reasoning/clarification/grounding problem from a retrieval or corpus problem
+  rather than attributing every failure to the LLM:
+  - **Sufficient coverage:** the retrieved official material contains enough information for a knowledgeable
+    human judge to resolve the scenario; a PokéJudge failure here points elsewhere (sufficiency assessment,
+    clarification, ruling generation, or grounding).
+  - **Retrieval problem:** the corpus contains what's needed, but retrieval didn't surface the right or
+    complete material — points to ranking, chunking, or query formulation, not missing sources.
+  - **Possible source gap:** retrieved material is relevant but appears insufficient; the missing information
+    is recorded, but the gap isn't yet confirmed.
+  - **Confirmed source gap:** a specific authoritative source containing the needed information is known but
+    not currently in the corpus; record the missing information and, where practical, the likely source
+    document.
+- **Keep source-corpus expansion deliberate, not automatic.** Finding a source gap does not by itself justify
+  ingesting more documents — additional irrelevant or overlapping material can make retrieval noisier, not
+  better. Only narrowly justified, small additions belong to this milestone; a larger corpus expansion is a
+  separate, evidence-based follow-up decision.
+- **Keep known failure categories distinguishable**, rather than collapsing every non-pass into one generic
+  "failed" label: the recurring insufficient-with-zero-clarifying-questions failure, a wrong/weak final
+  ruling, a divergent trajectory, turn-cap exhaustion, an expected loud failure, a retrieval/source problem,
+  and an infrastructure failure (e.g., a rate limit) are all different findings and must stay distinguishable.
+  Infrastructure failures are never counted as a PokéJudge scenario failure.
+- **Do not overclaim what the hardened dataset proves.** It remains hand-authored and comparatively small — it
+  improves coverage, regression detection, and gives Milestone 9 more (and more honestly-labeled) input data,
+  but it still does not establish a general system error rate, production-level accuracy, or statistically
+  representative judge behavior. Any Milestone 9 finding built on it is still exploratory, not validated.
+
+Milestone 9 builds on this hardened dataset and its repeated-run observations, not directly on the original
+Milestone 8 dataset.
 
 ## 16. Security Considerations
 
@@ -410,14 +472,17 @@ Also recognize a specific limitation of this architecture: if the same underlyin
 **Milestone 8 — Evaluation**
 Understand AI evaluation as a discipline distinct from manual testing: building eval datasets, defining measurable success criteria for both retrieval and generation, and tracking quality over time as prompts/data change. Also understand **trajectory (process) evaluation**: for a multi-turn, branching decision-support system, final-answer correctness alone isn't sufficient — intermediate decisions matter too (recognizing an incomplete scenario, identifying the material fact, asking the right clarifying question, avoiding unnecessary ones, updating structured state correctly, choosing the right next branch, retrieving the right policy for that branch), so a lucky correct ruling reached via a wrong investigation path is scored differently from one reached via a correct investigation. A simple hand-authored set of branching scenarios is enough — this doesn't require specialized trajectory-evaluation infrastructure.
 
-**Milestone 9 — Confidence Calibration and Reliability**
-Goal: investigate whether PokéJudge can produce a meaningful, empirically validated estimate of how likely a recommendation is to be correct, building on the Milestone 8 evaluation dataset. This is an advanced, exploratory topic, not a requirement for a working product — the qualitative Source Support model (section 8) remains the default judge-facing signal unless this milestone demonstrates a numerical estimate is trustworthy enough to justify showing it.
+**Milestone 8.5 — Evaluation Dataset Hardening**
+Understand evaluation-dataset curation as its own discipline, separate from building the harness that runs it (Milestone 8): recognizing when a single observed outcome is not a stable ground-truth label, distinguishing genuine model non-determinism from an actually-wrong investigation path, and deciding when an eval scenario's originally-authored expectation deserves revision versus deserves defending. Also understand root-cause attribution in a RAG system specifically — a scenario failure can originate in retrieval/corpus coverage rather than in the model's reasoning, and conflating the two leads to fixing the wrong layer. This reinforces, rather than replaces, Milestone 8's "a small dataset is a named limitation, not a stepping stone" lesson: growing the dataset and documenting its remaining limits are both required, not a substitute for each other.
 
-A required part of this milestone's deliverable is an explicit limitations analysis: state how many labeled outcomes fall into each probability bucket, and assess candidly whether that sample size is large enough to support the chosen statistic (reliability diagram, ECE, Brier score) or whether the dataset can only support a simpler, more qualitative comparison (e.g., raw correlation between stated confidence and correctness, or 2–3 coarse buckets). This limitations analysis is itself a deliverable, not an afterthought — recognizing when a dataset is too small for a statistic to be meaningful is a core, transferable evaluation skill.
+**Milestone 9 — Confidence Calibration and Reliability**
+Goal: investigate whether PokéJudge can produce a meaningful, empirically validated estimate of how likely a recommendation is to be correct, building on the Milestone 8.5 hardened evaluation dataset (including its repeated-run observations). This is an advanced, exploratory topic, not a requirement for a working product — the qualitative Source Support model (section 8) remains the default judge-facing signal unless this milestone demonstrates a numerical estimate is trustworthy enough to justify showing it.
+
+A required part of this milestone's deliverable is an explicit limitations analysis: state how many labeled outcomes fall into each probability bucket, and assess candidly whether that sample size is large enough to support the chosen statistic (reliability diagram, ECE, Brier score) or whether the dataset can only support a simpler, more qualitative comparison (e.g., raw correlation between stated confidence and correctness, or 2–3 coarse buckets). The analysis must also account for Milestone 8.5's repeated-run observations — a scenario with materially different outcomes across runs should not be treated as having one fixed ground-truth label — and for any source-coverage uncertainty Milestone 8.5 documented, rather than attributing every observed miscalibration to the confidence signal itself. This limitations analysis is itself a deliverable, not an afterthought — recognizing when a dataset is too small for a statistic to be meaningful is a core, transferable evaluation skill.
 
 *Learning goals:* the difference between model confidence and actual correctness; what calibration means and why it's a different property from accuracy; overconfidence and underconfidence in LLM systems; how evaluation data is used to validate uncertainty estimates; reliability diagrams / calibration curves; the difference between qualitative support labels and calibrated probabilities; calibration metrics such as Expected Calibration Error and/or Brier Score, scoped appropriately; why a confidence percentage should not be exposed to judges until it has demonstrated meaningful calibration.
 
-*Experiments:* have the model emit a predicted probability that its ruling is correct; compare those predictions against the curated Milestone 8 eval dataset's actual outcomes; bucket predictions into ranges (e.g., 50–60%, 60–70%, ... 90–100%) and check whether observed correctness in each bucket matches the stated range; compare model self-reported confidence against other reliability signals — retrieval quality, citation coverage, Source Support classification, presence of explicit vs. inferred policy, source conflict, and evaluation performance on similar past scenarios; investigate whether combining these signals produces a better reliability estimate than self-reported confidence alone.
+*Experiments:* have the model emit a predicted probability that its ruling is correct; compare those predictions against the curated Milestone 8.5 hardened eval dataset's actual outcomes, incorporating repeated-run observations where available rather than treating a single run per scenario as definitive; bucket predictions into ranges (e.g., 50–60%, 60–70%, ... 90–100%) and check whether observed correctness in each bucket matches the stated range; compare model self-reported confidence against other reliability signals — retrieval quality, citation coverage, Source Support classification, presence of explicit vs. inferred policy, source conflict, and evaluation performance on similar past scenarios; investigate whether combining these signals produces a better reliability estimate than self-reported confidence alone.
 
 *Product decision (end of milestone):* if the resulting reliability score demonstrates adequate calibration, consider exposing it to judges; if it does not, retain the qualitative Source Support model as the sole judge-facing signal and keep numeric confidence work internal to evaluation. Do not assume in advance that the product must eventually display a percentage.
 
