@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using PokeJudge.AI;
 using PokeJudge.Chunking;
 using PokeJudge.Clarification;
+using PokeJudge.Evaluation;
 using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
 using PokeJudge.Retrieval;
@@ -69,6 +70,18 @@ using PokeJudge.Retrieval;
 // The console prints both: the model's own unvalidated opinion and the validated
 // signal, so any divergence is visible rather than buried. See
 // .project-plans/milestone-7/plan.md and grounding-analysis.md.
+//
+// Milestone 8 — Evaluation
+//
+// Adds `dotnet run -- evaluate`: runs the real, full pipeline (the same one the
+// default flow below runs) against every hand-authored scenario in
+// Evaluation/EvalDataset.cs, with a scripted judge instead of console input.
+// ScenarioEvalScorer compares each captured trajectory against the scenario's
+// expected criteria -- retrieval quality, sufficiency timing, clarifying-question
+// materiality, and final Source Support -- per PRD SS15's trajectory-evaluation
+// framing: a correct final ruling reached the wrong way should be distinguishable
+// from one reached correctly. No new AI mechanism here; this measures Milestones
+// 1-7's existing pipeline. See .project-plans/milestone-8/plan.md.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -103,6 +116,11 @@ if (args.Length > 0 && args[0] == "search")
 if (args.Length > 0 && args[0] == "eval")
 {
     return await RunRetrievalEval(apiKey);
+}
+
+if (args.Length > 0 && args[0] == "evaluate")
+{
+    return await RunScenarioEval(args, apiKey, modelId);
 }
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
@@ -518,6 +536,91 @@ static async Task<int> RunRetrievalEval(string apiKey)
     }
 
     Console.WriteLine($"Result: {hits}/{RetrievalEvalSet.Cases.Count} hit within top 5.");
+
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Milestone 8 evaluation harness. Runs the real, full pipeline (retrieve -> assess
+// -> clarify -> re-retrieve -> generate -> validate grounding) against every
+// hand-authored scenario in EvalDataset, scoring each captured trajectory against
+// its expected criteria -- the "simple run log" PRD SS15 asks for. Separate from
+// `eval` (Milestone 5's retrieval-only check, unchanged): this is a materially more
+// expensive check, real chat completions per scenario, not just embeddings.
+//
+// Supports `--from <scenario-id>` / `--only <scenario-id>` so a developer can resume
+// past the free-tier chat-completion rate limit (15 req/min, tighter than Milestone
+// 4's embedding-tier limit) without re-running already-passing scenarios -- this
+// command is developer/CI-facing tooling, not the judge-facing product, which only
+// ever makes one real request at a time.
+// ---------------------------------------------------------------------------
+static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId)
+{
+    var (scenarios, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
+    if (selectionError is not null)
+    {
+        Console.Error.WriteLine(selectionError);
+        return 1;
+    }
+
+    var chunks = LoadAllEmbeddedChunks();
+    if (chunks.Count == 0)
+    {
+        Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
+        return 1;
+    }
+
+    ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
+    var store = CreateVectorStore(chunks);
+    IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
+
+    Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s).\n");
+
+    var scenarioPassCount = 0;
+    foreach (var scenario in scenarios)
+    {
+        // Fresh loop/generator/validator per scenario -- no mutable state should leak
+        // between independent scenario runs.
+        var loop = new ClarificationLoop(llmClient, retriever);
+        var rulingGenerator = new RulingGenerator(llmClient);
+        var groundingValidator = new GroundingValidator(llmClient);
+        var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+
+        var trajectory = await runner.RunAsync(scenario);
+        var report = ScenarioEvalScorer.Score(trajectory);
+
+        var outcomeLabel = trajectory.ThrewExpectedFailure
+            ? "failed loudly"
+            : trajectory.ReachedSufficiency ? "reached sufficiency" : "turn cap exhausted";
+
+        Console.WriteLine($"--- [{scenario.Id}] {scenario.Category} ---");
+        Console.WriteLine(scenario.InitialDescription);
+        Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
+        Console.WriteLine($"Asked more questions than scripted: {trajectory.AskedMoreQuestionsThanScripted}");
+
+        foreach (var criterion in report.Criteria)
+        {
+            var marker = criterion.Result == CriterionResult.Pass ? "PASS" : "FAIL";
+            Console.WriteLine($"  [{marker}] {criterion.Name}: {criterion.Detail}");
+        }
+
+        if (trajectory.Grounding is not null)
+        {
+            Console.WriteLine(
+                $"  Model's own assessment: {trajectory.Ruling!.SourceSupport} | Validated: {trajectory.Grounding.ValidatedSourceSupport}");
+        }
+
+        if (report.AllPassed)
+        {
+            scenarioPassCount++;
+        }
+
+        Console.WriteLine();
+    }
+
+    Console.WriteLine($"Result: {scenarioPassCount}/{scenarios.Count} scenarios fully passed all applicable criteria.");
 
     return 0;
 }

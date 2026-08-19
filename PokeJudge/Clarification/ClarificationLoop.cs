@@ -59,7 +59,7 @@ public sealed class ClarificationLoop
 
             if (result.Questions.Count == 0)
             {
-                throw new InvalidOperationException(
+                throw new InsufficientWithoutQuestionsException(
                     "Model reported the scenario insufficient but supplied no clarifying questions.");
             }
 

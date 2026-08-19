@@ -176,7 +176,7 @@ public class ClarificationLoopTests
 
         var loop = new ClarificationLoop(llm, retriever);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<InsufficientWithoutQuestionsException>(
             () => loop.RunAsync(ScenarioDescription, askJudge: _ => Task.FromResult("unused")));
     }
 
