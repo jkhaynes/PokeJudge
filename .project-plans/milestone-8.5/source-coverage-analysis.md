@@ -13,6 +13,10 @@ questions" crash across Milestones 6-8 (`missed-prize`, `drew-extra-card`, and t
 three runs), plus `spectator-badges`, the one scenario with a *repeatable* (not one-off) mismatch between its
 authored expectation and observed behavior.
 
+A fifth scenario, `deck-under-60`, was added after this milestone's five-run validation pass (see
+`five-run-validation.md`, finding 6) surfaced a different kind of problem — a genuine retrieval miss rather
+than a reasoning gap.
+
 ## 1. `spectator-badges` — Sufficient coverage
 
 **Query:** "Do spectators need to wear a badge at large tournaments?"
@@ -88,6 +92,37 @@ somewhere not surfaced by the queries tried. Per the milestone plan, no corpus e
 strength of this alone; this is recorded as a candidate for a future, narrowly-scoped addition if the gap is
 confirmed through further investigation, not acted on automatically.
 
+## 5. `deck-under-60` — Retrieval problem
+
+**Query:** "Before a match begins, a judge is asked to check a competitor's deck because it seems to have
+fewer than 60 cards." (the scenario's own prompt text, unmodified)
+
+**Live retrieval (re-confirmed this session, current corpus):**
+
+```
+[0.7803] PPG-5.6.1#2
+[0.7583] PPG-5.6.1#6
+[0.7473] TCGTH-6.2.1#0
+[0.7463] PPG-5.6.1#3
+[0.7462] PPG-5.6.1#8
+```
+
+`TCGRULES-deck-building` — the section that directly and explicitly states the 60-card deck-size requirement
+— does not appear anywhere in the top 5 results for this query. `PPG-5.6.1`'s legality-infraction variants
+dominate instead, alongside an unrelated shuffling-procedure chunk (`TCGTH-6.2.1#0`).
+
+**Conclusion:** unlike the four scenarios above, this is not a reasoning or sufficiency-assessment problem —
+the corpus contains the exact rule needed (`TCGRULES-deck-building`), but it isn't being surfaced for this
+scenario's natural phrasing. This matches the five-run validation pass's finding (`five-run-validation.md`,
+finding 6): 2 of 3 real runs failed `Initial retrieval` for this reason. The scripting half of this scenario
+was already fixed (adding `PPG-5.6.1` to `ExpectedMaterialSectionIds`, since it *does* retrieve reliably and
+is itself sufficient to answer the scenario), which makes the eval scenario pass even when
+`TCGRULES-deck-building` doesn't surface — but the underlying ranking/query-formulation question (why the
+section stating the actual numeric rule loses to the penalty-determination section for this phrasing) remains
+open. **Decision:** classified as a **Retrieval problem**, not a source gap — the fix, if pursued, belongs in
+retrieval ranking or query formulation, not the corpus. No retrieval-layer change made here, per the
+milestone's scope boundary (this milestone hardens the dataset/harness, not `Retrieval/`).
+
 ## Summary
 
 | Scenario | Classification | Root cause of the observed failure |
@@ -96,8 +131,10 @@ confirmed through further investigation, not acted on automatically.
 | `drew-extra-card` | Sufficient coverage | Known zero-questions crash (reasoning, not retrieval) |
 | `deck-not-shuffled` | Sufficient coverage | Reasoning/consistency non-determinism (not retrieval) |
 | `missed-prize` | Possible source gap | Corpus may lack an explicit worked example; genuinely unconfirmed |
+| `deck-under-60` | Retrieval problem | `TCGRULES-deck-building` doesn't rank in the top 5 for the scenario's phrasing, despite directly stating the needed rule |
 
-Three of four investigated scenarios are Sufficient coverage — the dominant pattern in this dataset's known
-failures is a reasoning/sufficiency-assessment weakness, not a retrieval or corpus problem. `missed-prize` is
-the one exception, and is recorded as a possible (not confirmed) gap rather than acted on, consistent with
-the plan's "keep source expansion deliberate, not automatic" requirement.
+Three of five investigated scenarios are Sufficient coverage. `missed-prize` is a possible (not confirmed)
+source gap, and `deck-under-60` is this dataset's first confirmed *retrieval* problem — distinct in kind from
+every other finding here, and evidence that not every eval failure in this project reduces to the same
+reasoning/sufficiency-assessment weakness. Consistent with the plan's "keep source expansion deliberate, not
+automatic" requirement, no corpus or retrieval-layer change was made on the strength of this alone.

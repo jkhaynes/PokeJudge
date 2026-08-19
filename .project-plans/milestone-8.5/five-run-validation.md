@@ -173,9 +173,11 @@ dataset's size can absorb in one day of development.
   based on two further rounds of real diagnosis — see finding 5's updated note. Live re-verification pending
   daily quota reset.
 - ~~`deck-under-60` deserves a source-coverage investigation entry (retrieval problem)...~~ **The scripting
-  half fixed** (expected section, scripted answer); **the retrieval-quality half remains open** — still worth
-  a source-coverage investigation entry extending `source-coverage-analysis.md` beyond its original four
-  scenarios. Live re-verification of the scripting fix also pending daily quota reset.
+  half fixed** (expected section, scripted answer); **the retrieval-quality half now investigated and
+  recorded** — added as `source-coverage-analysis.md`'s fifth finding (Retrieval problem), re-confirmed live
+  via `dotnet run -- search` this session: `TCGRULES-deck-building` still doesn't rank in the top 5 for this
+  scenario's phrasing. Live re-verification of the scripting fix itself (the eval scenario run end-to-end)
+  remains pending daily quota reset.
 - `mulligan-not-taken` and `spectator-conduct` extend the known-crash finding to a fifth and sixth scenario
   category — worth citing alongside the existing three in any future summary of that systemic issue. Not
   addressed here — this is the model's known sufficiency-assessment bug, not an eval-authoring issue.

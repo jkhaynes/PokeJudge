@@ -45,5 +45,14 @@ public static class SourceCoverageFindings
             MissingInformation: "An explicit worked example or rule covering a competitor forgetting to take a " +
                 "Prize card they were entitled to, analogous to how PPG-5.5.1 already covers the reverse case.",
             LikelySourceDocument: "Penalty Guidelines (PPG), likely adjacent to PPG-5.5.1's existing Prize-related examples."),
+
+        new SourceCoverageFinding(
+            "deck-under-60",
+            SourceCoverageLevel.RetrievalProblem,
+            "TCGRULES-deck-building explicitly states the 60-card deck-size requirement, but does not rank in " +
+            "the top 5 retrieved chunks for this scenario's natural phrasing -- PPG-5.6.1's legality-infraction " +
+            "variants dominate instead. The corpus has the needed rule; retrieval doesn't reliably surface it. " +
+            "Distinct from every other finding here: this is a ranking/query-formulation problem, not a " +
+            "reasoning or corpus problem, matching Milestone 8.5's five-run validation pass (finding 6)."),
     };
 }
