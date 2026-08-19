@@ -18,7 +18,7 @@ public class ScenarioEvalScorerTests
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         expectedSections ?? new List<string> { "A1" },
         ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        ScriptedAnswer: null,
+        ScriptedAnswers: Array.Empty<string>(),
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -27,7 +27,7 @@ public class ScenarioEvalScorerTests
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" },
         ExpectedTrajectoryOutcome.RequiresOneClarification,
-        ScriptedAnswer: "The marker is Asleep, but it should be Confused.",
+        ScriptedAnswers: new[] { "The marker is Asleep, but it should be Confused." },
         afterAnswerSections ?? new List<string> { "A1" },
         acceptable);
 
@@ -35,7 +35,7 @@ public class ScenarioEvalScorerTests
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(),
         ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        ScriptedAnswer: null,
+        ScriptedAnswers: Array.Empty<string>(),
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 

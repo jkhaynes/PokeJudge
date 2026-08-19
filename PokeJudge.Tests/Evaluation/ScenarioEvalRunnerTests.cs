@@ -19,20 +19,31 @@ public class ScenarioEvalRunnerTests
     private static EvalScenario SufficientOnFirstTurnScenario() => new(
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        ScriptedAnswer: null, ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        ScriptedAnswers: Array.Empty<string>(), ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario RequiresOneClarificationScenario() => new(
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
-        ScriptedAnswer: "The marker is Asleep, but it should be Confused.",
+        ScriptedAnswers: new[] { "The marker is Asleep, but it should be Confused." },
+        ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
+        AcceptableFinalSourceSupport: null);
+
+    private static EvalScenario RequiresTwoClarificationsScenario() => new(
+        "supporter-twice-like", "Timing Questions", "A player thinks their opponent played two Supporter cards.",
+        new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
+        ScriptedAnswers: new[]
+        {
+            "Yes, both Supporter cards were fully played and resolved.",
+            "The error was noticed three turns later, well after both effects had already taken place.",
+        },
         ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario ExpectedFailureScenario() => new(
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(), ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        ScriptedAnswer: null, ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        ScriptedAnswers: Array.Empty<string>(), ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     private static (ScenarioEvalRunner Runner, StubLlmClient Llm, StubRetriever Retriever) BuildRunner()
@@ -84,6 +95,30 @@ public class ScenarioEvalRunnerTests
     }
 
     [Fact]
+    public async Task RunAsync_RequiresTwoClarifications_ConsumesBothScriptedAnswersInOrderAndReachesSufficiency()
+    {
+        var (runner, llm, retriever) = BuildRunner();
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q1?", "A1#0") }));
+        llm.Enqueue(new FactExtractionResult(new List<string> { "Both Supporter cards resolved." }, new List<string>()));
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q2?", "A1#0") }));
+        llm.Enqueue(new FactExtractionResult(new List<string> { "Noticed three turns later." }, new List<string>()));
+        llm.Enqueue(new ClarificationResult(true, new List<ClarifyingQuestion>()));
+        retriever.Enqueue(new[] { Chunk("A1") });
+        retriever.Enqueue(new[] { Chunk("A1") });
+        retriever.Enqueue(new[] { Chunk("A1") });
+        llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
+        llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+
+        var trajectory = await runner.RunAsync(RequiresTwoClarificationsScenario());
+
+        Assert.True(trajectory.ReachedSufficiency);
+        Assert.Equal(3, trajectory.Turns.Count);
+        Assert.False(trajectory.AskedMoreQuestionsThanScripted);
+        Assert.Contains("Both Supporter cards resolved.", llm.UserContents[2]);
+        Assert.Contains("Noticed three turns later.", llm.UserContents[4]);
+    }
+
+    [Fact]
     public async Task RunAsync_LoopAsksMoreQuestionsThanScripted_RecordsItRatherThanCrashing()
     {
         var (runner, llm, retriever) = BuildRunner();
@@ -98,6 +133,9 @@ public class ScenarioEvalRunnerTests
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
 
+        // RequiresOneClarificationScenario only scripts a single answer -- the
+        // second question here exceeds it, so it should be flagged, not silently
+        // answered with the same single scripted answer again.
         var trajectory = await runner.RunAsync(RequiresOneClarificationScenario());
 
         Assert.True(trajectory.AskedMoreQuestionsThanScripted);

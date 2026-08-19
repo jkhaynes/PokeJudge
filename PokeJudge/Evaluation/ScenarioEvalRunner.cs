@@ -26,7 +26,7 @@ public sealed class ScenarioEvalRunner
     public async Task<ScenarioTrajectory> RunAsync(EvalScenario scenario)
     {
         var turns = new List<TurnRecord>();
-        var scriptedAnswerUsed = false;
+        var nextScriptedAnswerIndex = 0;
         var askedMoreQuestionsThanScripted = false;
         IReadOnlyList<ScoredChunk>? lastRetrievedChunks = null;
 
@@ -37,15 +37,19 @@ public sealed class ScenarioEvalRunner
                 scenario.InitialDescription,
                 askJudge: _ =>
                 {
-                    if (!scriptedAnswerUsed && scenario.ScriptedAnswer is not null)
+                    if (nextScriptedAnswerIndex < scenario.ScriptedAnswers.Count)
                     {
-                        scriptedAnswerUsed = true;
-                        return Task.FromResult(scenario.ScriptedAnswer);
+                        var answer = scenario.ScriptedAnswers[nextScriptedAnswerIndex];
+                        nextScriptedAnswerIndex++;
+                        return Task.FromResult(answer);
                     }
 
-                    // Milestone 8's branching scenarios script exactly one answer (PRD SS15's
-                    // own single-branch-point example) -- a loop that asks for more is a real,
-                    // informative outcome to record and score, not a reason to crash the harness.
+                    // A scenario scripts as many answers as it expects clarifying rounds
+                    // (Milestone 8.5: previously exactly one, per PRD SS15's own
+                    // single-branch-point example -- now however many rounds the scenario
+                    // actually needs). A loop that asks beyond the scripted answers is a
+                    // real, informative outcome to record and score, not a reason to crash
+                    // the harness.
                     askedMoreQuestionsThanScripted = true;
                     return Task.FromResult(string.Empty);
                 },

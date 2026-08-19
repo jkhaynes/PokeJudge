@@ -553,10 +553,20 @@ static async Task<int> RunRetrievalEval(string apiKey)
 // 4's embedding-tier limit) without re-running already-passing scenarios -- this
 // command is developer/CI-facing tooling, not the judge-facing product, which only
 // ever makes one real request at a time.
+//
+// Milestone 8.5 adds `--repeat <n>` so run-to-run variability (observed directly:
+// deck-not-shuffled produced three different outcomes across three identical live
+// runs) is visible rather than hidden behind whichever single run happened to
+// occur. Each repeat is its own independent trajectory/report -- never collapsed --
+// with a per-scenario "N/repeat runs passed" line printed alongside the individual
+// results. A rate-limit or other transport failure (HttpRequestException) is caught
+// per run and reported as an infrastructure failure, excluded from the pass/fail
+// totals, rather than crashing the whole command or silently counting as PokeJudge
+// getting the scenario wrong.
 // ---------------------------------------------------------------------------
 static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId)
 {
-    var (scenarios, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
+    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
     if (selectionError is not null)
     {
         Console.Error.WriteLine(selectionError);
@@ -576,51 +586,116 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
 
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
-    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s).\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
 
-    var scenarioPassCount = 0;
+    var categoryResults = new List<(string Category, bool Passed)>();
+    var totalPassCount = 0;
+    var totalRunCount = 0;
+    var infrastructureFailureCount = 0;
+
     foreach (var scenario in scenarios)
     {
-        // Fresh loop/generator/validator per scenario -- no mutable state should leak
-        // between independent scenario runs.
-        var loop = new ClarificationLoop(llmClient, retriever);
-        var rulingGenerator = new RulingGenerator(llmClient);
-        var groundingValidator = new GroundingValidator(llmClient);
-        var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+        var scenarioPassCount = 0;
 
-        var trajectory = await runner.RunAsync(scenario);
-        var report = ScenarioEvalScorer.Score(trajectory);
-
-        var outcomeLabel = trajectory.ThrewExpectedFailure
-            ? "failed loudly"
-            : trajectory.ReachedSufficiency ? "reached sufficiency" : "turn cap exhausted";
-
-        Console.WriteLine($"--- [{scenario.Id}] {scenario.Category} ---");
-        Console.WriteLine(scenario.InitialDescription);
-        Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
-        Console.WriteLine($"Asked more questions than scripted: {trajectory.AskedMoreQuestionsThanScripted}");
-
-        foreach (var criterion in report.Criteria)
+        for (var run = 1; run <= repeatCount; run++)
         {
-            var marker = criterion.Result == CriterionResult.Pass ? "PASS" : "FAIL";
-            Console.WriteLine($"  [{marker}] {criterion.Name}: {criterion.Detail}");
+            // Fresh loop/generator/validator per run -- no mutable state should leak
+            // between independent runs, scenario or repeat alike.
+            var loop = new ClarificationLoop(llmClient, retriever);
+            var rulingGenerator = new RulingGenerator(llmClient);
+            var groundingValidator = new GroundingValidator(llmClient);
+            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+
+            var runLabel = repeatCount > 1 ? $"[{scenario.Id}] {scenario.Category} (run {run}/{repeatCount})" : $"[{scenario.Id}] {scenario.Category}";
+
+            ScenarioTrajectory trajectory;
+            try
+            {
+                trajectory = await runner.RunAsync(scenario);
+            }
+            catch (HttpRequestException ex)
+            {
+                infrastructureFailureCount++;
+                Console.WriteLine($"--- {runLabel} ---");
+                Console.WriteLine($"  [INFRASTRUCTURE FAILURE -- not counted] {ex.Message}");
+                Console.WriteLine();
+                continue;
+            }
+
+            var report = ScenarioEvalScorer.Score(trajectory);
+
+            var outcomeLabel = trajectory.ThrewExpectedFailure
+                ? "failed loudly"
+                : trajectory.ReachedSufficiency ? "reached sufficiency" : "turn cap exhausted";
+
+            Console.WriteLine($"--- {runLabel} ---");
+            Console.WriteLine(scenario.InitialDescription);
+            Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
+            Console.WriteLine($"Asked more questions than scripted: {trajectory.AskedMoreQuestionsThanScripted}");
+
+            // Eval mode was otherwise silent about what the model actually asked --
+            // only the scorer's pass/fail criteria were visible. Printing the real
+            // question text (mirroring the interactive console flow, which already does
+            // this) matters most when a scenario needed more clarification than
+            // scripted: without seeing the real question, there's no way to tell
+            // whether the scripted answers should have anticipated it.
+            for (var turnIndex = 0; turnIndex < trajectory.Turns.Count; turnIndex++)
+            {
+                foreach (var question in trajectory.Turns[turnIndex].Questions)
+                {
+                    Console.WriteLine($"  [Turn {turnIndex + 1} question — re: {question.RelatedChunkId}] {question.Question}");
+                }
+            }
+
+            foreach (var criterion in report.Criteria)
+            {
+                var marker = criterion.Result == CriterionResult.Pass ? "PASS" : "FAIL";
+                Console.WriteLine($"  [{marker}] {criterion.Name}: {criterion.Detail}");
+            }
+
+            if (trajectory.Grounding is not null)
+            {
+                Console.WriteLine(
+                    $"  Model's own assessment: {trajectory.Ruling!.SourceSupport} | Validated: {trajectory.Grounding.ValidatedSourceSupport}");
+            }
+
+            categoryResults.Add((scenario.Category, report.AllPassed));
+            totalRunCount++;
+            if (report.AllPassed)
+            {
+                scenarioPassCount++;
+                totalPassCount++;
+            }
+
+            Console.WriteLine();
         }
 
-        if (trajectory.Grounding is not null)
+        if (repeatCount > 1)
         {
-            Console.WriteLine(
-                $"  Model's own assessment: {trajectory.Ruling!.SourceSupport} | Validated: {trajectory.Grounding.ValidatedSourceSupport}");
+            Console.WriteLine($"  [{scenario.Id}] {scenarioPassCount}/{repeatCount} runs fully passed.\n");
         }
+    }
 
-        if (report.AllPassed)
+    if (categoryResults.Count > 0)
+    {
+        Console.WriteLine("--- By category ---");
+        foreach (var outcome in CategorySummary.Summarize(categoryResults))
         {
-            scenarioPassCount++;
+            Console.WriteLine($"  {outcome.Category}: {outcome.Passed}/{outcome.Total} passed");
         }
 
         Console.WriteLine();
     }
 
-    Console.WriteLine($"Result: {scenarioPassCount}/{scenarios.Count} scenarios fully passed all applicable criteria.");
+    Console.WriteLine(repeatCount > 1
+        ? $"Result: {totalPassCount}/{totalRunCount} scenario-runs fully passed all applicable criteria " +
+          $"(across {scenarios.Count} scenario(s), {repeatCount} run(s) each)."
+        : $"Result: {totalPassCount}/{totalRunCount} scenarios fully passed all applicable criteria.");
+
+    if (infrastructureFailureCount > 0)
+    {
+        Console.WriteLine($"Infrastructure failures (not counted above): {infrastructureFailureCount}.");
+    }
 
     return 0;
 }
