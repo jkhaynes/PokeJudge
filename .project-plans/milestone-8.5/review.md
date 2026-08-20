@@ -48,7 +48,10 @@ solid and does what §15 asked for:
 
 ## 🚨 Must Fix
 
-### 1. The zero-question-crash fix is a real, undisclosed scope expansion beyond the approved plan
+**Both items below were addressed in commit `2a4aa65` (2026-08-20), the same day as this review.** Left in
+full below as the historical record of what the review found; each item now has a resolution note.
+
+### 1. The zero-question-crash fix is a real, undisclosed scope expansion beyond the approved plan — ✅ RESOLVED
 
 **File/location:** `PokeJudge/Clarification/SystemPrompts.cs`, `PokeJudge/Clarification/ClarificationLoop.cs`,
 `PokeJudge/StructuredState/ClarificationResult.cs`, `PokeJudge/Evaluation/ScenarioEvalScorer.cs`,
@@ -91,7 +94,14 @@ named addendum) so the roadmap accurately reflects that a production AI-behavior
 milestone that was supposed to only harden data collection. Either way, this should be a conscious decision
 recorded in the plan, not something a reader discovers only by diffing the branch against PRD §15.
 
-### 2. Three documents now contain stale, actively false claims about system behavior
+**Resolution:** Took direction (a). `plan.md` now has an "Addendum (2026-08-20)" section, appended after its
+Out-of-Scope list, documenting exactly what changed (the `Rationale` field, the `SystemPrompts.Judge`
+instruction, the new `ExpectedUnresolvable` outcome/scorer branch, the `missed-prize` reclassification), why
+it was judged worth doing despite being outside the approved scope, and the named tradeoff for Milestone 9
+(it will study a sufficiency-assessment step whose behavior changed mid-project, not the exact pipeline
+Milestone 8 measured).
+
+### 2. Three documents now contain stale, actively false claims about system behavior — ✅ RESOLVED
 
 **File/location:** `PokeJudge/Evaluation/EvalDataset.cs` lines 39–45; `.project-plans/milestone-8.5/observed-limitations.md`
 lines 63–64; `.project-plans/milestone-8.5/implementation-summary.md` lines 14–15 and 72–75.
@@ -121,6 +131,12 @@ exactly as before" belief could misdirect that work.
 clearly-dated addendum section to each (matching the pattern already used successfully in
 `five-run-validation.md`'s "Follow-up: 2026-08-20" section) rather than leaving the original claims
 uncorrected.
+
+**Resolution:** Each of the four locations (the three named here plus `SourceCoverageFindings.cs`'s
+`missed-prize` entry, caught in the same pass) now has an inline, dated correction next to the original
+claim — the original text is kept as an accurate record of that point in time, not deleted, with a
+"no longer true as of 2026-08-20 / UPDATE ..." note explaining what actually changed and pointing to
+`plan.md`'s addendum and `five-run-validation.md`'s "Follow-up" section for the full story.
 
 ---
 
@@ -213,19 +229,21 @@ uncorrected.
 | 7. Manually investigate & record source-coverage findings | **Complete** — 5 scenarios investigated (4 planned + `deck-under-60` added later), written up in `source-coverage-analysis.md` |
 | 8. Run the expanded harness for real, incl. `--repeat` | **Complete**, and substantially exceeded — full five-run validation pass across all 20 scenarios (`five-run-validation.md`), well beyond the plan's minimum ask |
 | 9. Update/add tests | **Complete** — 219/219 passing, includes tests added for work beyond the original plan (rationale-message tests, `ExpectedUnresolvable` scorer tests) |
-| 10. Document findings | **Complete**, but see Must Fix #2 — some of that documentation is now stale relative to later work in the same branch |
-| *(unplanned)* Fix the zero-question sufficiency-assessment crash | **Not in the plan** — see Must Fix #1. Real, well-executed work; a scope decision that should be made explicit rather than implicit. |
+| 10. Document findings | **Complete** — Must Fix #2's staleness resolved with dated inline corrections in all four affected locations |
+| *(unplanned)* Fix the zero-question sufficiency-assessment crash | **Not in the original plan; scope expansion now made explicit** — see Must Fix #1's resolution, `plan.md`'s "Addendum (2026-08-20)". Real, well-executed work, now a documented, conscious decision rather than an implicit one. |
 
 ---
 
 ## Final Verdict
 
-**Ready After Minor Fixes**
+**Ready to Complete**
+
+*(Originally "Ready After Minor Fixes" — updated 2026-08-20 after both Must Fix items were resolved in commit
+`2a4aa65`, the same day as this review.)*
 
 The originally-scoped hardening work is genuinely complete, well-tested, and does exactly what Milestone 8.5
-was approved to do — this is not a quality problem. What keeps this from a clean "Ready to Complete" is
-process, not code: real production AI-behavior and scoring-criteria changes were made that the approved plan
-explicitly scoped out (Must Fix #1), and three documents now contain claims about system behavior that later
-work in the same branch made false (Must Fix #2). Both are fixable without touching the underlying
-engineering — update the plan/summary documents to honestly reflect what was actually built and why the scope
-grew, and this milestone is done.
+was approved to do. Both process gaps found during review are now closed: the zero-question-crash fix's scope
+expansion is documented as a conscious, explained decision in `plan.md`'s addendum rather than something
+only discoverable by diffing the branch against the PRD (Must Fix #1), and every document that made a claim
+later work invalidated now carries a dated correction pointing to what's actually true (Must Fix #2). No
+further action needed to consider this milestone done.
