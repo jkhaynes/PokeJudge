@@ -315,8 +315,9 @@ public static class EvalDataset
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             ScriptedAnswers: new[]
             {
-                "The decklist itself lists two different ACE SPEC cards, and the judge confirmed this while " +
-                    "reviewing the decklist before either player drew their opening hand -- before the match began.",
+                "Both the decklist and the physical deck contain two different ACE SPEC cards -- they match each " +
+                    "other, and the judge confirmed this while reviewing the decklist before either player drew " +
+                    "their opening hand -- before the match began.",
             },
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGRULES-appendix-3-ace-spec-cards", "PPG-5.6.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),

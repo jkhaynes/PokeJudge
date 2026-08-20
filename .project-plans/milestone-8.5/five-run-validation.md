@@ -108,30 +108,41 @@ questions across two fixes is itself evidence: this scenario's topic is more pro
 clean zero-clarification case, not a wording problem worth a third guess. Reclassified to
 `RequiresOneClarification` with a scripted answer addressing both points directly (decklist-level violation,
 confirmed before opening hands were drawn); `gx-attack-twice` remains the dataset's clean `SufficientOnFirstTurn`
-contrast case. **Not yet re-verified live** — the session's free-tier quota was exhausted at the *daily* limit
-(`GenerateRequestsPerDayPerProjectPerModel-FreeTier`), not just the per-minute one, partway through
-verification. Build and the full deterministic test suite (214/214) are unaffected; live confirmation is
-pending quota reset.
+contrast case.
+
+**Live re-verified 2026-08-20, after the daily quota reset — surfaced a third, real gap in the scripted
+answer.** First 3x re-run: 1/3 passed clean, 1/3 hit the known unrelated zero-question crash, and 1/3 exhausted
+the turn cap asking the *same* question four times — "does the physical deck actually match the decklist" —
+because the scripted answer only confirmed the decklist, never the physical deck. This is the identical
+decklist-vs-physical-deck gap already found and fixed for `deck-under-60` below, just not applied here yet.
+Fixed by stating explicitly that both the decklist and the physical deck contain two ACE SPEC cards and match
+each other. Re-verified live: **3/3 passed clean** after the fix (validated Source Support Partial, Strong,
+Partial — all within the acceptable set).
 
 ### 6. `deck-under-60` shows a genuine retrieval miss, not just a reasoning problem — partially addressed
 
 Two of three real runs failed `Initial retrieval` — `TCGRULES-deck-building` was not among the top results on
 turn 1, despite being the section that directly and explicitly states the 60-card requirement. This is
 different in kind from every other new finding here (which are reasoning/sufficiency-assessment issues, not
-retrieval issues) and remains a genuine Retrieval-problem candidate for the source-coverage classification
-process, not yet added to `source-coverage-analysis.md`'s four investigated scenarios — the underlying
-retrieval-quality question (why `TCGRULES-deck-building` sometimes doesn't surface for this query) is not
-addressed by anything below and stays open.
+retrieval issues) and was added to `source-coverage-analysis.md` as its fifth investigated scenario,
+classified a **Retrieval problem** — the underlying retrieval-quality question (why `TCGRULES-deck-building`
+sometimes doesn't surface for this query) is not addressed by anything below and stays open.
 
-**Scripting fix applied, not yet re-verified live**, independent of the retrieval question above: the same
-diagnostic pass showed the real first clarifying question consistently ties to `PPG-5.6.1` (the penalty
+**Scripting fix applied and live re-verified (2/3 clean)**, independent of the retrieval question above: the
+same diagnostic pass showed the real first clarifying question consistently ties to `PPG-5.6.1` (the penalty
 section), not `TCGRULES-deck-building` alone — the identical "real question targets the penalty section"
 pattern already found for `weakness-not-applied`/`supporter-twice` — and the original scripted answer never
 specified whether the shortfall was in the decklist or the physical deck, which a follow-up question asked
 directly. Fixed by adding `PPG-5.6.1` to `ExpectedMaterialSectionIds` and specifying both decklist and
 physical deck explicitly in the scripted answer. This also makes `Initial retrieval` more robust going
 forward (either section now counts as a hit), without fixing why `TCGRULES-deck-building` itself sometimes
-doesn't retrieve. Live re-verification is pending the same daily-quota reset as finding 5.
+doesn't retrieve.
+
+**Live re-verified 2026-08-20, after the daily quota reset: 2/3 runs passed clean** (both resolved in one
+round, tied to `PPG-5.6.1` as expected, validated Strong). The remaining 1/3 hit the known, unrelated
+"insufficient with zero questions" crash (finding 2) — an independent, already-documented bug, not something
+this scripting fix could or should address. The retrieval-quality question itself (why `TCGRULES-deck-building`
+sometimes doesn't surface) remains open, as recorded in `source-coverage-analysis.md`.
 
 ### 7. Self-reported Source Support consistently undershoots the validated label in several scenarios
 
@@ -169,15 +180,14 @@ dataset's size can absorb in one day of development.
   focused on the three scripting/wording issues (findings 3, 5, 6).
 - ~~`late-to-round` is a known, fixable issue of the same shape already solved twice this session.~~ **Fixed
   and verified live** (3/3 clean) — see finding 3's updated note.
-- ~~`ace-spec-count`'s expected outcome...~~ **Investigated and reclassified** to `RequiresOneClarification`
-  based on two further rounds of real diagnosis — see finding 5's updated note. Live re-verification pending
-  daily quota reset.
+- ~~`ace-spec-count`'s expected outcome...~~ **Investigated, reclassified, and live re-verified** to
+  `RequiresOneClarification` (3/3 clean after a third fix — the scripted answer needed to confirm the physical
+  deck, not just the decklist) — see finding 5's updated note.
 - ~~`deck-under-60` deserves a source-coverage investigation entry (retrieval problem)...~~ **The scripting
-  half fixed** (expected section, scripted answer); **the retrieval-quality half now investigated and
-  recorded** — added as `source-coverage-analysis.md`'s fifth finding (Retrieval problem), re-confirmed live
-  via `dotnet run -- search` this session: `TCGRULES-deck-building` still doesn't rank in the top 5 for this
-  scenario's phrasing. Live re-verification of the scripting fix itself (the eval scenario run end-to-end)
-  remains pending daily quota reset.
+  half fixed and live re-verified** (2/3 clean, 1/3 the known unrelated crash); **the retrieval-quality half
+  now investigated and recorded** — added as `source-coverage-analysis.md`'s fifth finding (Retrieval
+  problem), re-confirmed live via `dotnet run -- search` this session: `TCGRULES-deck-building` still doesn't
+  rank in the top 5 for this scenario's phrasing. That retrieval-quality question remains open.
 - `mulligan-not-taken` and `spectator-conduct` extend the known-crash finding to a fifth and sixth scenario
   category — worth citing alongside the existing three in any future summary of that systemic issue. Not
   addressed here — this is the model's known sufficiency-assessment bug, not an eval-authoring issue.
