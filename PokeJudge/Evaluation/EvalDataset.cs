@@ -248,12 +248,26 @@ public static class EvalDataset
         // scripted answer deliberately reveals the fact is now unverifiable, testing
         // whether an unresolved game-state question correctly caps the final label
         // rather than defaulting to Strong.
+        //
+        // TCGTH-3.3.1 added to ExpectedMaterialSectionIds after the Milestone 8.5
+        // zero-question-crash fix stopped this scenario from crashing and exposed its
+        // real trajectory: across 4 live runs, the model's actual first question
+        // consistently tied to TCGTH-3.3.1 (deck lists must be reviewed and put away
+        // "before either player draws their opening hand") rather than TCGTH-7.4.1
+        // alone -- retrieved because it also discusses opening-hand/game-setup timing,
+        // even though its own applicability doesn't turn on whether a mulligan was
+        // taken. The existing scripted answer ("there's no way to verify it") already
+        // resolved 3 of 4 runs cleanly once this is accounted for -- only Initial
+        // retrieval and Clarifying question materiality were failing on an
+        // authoring gap, not a real model problem. The same "real first question ties
+        // to a section other than the one authored" pattern already found for
+        // weakness-not-applied/supporter-twice/deck-under-60/ace-spec-count.
         new EvalScenario(
             "mulligan-not-taken",
             "Illegal Game State",
             "Partway through a game, a judge is called over because a player realizes they don't remember " +
             "either player mulliganing at the start, even though the game has clearly been going for several turns.",
-            new[] { "TCGTH-7.4.1" },
+            new[] { "TCGTH-7.4.1", "TCGTH-3.3.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             ScriptedAnswers: new[]
             {

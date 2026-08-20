@@ -236,3 +236,35 @@ fixing it).
 
 Full deterministic test suite: 219/219 (added tests for the rationale field flowing into the crash exception
 message, and for all three `ExpectedUnresolvable` scoring branches).
+
+### `mulligan-not-taken`'s scripted section fix — applied, but surfaced more variability than expected
+
+Added `TCGTH-3.3.1` to `ExpectedMaterialSectionIds` alongside the authored `TCGTH-7.4.1`, per the finding
+directly above: it's genuinely retrieved (it discusses "before either player draws their opening hand," which
+overlaps with the mulligan scenario's language even though its own applicability doesn't turn on whether a
+mulligan happened), and the existing scripted answer ("there's no way to verify it") already resolved 3 of the
+4 prior runs cleanly once that section is accounted for -- this was an authoring gap, not a real model problem.
+
+**Live re-verified, 3 more runs — only 1/3 passed clean, and the other two show this scenario is more variable
+than a single scripted section can capture:**
+- Run 1: first question tied to a *third* section, `PPG-4.2.1` (not `TCGTH-3.3.1` or `TCGTH-7.4.1`), needed a
+  second round the scripted answers don't cover, and the final validated Source Support came back **Strong** —
+  outside this scenario's `{Partial, Insufficient}` acceptable set, which exists specifically to test that an
+  unresolved game-state fact caps the label below Strong. A new, real divergence, not yet investigated.
+- Run 2: **the zero-question crash recurred** — now with a rationale, for the first time showing exactly why:
+  *"none of the retrieved passages address mulligans at the start of a game; the passages instead discuss deck
+  lists, playing multiple Supporter cards, and infinite loops."* This is a genuine turn-1 retrieval miss
+  (`TCGTH-7.4.1` didn't make the top-K at all) that the Milestone 8.5 prompt fix's "ask about the missing fact
+  anyway" instruction didn't fully prevent — the fix reduces the crash's frequency, evidently, but doesn't
+  eliminate it outright even after the reduction already confirmed above (6/6 clean elsewhere).
+- Run 3: clean, tied to `TCGTH-3.3.1` as expected, resolved in one round.
+
+Per this dataset's established practice (`ace-spec-count`'s finding 5: two different real follow-up questions
+across two rewrites was evidence the topic is procedurally entangled, not a wording problem worth a third
+guess) — `TCGTH-3.3.1` is kept as a real, evidence-grounded addition (now 4 of 7 cumulative live runs), but
+`PPG-4.2.1` is not chased into the expected-sections list on a single occurrence, and the recurring retrieval
+miss is a separate, deeper problem than a scripting gap. Left open rather than patched further: this scenario
+appears to have at least three distinct real trajectories (clean via `TCGTH-3.3.1`, a `PPG-4.2.1`-anchored path
+needing a second round, and an occasional genuine retrieval miss reproducing the zero-question crash) — worth
+a dedicated source-coverage investigation of its own before any further scripting changes, rather than
+one-off reactions to whichever path the next live run happens to hit.
