@@ -18,7 +18,18 @@ public enum ExpectedTrajectoryOutcome
     // The scenario is expected to reproduce a known, real "fail loudly" case
     // (Milestone 2's insufficient-with-zero-questions guard) -- a scored outcome in
     // its own right, not something to route around.
-    ExpectedToFailLoudly
+    ExpectedToFailLoudly,
+
+    // The scenario is expected to never reach sufficiency within the turn cap,
+    // because no retrieved passage actually answers the material question (a
+    // genuine corpus gap, not a model bug). Added in Milestone 8.5 alongside the
+    // sufficiency-assessment prompt fix that made the model always ask a real
+    // question rather than silently refusing (see SystemPrompts.Judge) -- for a
+    // scenario like this, that means it now exhausts the turn cap asking
+    // questions that never resolve anything, instead of crashing. Distinct from
+    // ExpectedToFailLoudly: reaching the turn cap without crashing is the correct,
+    // expected outcome here, not a failure to route around.
+    ExpectedUnresolvable
 }
 
 // A flat representation, not a nested tree -- PRD SS18 explicitly leaves the exact

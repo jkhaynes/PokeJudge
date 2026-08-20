@@ -39,6 +39,14 @@ public class ScenarioEvalScorerTests
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
+    private static EvalScenario ExpectedUnresolvableScenario() => new(
+        "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
+        Array.Empty<string>(),
+        ExpectedTrajectoryOutcome.ExpectedUnresolvable,
+        ScriptedAnswers: Array.Empty<string>(),
+        ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        AcceptableFinalSourceSupport: null);
+
     private static RulingResult SomeRuling() => new(
         "Recommendation.", "Explanation.", new List<string>(), null, new List<string> { "A1#0" },
         SourceSupport.Strong, "Model's own opinion.");
@@ -90,6 +98,46 @@ public class ScenarioEvalScorerTests
         Assert.Single(report.Criteria);
         Assert.Equal("Unexpected failure", report.Criteria[0].Name);
         Assert.Equal(CriterionResult.Fail, report.Criteria[0].Result);
+    }
+
+    // --- ExpectedUnresolvable ---
+
+    [Fact]
+    public void Score_ExpectedUnresolvable_TurnCapExhausted_Passes()
+    {
+        var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }) };
+        var trajectory = ScenarioTrajectory.TurnCapExhausted(ExpectedUnresolvableScenario(), turns, 4, true);
+
+        var report = ScenarioEvalScorer.Score(trajectory);
+
+        Assert.True(report.AllPassed);
+        Assert.Single(report.Criteria);
+        Assert.Equal("Expected unresolvable", report.Criteria[0].Name);
+    }
+
+    [Fact]
+    public void Score_ExpectedUnresolvable_CrashedInstead_Fails()
+    {
+        var trajectory = ScenarioTrajectory.Failed(
+            ExpectedUnresolvableScenario(), new List<TurnRecord>(), "Model reported insufficient with no questions.");
+
+        var report = ScenarioEvalScorer.Score(trajectory);
+
+        Assert.False(report.AllPassed);
+        Assert.Contains(report.Criteria, c => c.Name == "Expected unresolvable" && c.Result == CriterionResult.Fail);
+    }
+
+    [Fact]
+    public void Score_ExpectedUnresolvable_ReachedSufficiencyInstead_Fails()
+    {
+        var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
+        var trajectory = ScenarioTrajectory.Completed(
+            ExpectedUnresolvableScenario(), turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+
+        var report = ScenarioEvalScorer.Score(trajectory);
+
+        Assert.False(report.AllPassed);
+        Assert.Contains(report.Criteria, c => c.Name == "Expected unresolvable" && c.Result == CriterionResult.Fail);
     }
 
     // --- Initial retrieval ---

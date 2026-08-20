@@ -129,20 +129,31 @@ public static class EvalDataset
         // Prize errors / missed game actions. Reproducibly failed loudly (isSufficient:
         // false with zero clarifying questions) in both Milestone 6 and Milestone 7's real
         // runs, even after Milestone 7's corpus expansion improved retrieval quality
-        // substantially -- see observed-limitations.md in both milestones. This is now a
+        // substantially -- see observed-limitations.md in both milestones. This was a
         // regression check for that known, real failure mode, not an assumption it's fixed.
         // Milestone 8.5's source-coverage investigation classifies this one differently
         // from the others below, though: the corpus explicitly covers "took too many
         // Prize cards" and "took a Prize without a Knock Out" (PPG-5.5.1), but never the
         // exact inverse -- forgetting a Prize card actually earned. Classified Possible
         // source gap, not Sufficient coverage -- see source-coverage-analysis.md.
+        //
+        // Reclassified from ExpectedToFailLoudly after the sufficiency-assessment prompt
+        // fix (SystemPrompts.Judge, Milestone 8.5's zero-question-crash investigation):
+        // once the model was instructed to always ask a real question rather than silently
+        // refuse, this scenario stopped reproducing the crash it existed to test for --
+        // live re-verified, 0/2 crashes where it previously crashed reliably. Its real
+        // behavior now is exhausting the turn cap asking repeated questions that never
+        // resolve anything, because no retrieved passage actually answers the inverse case.
+        // That's the same underlying corpus gap, surfacing a different, now more honest way
+        // (the model tries and fails to find grounding, rather than silently giving up) --
+        // ExpectedUnresolvable is this scenario's current, live-verified regression check.
         new EvalScenario(
             "missed-prize",
             "Prize Errors",
             "During a League Challenge, a player just noticed they forgot to take a Prize card after knocking " +
             "out their opponent's Pokemon two turns ago.",
             Array.Empty<string>(),
-            ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
+            ExpectedTrajectoryOutcome.ExpectedUnresolvable,
             ScriptedAnswers: Array.Empty<string>(),
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: null),

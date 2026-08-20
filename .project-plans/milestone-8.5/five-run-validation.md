@@ -71,6 +71,8 @@ independent reproductions: `mulligan-not-taken` (5/5 consistently) and `spectato
 gameplay error, illegal game state (two different scenarios), prize errors, tournament procedure, and setup
 violations all hitting the identical failure mode. The "systemic weakness in the sufficiency-assessment step"
 conclusion from Milestone 8's `observed-limitations.md` §6 is substantially reinforced, not just repeated.
+**Investigated and largely fixed the next day — see the 2026-08-20 follow-up section near the end of this
+document.**
 
 ### 3. Two more scenarios show the exact "answer didn't address what was asked" pattern already fixed once
 
@@ -188,6 +190,49 @@ dataset's size can absorb in one day of development.
   now investigated and recorded** — added as `source-coverage-analysis.md`'s fifth finding (Retrieval
   problem), re-confirmed live via `dotnet run -- search` this session: `TCGRULES-deck-building` still doesn't
   rank in the top 5 for this scenario's phrasing. That retrieval-quality question remains open.
-- `mulligan-not-taken` and `spectator-conduct` extend the known-crash finding to a fifth and sixth scenario
-  category — worth citing alongside the existing three in any future summary of that systemic issue. Not
-  addressed here — this is the model's known sufficiency-assessment bug, not an eval-authoring issue.
+- ~~`mulligan-not-taken` and `spectator-conduct` extend the known-crash finding...~~ **Attempted and largely
+  fixed** — see the 2026-08-20 follow-up section below. The zero-question crash itself is substantially
+  addressed; `mulligan-not-taken`'s real first question now needs its own scripting fix (a new, separate
+  finding of the same "real question targets a different section than authored" shape as findings 3/5/6, not
+  yet applied).
+
+## Follow-up: 2026-08-20 — the zero-question crash, investigated and largely fixed
+
+Finding 2 above ("insufficient with zero questions") was the one recurring failure mode with no diagnostic
+surface: the crash carried no information about *why* the model wouldn't commit to a question, unlike every
+other finding in this document, which came from seeing the model's actual question text. Investigated by
+adding a `Rationale` field to the sufficiency-assessment schema (mirroring `RulingResult`'s
+`SourceSupportRationale`) and an explicit instruction in `SystemPrompts.Judge`: never report insufficient with
+zero questions; if no retrieved passage's applicability turns on a specific missing fact, that means the
+retrieved passages don't answer the material question (a retrieval problem), not a reason to withhold a
+question.
+
+**Live re-verified across three scenarios, 8 real runs:**
+- `mulligan-not-taken` (previously crashed 5/5): **4/4 runs, zero crashes.** The model now asks a real
+  question every time instead of silently refusing.
+- `drew-extra-card` (previously crashed 4/5): **2/2 runs, zero crashes.**
+- `missed-prize` — the dataset's *deliberate* `ExpectedToFailLoudly` regression check for this exact crash (a
+  genuine corpus gap, per `source-coverage-analysis.md`'s "Possible source gap" classification): **also 2/2, no
+  longer crashes.** Instead it now exhausts the turn cap asking repeated, near-duplicate questions that never
+  resolve anything — the model tries and fails to find grounding, rather than silently giving up. Same
+  underlying corpus gap, a different and more honest failure shape.
+
+**This broke the regression check by design, not by accident** — `missed-prize` existed specifically to prove
+the crash still reproduces, and after this fix it structurally can't (the instruction removes the code path
+that produces a zero-question response at all, for any scenario). Reclassified `missed-prize` from
+`ExpectedToFailLoudly` to a new `ExpectedTrajectoryOutcome.ExpectedUnresolvable` (turn cap exhausted without
+crashing is the correct, expected outcome for a genuine corpus gap now) — a new, dedicated scorer branch
+(`ScenarioEvalScorer.ScoreExpectedUnresolvable`) fails if the loop crashes anyway (regression in the fix) or if
+it unexpectedly reaches sufficiency (the corpus may have grown to cover it), and passes only on a clean
+turn-cap exhaustion. Live re-verified after reclassifying: 2/2 clean.
+
+**Not fully clean, though** — `mulligan-not-taken`'s real first question across all 4 runs tied to
+`TCGTH-3.3.1`, not the scenario's authored `TCGTH-7.4.1`, failing `Initial retrieval` and `Clarifying question
+materiality` even though the scenario now resolves without crashing. This is the identical "real question
+targets a different section than authored" pattern already found and fixed for `weakness-not-applied`,
+`supporter-twice`, `deck-under-60`, and `ace-spec-count` — a legitimate follow-up scripting fix, not yet
+applied here, per this pass's scope (fixing the crash itself, not every downstream scripting consequence of
+fixing it).
+
+Full deterministic test suite: 219/219 (added tests for the rationale field flowing into the crash exception
+message, and for all three `ExpectedUnresolvable` scoring branches).

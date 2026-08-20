@@ -181,6 +181,39 @@ public class ClarificationLoopTests
     }
 
     [Fact]
+    public async Task RunAsync_InsufficientWithoutQuestions_ExceptionMessageIncludesModelsRationale()
+    {
+        var llm = new StubLlmClient();
+        llm.Enqueue(new ClarificationResult(
+            false, new List<ClarifyingQuestion>(), "No retrieved passage's applicability turns on any missing fact."));
+        var retriever = new StubRetriever();
+        retriever.Enqueue(SomeChunks());
+
+        var loop = new ClarificationLoop(llm, retriever);
+
+        var ex = await Assert.ThrowsAsync<InsufficientWithoutQuestionsException>(
+            () => loop.RunAsync(ScenarioDescription, askJudge: _ => Task.FromResult("unused")));
+
+        Assert.Contains("No retrieved passage's applicability turns on any missing fact.", ex.Message);
+    }
+
+    [Fact]
+    public async Task RunAsync_InsufficientWithoutQuestionsAndNoRationale_ExceptionMessageNotesNoneGiven()
+    {
+        var llm = new StubLlmClient();
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion>(), Rationale: ""));
+        var retriever = new StubRetriever();
+        retriever.Enqueue(SomeChunks());
+
+        var loop = new ClarificationLoop(llm, retriever);
+
+        var ex = await Assert.ThrowsAsync<InsufficientWithoutQuestionsException>(
+            () => loop.RunAsync(ScenarioDescription, askJudge: _ => Task.FromResult("unused")));
+
+        Assert.Contains("(none given)", ex.Message);
+    }
+
+    [Fact]
     public async Task RunAsync_OnAssessmentCallback_ReceivesTheChunksRetrievedForThatTurn()
     {
         var llm = new StubLlmClient();

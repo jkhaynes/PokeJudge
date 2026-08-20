@@ -34,6 +34,12 @@ public static class ScenarioEvalScorer
             return new ScenarioEvalReport(scenario.Id, criteria);
         }
 
+        if (scenario.ExpectedOutcome == ExpectedTrajectoryOutcome.ExpectedUnresolvable)
+        {
+            criteria.Add(ScoreExpectedUnresolvable(trajectory));
+            return new ScenarioEvalReport(scenario.Id, criteria);
+        }
+
         // A scenario not expected to fail loudly still might, for real (observed running
         // "deck-not-shuffled" against the live corpus: the second turn's malformed
         // insufficient-with-zero-questions response crashed it). Scoring the other
@@ -70,6 +76,24 @@ public static class ScenarioEvalScorer
             ? new CriterionOutcome("Expected failure", CriterionResult.Pass, $"Failed loudly as expected: {trajectory.FailureMessage}")
             : new CriterionOutcome("Expected failure", CriterionResult.Fail,
                 "Expected the loop to fail loudly (insufficient with no questions), but it completed instead.");
+
+    private static CriterionOutcome ScoreExpectedUnresolvable(ScenarioTrajectory trajectory)
+    {
+        if (trajectory.ThrewExpectedFailure)
+        {
+            return new CriterionOutcome("Expected unresolvable", CriterionResult.Fail,
+                $"Expected the loop to exhaust the turn cap asking real questions, but it crashed instead: {trajectory.FailureMessage}");
+        }
+
+        if (trajectory.ReachedSufficiency)
+        {
+            return new CriterionOutcome("Expected unresolvable", CriterionResult.Fail,
+                "Expected the scenario to remain unresolvable, but a ruling was produced -- the corpus may now cover this.");
+        }
+
+        return new CriterionOutcome("Expected unresolvable", CriterionResult.Pass,
+            "Correctly exhausted the turn cap without resolving, as expected for this known corpus gap.");
+    }
 
     private static CriterionOutcome ScoreInitialRetrieval(EvalScenario scenario, ScenarioTrajectory trajectory)
     {
