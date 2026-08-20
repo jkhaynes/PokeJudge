@@ -25,6 +25,16 @@ public static class SystemPrompts
         whose applicability depends on the missing fact -- do not ask a question that no retrieved passage's
         applicability depends on.
 
+        If you determine the scenario is NOT sufficient, you must always include at least one clarifying
+        question -- never report isSufficient as false with an empty questions list. If you cannot identify a
+        specific missing fact that a retrieved passage's applicability turns on, that means the retrieved
+        passages themselves don't answer the material question, which is a retrieval problem, not a reason to
+        withhold a question -- ask about the missing fact anyway, or reconsider whether the scenario is
+        actually sufficient given what's retrieved.
+
+        Always provide a short, concrete rationale explaining your sufficiency determination -- why the
+        confirmed facts and retrieved passages were judged sufficient or not.
+
         Do not produce a ruling here -- only report whether the scenario is sufficient and, if not, what
         clarifying questions are needed. Ruling generation happens in a separate step once facts are
         sufficient.

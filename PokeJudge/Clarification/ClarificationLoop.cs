@@ -59,8 +59,10 @@ public sealed class ClarificationLoop
 
             if (result.Questions.Count == 0)
             {
+                var rationale = string.IsNullOrWhiteSpace(result.Rationale) ? "(none given)" : result.Rationale;
                 throw new InsufficientWithoutQuestionsException(
-                    "Model reported the scenario insufficient but supplied no clarifying questions.");
+                    "Model reported the scenario insufficient but supplied no clarifying questions. " +
+                    $"Model's rationale: \"{rationale}\"");
             }
 
             foreach (var question in result.Questions)
