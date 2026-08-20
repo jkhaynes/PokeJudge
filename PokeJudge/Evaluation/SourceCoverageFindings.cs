@@ -39,9 +39,14 @@ public static class SourceCoverageFindings
             "many Prize cards after Knocking Out a Pokemon,' but no passage found (via multiple targeted " +
             "searches) explicitly names the exact inverse: forgetting to take a Prize card actually earned. " +
             "This is a genuinely different classification from the other three scenarios above, and a plausible " +
-            "partial explanation for why this scenario's crash is so consistently reproducible: with no clear " +
-            "passage to hang a clarifying question on, the sufficiency-assessment step may have less to work " +
-            "with here than in the Sufficient-coverage cases.",
+            "partial explanation for why this scenario originally reproduced the zero-question sufficiency-" +
+            "assessment crash so consistently: with no clear passage to hang a clarifying question on, the " +
+            "sufficiency-assessment step had less to work with here than in the Sufficient-coverage cases. " +
+            "(Out-of-scope follow-up, 2026-08-20: that crash was later largely fixed elsewhere in the pipeline " +
+            "-- see plan.md's addendum. This scenario no longer crashes; it now exhausts the turn cap asking " +
+            "real questions that never resolve anything, the same underlying source gap surfacing a different, " +
+            "more honest way. Reclassified from ExpectedToFailLoudly to ExpectedUnresolvable accordingly -- " +
+            "this PossibleSourceGap classification itself is unaffected.)",
             MissingInformation: "An explicit worked example or rule covering a competitor forgetting to take a " +
                 "Prize card they were entitled to, analogous to how PPG-5.5.1 already covers the reverse case.",
             LikelySourceDocument: "Penalty Guidelines (PPG), likely adjacent to PPG-5.5.1's existing Prize-related examples."),

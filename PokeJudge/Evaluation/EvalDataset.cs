@@ -39,10 +39,16 @@ using PokeJudge.StructuredState;
 // - "drew-extra-card" (reproduces the known "insufficient with zero questions"
 //   crash): kept as RequiresOneClarification. PPG-5.5.1 explicitly names "a
 //   competitor draws an extra card" as a worked example -- the expectation is
-//   evidence-grounded, and the repeated crash is evidence the known
-//   sufficiency-assessment bug persists, not evidence the expectation is wrong.
-//   Downgrading it to ExpectedToFailLoudly would quietly convert a real
-//   regression signal into a tautology.
+//   evidence-grounded, and at the time of this review the repeated crash was
+//   evidence the known sufficiency-assessment bug persisted, not evidence the
+//   expectation was wrong. Downgrading it to ExpectedToFailLoudly would have
+//   quietly converted a real regression signal into a tautology.
+//   UPDATE, out-of-scope follow-up on 2026-08-20 (see plan.md's addendum): the
+//   crash itself was subsequently investigated and largely fixed via a
+//   SystemPrompts.Judge instruction + a new ClarificationResult.Rationale
+//   diagnostic field. drew-extra-card no longer reproduces it (0/2 in live
+//   re-verification) -- this bullet's history is kept for the record, but the
+//   crash it describes is no longer current behavior for this scenario.
 // - "spectator-badges" (both real runs that reached it consistently asked a
 //   clarifying question and never reached sufficiency): kept as
 //   SufficientOnFirstTurn. Investigated via the new source-coverage

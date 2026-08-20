@@ -11,8 +11,20 @@ normalizes and actually uses scenario categorization, reviews the original 8 sce
 against Milestone 8's real-run findings, adds `--repeat <n>` support so run-to-run variability is observable,
 generalizes the scripted judge to support multiple clarification rounds (found necessary by testing the newly
 expanded dataset live), distinguishes infrastructure failures from real scenario failures, and adds a
-manually-authored source-coverage classification for repeatedly-failing scenarios. No change to
-`ScenarioEvalScorer`'s scoring criteria.
+manually-authored source-coverage classification for repeatedly-failing scenarios.
+
+**Scope note added 2026-08-20:** the paragraph above and the "What Changed" section below describe this
+milestone's originally-approved scope and were accurate as of the two checkpoint commits (`2c392f7`,
+`a8f4fb1`). A follow-up session on this same branch went beyond that approved scope to investigate and fix the
+recurring "insufficient with zero questions" sufficiency-assessment crash -- a deliberate, after-the-fact scope
+expansion, recorded in full in `plan.md`'s addendum and `five-run-validation.md`'s "Follow-up: 2026-08-20"
+section. That work **did** change `Clarification/SystemPrompts.cs`, `Clarification/ClarificationLoop.cs`,
+`StructuredState/ClarificationResult.cs`, and `Evaluation/ScenarioEvalScorer.cs` (a new
+`ExpectedTrajectoryOutcome.ExpectedUnresolvable` scoring branch) -- directly contradicting the "no change to
+`ScenarioEvalScorer`'s scoring criteria" claim above and the "no changes to `Clarification/`... or
+`ScenarioEvalScorer.cs`" claim in "What Changed" below. Both claims are left unedited below as an accurate
+record of the originally-approved implementation; this note is the correction for anyone reading only the top
+of this document.
 
 ## What Changed
 
@@ -73,6 +85,11 @@ No new NuGet packages. No changes to `Clarification/`, `Grounding/`, `Retrieval/
 `ScenarioEvalScorer.cs` — this milestone hardens the dataset and the harness's orchestration/scripting layer
 only, per the approved plan's explicit scope boundary. `ScenarioEvalRunner.cs` was touched only for the
 scripted-answer indexing change described above.
+
+**No longer true as of the 2026-08-20 scope expansion noted at the top of this document** — `Clarification/`,
+`StructuredState/`, and `ScenarioEvalScorer.cs` were all subsequently modified to fix the zero-question
+sufficiency-assessment crash. This paragraph is kept as an accurate record of the state at the two checkpoint
+commits it describes.
 
 ## Validation
 

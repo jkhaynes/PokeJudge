@@ -59,9 +59,16 @@ what these two specific scenarios needed. Both also revealed their real first cl
 different section than originally guessed (`supporter-twice` → `PPG-4.2.1`, not just `TCGRULES-turn-actions`;
 `weakness-not-applied` → `TCGRULES-turn-actions`, not just `TCGRULES-full-details-of-attacking`) -- both
 sections were added to `ExpectedMaterialSectionIds` based on this direct observation, not a guess. Re-run
-after the fix: both scenarios now reach sufficiency in 2 turns and pass all 6 applicable criteria. Regression
-check on `drew-extra-card` (an already-working single-answer scenario) confirmed no behavior change -- it
-still reproduces the known, unrelated zero-questions crash exactly as before.
+after the fix: both scenarios now reach sufficiency in 2 turns and pass all 6 applicable criteria. A
+regression check on `drew-extra-card` (an already-working single-answer scenario) confirmed no behavior change
+*at the time* -- it still reproduced the known, unrelated zero-questions crash exactly as before.
+
+**UPDATE, 2026-08-20 (out of this milestone's original scope -- see `plan.md`'s addendum):** that crash was
+subsequently investigated and largely fixed (a `SystemPrompts.Judge` instruction plus a new
+`ClarificationResult.Rationale` diagnostic field). `drew-extra-card` no longer reproduces it -- 0/2 in live
+re-verification. The regression-check statement above is accurate as a description of this milestone's
+originally-scoped state, not of current behavior; see `five-run-validation.md`'s "Follow-up: 2026-08-20"
+section for the full investigation.
 
 ## 4. `gx-attack-twice`, a new `SufficientOnFirstTurn` scenario, passed cleanly on its first live run
 

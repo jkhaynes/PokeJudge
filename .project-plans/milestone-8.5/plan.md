@@ -167,3 +167,49 @@ capability or a benchmark-building project:
 - A persisted, historical eval-report/dashboard system — `observed-limitations.md` and the new
   `source-coverage-analysis.md` continue to fill PRD §15's "simple run log" role.
 - Any UI work (Milestone 10).
+
+## Addendum (2026-08-20): scope expansion to fix the zero-question sufficiency-assessment crash
+
+This milestone's original scope, above, deliberately treated the recurring "insufficient with zero
+clarifying questions" crash (`InsufficientWithoutQuestionsException`) as a finding to measure and keep
+distinguishable — not to fix. Step 3 explicitly argued against fixing it: `drew-extra-card`'s repeated crash
+was framed as "evidence the known sufficiency-assessment bug persists, not evidence the expectation is wrong,"
+and the Out-of-Scope list above explicitly excludes "any change to `ScenarioEvalScorer`'s scoring criteria."
+
+After the originally-scoped hardening work was checkpointed (commits `2c392f7`, `a8f4fb1`), a follow-up
+session investigated and substantially fixed this crash anyway, motivated by live evidence that the crash
+carried zero diagnostic information — the one recurring failure mode in the entire dataset with no visible
+cause, unlike every other finding in `five-run-validation.md`, which came from seeing the model's actual
+question text. This is a deliberate, after-the-fact scope expansion, recorded here explicitly rather than
+left for a reader to discover only by diffing the branch against PRD §15:
+
+- Added a `Rationale` field to the sufficiency-assessment schema (`StructuredState/ClarificationResult.cs`,
+  mirroring `RulingResult.SourceSupportRationale`) and an explicit instruction in `SystemPrompts.Judge`
+  forbidding "insufficient with zero questions." This changes production AI behavior, not just the eval
+  harness — `SystemPrompts.Judge` and `ClarificationLoop` are shared with the interactive, judge-facing
+  console flow.
+- Live-verified across 8 real runs on the two scenarios with the highest known crash rates:
+  `mulligan-not-taken` (previously 5/5 crashed) and `drew-extra-card` (previously 4/5) both went to 0/0
+  crashes.
+- This broke `missed-prize`'s `ExpectedToFailLoudly` regression check by design — it existed specifically to
+  prove the crash reproduces, and after the fix it structurally can't. Added a new
+  `ExpectedTrajectoryOutcome.ExpectedUnresolvable` outcome and a corresponding `ScenarioEvalScorer` branch (a
+  direct scoring-criteria change, contradicting the Out-of-Scope line above) and reclassified `missed-prize`
+  to it. Live re-verified: 2/2 clean.
+- `mulligan-not-taken`'s scripted section was subsequently fixed too (`TCGTH-3.3.1` added to
+  `ExpectedMaterialSectionIds`), which in turn surfaced further, only-partially-understood variability in that
+  scenario (a third real question path, and one recurring genuine retrieval miss) — documented as open in
+  `five-run-validation.md` rather than chased further.
+
+**Why this was judged worth doing now, despite being out of the approved plan:** the crash's diagnosability
+gap was itself blocking exactly the kind of root-cause attribution this milestone's plan calls its central
+learning objective (distinguishing a reasoning problem from a retrieval/corpus problem) — six scenario
+categories were sharing one unexplained failure mode. Fixing it materially improves the dataset Milestone 9
+inherits (fewer, more honestly-labeled infrastructure-adjacent crashes cluttering calibration data) and the
+diagnostic tooling itself (the `Rationale` field) is reusable beyond this one fix. The tradeoff, named
+plainly: Milestone 9's calibration work will now study a sufficiency-assessment step whose behavior changed
+mid-project, not the exact pipeline Milestone 8 originally measured — worth remembering if a future comparison
+against Milestone 8's original numbers is ever attempted.
+
+Full investigation, live evidence, and follow-up findings are recorded in `five-run-validation.md`'s
+"Follow-up: 2026-08-20" section and the section immediately after it.
