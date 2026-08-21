@@ -156,4 +156,68 @@ public class PromptBuilderTests
 
         Assert.Contains("Issue a Warning.", prompt);
     }
+
+    [Fact]
+    public void BuildConfidenceEstimationPrompt_IncludesScenarioConfirmedFactsAndRetrievedChunks()
+    {
+        var state = new GameState();
+        state.AddConfirmedFacts(new[] { "A Pokemon was Knocked Out." });
+
+        var prompt = PromptBuilder.BuildConfidenceEstimationPrompt(
+            "A test scenario description.", state, RetrievedChunks, SomeRuling("A1#0"));
+
+        Assert.Contains("A test scenario description.", prompt);
+        Assert.Contains("A Pokemon was Knocked Out.", prompt);
+        Assert.Contains("A1#0", prompt);
+        Assert.Contains("Material passage text.", prompt);
+    }
+
+    [Fact]
+    public void BuildConfidenceEstimationPrompt_IncludesTheRulingsRecommendationAndExplanation()
+    {
+        var prompt = PromptBuilder.BuildConfidenceEstimationPrompt(
+            "A test scenario description.", new GameState(), RetrievedChunks, SomeRuling("A1#0"));
+
+        Assert.Contains("Issue a Warning.", prompt);
+        Assert.Contains("Explanation text.", prompt);
+    }
+
+    [Fact]
+    public void BuildConfidenceEstimationPrompt_NeverIncludesTheRulingsOwnSourceSupportLabelOrRationale()
+    {
+        // The design decision this test locks in: confidence estimation must stay blind to any
+        // pre-existing support/confidence-adjacent label -- including the ruling's own
+        // self-assigned SourceSupport, not just the downstream GroundingResult -- so the
+        // estimate is an independent re-examination, not an anchored restatement. See
+        // PromptBuilder.BuildConfidenceEstimationPrompt's comment and .project-plans/milestone-9/plan.md.
+        var prompt = PromptBuilder.BuildConfidenceEstimationPrompt(
+            "A test scenario description.", new GameState(), RetrievedChunks, SomeRuling("A1#0"));
+
+        Assert.DoesNotContain("Strong", prompt);
+        Assert.DoesNotContain("The model's own opinion.", prompt);
+    }
+
+    [Fact]
+    public void BuildConfidenceEstimationPrompt_IncludesRepairStepsAndPenaltyGuidance_WhenPresent()
+    {
+        var ruling = new RulingResult(
+            "Issue a Warning.", "Explanation text.",
+            new List<string> { "Shuffle the extra card back into the deck." },
+            "Warning per PPG-5.5.1.", new List<string> { "A1#0" }, SourceSupport.Strong, "n/a");
+
+        var prompt = PromptBuilder.BuildConfidenceEstimationPrompt(
+            "A test scenario description.", new GameState(), RetrievedChunks, ruling);
+
+        Assert.Contains("Shuffle the extra card back into the deck.", prompt);
+        Assert.Contains("Warning per PPG-5.5.1.", prompt);
+    }
+
+    [Fact]
+    public void BuildConfidenceEstimationPrompt_NoCitations_StillProducesAPrompt()
+    {
+        var prompt = PromptBuilder.BuildConfidenceEstimationPrompt(
+            "A test scenario description.", new GameState(), RetrievedChunks, SomeRuling());
+
+        Assert.Contains("Issue a Warning.", prompt);
+    }
 }

@@ -73,6 +73,49 @@ public static class PromptBuilder
         return sb.ToString();
     }
 
+    public static string BuildConfidenceEstimationPrompt(
+        string scenarioDescription, GameState state, IReadOnlyList<ScoredChunk> retrievedChunks, RulingResult ruling)
+    {
+        var sb = new StringBuilder();
+
+        sb.AppendLine("Scenario:");
+        sb.AppendLine(scenarioDescription);
+        sb.AppendLine();
+
+        sb.AppendLine("Confirmed facts (the only facts that were available):");
+        AppendBulletedListOrNone(sb, state.ConfirmedFacts);
+        sb.AppendLine();
+
+        sb.AppendLine("Retrieved passages (the only source material that was available):");
+        AppendRetrievedChunksOrNone(sb, retrievedChunks);
+        sb.AppendLine();
+
+        // Deliberately omits ruling.SourceSupport/SourceSupportRationale (the model's own prior
+        // label from the same generation call) and the downstream GroundingResult entirely --
+        // showing either back here risks the confidence estimate anchoring to a pre-existing
+        // label instead of independently re-examining the material. Only the ruling's actual
+        // substance is shown, the same way a human reviewer double-checking it would see it.
+        sb.AppendLine("The ruling you produced:");
+        sb.AppendLine($"Recommendation: {ruling.Recommendation}");
+        sb.AppendLine($"Explanation: {ruling.Explanation}");
+        if (ruling.RepairSteps.Count > 0)
+        {
+            sb.AppendLine("Repair steps: " + string.Join("; ", ruling.RepairSteps));
+        }
+        if (ruling.PenaltyGuidance is not null)
+        {
+            sb.AppendLine($"Penalty guidance: {ruling.PenaltyGuidance}");
+        }
+        sb.AppendLine("Cited passages: " + (ruling.CitedChunkIds.Count > 0 ? string.Join(", ", ruling.CitedChunkIds) : "(none)"));
+        sb.AppendLine();
+
+        sb.AppendLine(
+            "Given only the scenario, confirmed facts, and retrieved passages above, estimate the probability " +
+            "that this ruling is correct, per the system instructions.");
+
+        return sb.ToString();
+    }
+
     public static string BuildGroundingValidationPrompt(RulingResult ruling, IReadOnlyList<ScoredChunk> retrievedChunks)
     {
         var sb = new StringBuilder();

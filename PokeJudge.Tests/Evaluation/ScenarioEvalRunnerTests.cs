@@ -5,6 +5,7 @@ using PokeJudge.Clarification;
 using PokeJudge.Evaluation;
 using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
+using PokeJudge.Reliability;
 using PokeJudge.Retrieval;
 using PokeJudge.StructuredState;
 using PokeJudge.Tests.TestDoubles;
@@ -53,7 +54,8 @@ public class ScenarioEvalRunnerTests
         var loop = new ClarificationLoop(llm, retriever);
         var rulingGenerator = new RulingGenerator(llm);
         var groundingValidator = new GroundingValidator(llm);
-        return (new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator), llm, retriever);
+        var confidenceEstimator = new ConfidenceEstimator(llm);
+        return (new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, confidenceEstimator), llm, retriever);
     }
 
     [Fact]
@@ -64,6 +66,7 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        llm.Enqueue(new ConfidenceEstimate(90, "n/a"));
 
         var trajectory = await runner.RunAsync(SufficientOnFirstTurnScenario());
 
@@ -72,6 +75,8 @@ public class ScenarioEvalRunnerTests
         Assert.Single(trajectory.Turns);
         Assert.NotNull(trajectory.Ruling);
         Assert.NotNull(trajectory.Grounding);
+        Assert.NotNull(trajectory.Confidence);
+        Assert.Equal(90, trajectory.Confidence.PredictedCorrectnessProbability);
     }
 
     [Fact]
@@ -85,6 +90,7 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Partial, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        llm.Enqueue(new ConfidenceEstimate(70, "n/a"));
 
         var trajectory = await runner.RunAsync(RequiresOneClarificationScenario());
 
@@ -92,6 +98,8 @@ public class ScenarioEvalRunnerTests
         Assert.Equal(2, trajectory.Turns.Count);
         Assert.False(trajectory.AskedMoreQuestionsThanScripted);
         Assert.Contains("The marker is Asleep.", llm.UserContents[2]);
+        Assert.NotNull(trajectory.Confidence);
+        Assert.Equal(70, trajectory.Confidence.PredictedCorrectnessProbability);
     }
 
     [Fact]
@@ -108,6 +116,7 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        llm.Enqueue(new ConfidenceEstimate(80, "n/a"));
 
         var trajectory = await runner.RunAsync(RequiresTwoClarificationsScenario());
 
@@ -116,6 +125,7 @@ public class ScenarioEvalRunnerTests
         Assert.False(trajectory.AskedMoreQuestionsThanScripted);
         Assert.Contains("Both Supporter cards resolved.", llm.UserContents[2]);
         Assert.Contains("Noticed three turns later.", llm.UserContents[4]);
+        Assert.NotNull(trajectory.Confidence);
     }
 
     [Fact]
@@ -132,6 +142,7 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        llm.Enqueue(new ConfidenceEstimate(60, "n/a"));
 
         // RequiresOneClarificationScenario only scripts a single answer -- the
         // second question here exceeds it, so it should be flagged, not silently

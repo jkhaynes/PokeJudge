@@ -2,25 +2,31 @@ namespace PokeJudge.Evaluation;
 
 using PokeJudge.Clarification;
 using PokeJudge.Grounding;
+using PokeJudge.Reliability;
 using PokeJudge.Retrieval;
 using PokeJudge.StructuredState;
 
 // Drives the real pipeline for one hand-authored scenario -- the same
-// ClarificationLoop -> RulingGenerator -> GroundingValidator sequence Program.cs's
-// default console flow runs, just with a scripted judge instead of console input.
-// No new AI mechanism is introduced here; this is orchestration and trajectory
-// capture over what Milestones 6-7 already built.
+// ClarificationLoop -> RulingGenerator -> GroundingValidator -> ConfidenceEstimator
+// sequence Program.cs's default console flow runs, just with a scripted judge
+// instead of console input. No new AI mechanism beyond Milestone 9's
+// ConfidenceEstimator is introduced here; this is orchestration and trajectory
+// capture over what Milestones 6-9 already built.
 public sealed class ScenarioEvalRunner
 {
     private readonly ClarificationLoop _loop;
     private readonly RulingGenerator _rulingGenerator;
     private readonly GroundingValidator _groundingValidator;
+    private readonly ConfidenceEstimator _confidenceEstimator;
 
-    public ScenarioEvalRunner(ClarificationLoop loop, RulingGenerator rulingGenerator, GroundingValidator groundingValidator)
+    public ScenarioEvalRunner(
+        ClarificationLoop loop, RulingGenerator rulingGenerator, GroundingValidator groundingValidator,
+        ConfidenceEstimator confidenceEstimator)
     {
         _loop = loop;
         _rulingGenerator = rulingGenerator;
         _groundingValidator = groundingValidator;
+        _confidenceEstimator = confidenceEstimator;
     }
 
     public async Task<ScenarioTrajectory> RunAsync(EvalScenario scenario)
@@ -81,7 +87,9 @@ public sealed class ScenarioEvalRunner
         var finalChunks = lastRetrievedChunks!;
         var ruling = await _rulingGenerator.GenerateAsync(scenario.InitialDescription, outcome.State, finalChunks);
         var grounding = await _groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
+        var confidence = await _confidenceEstimator.EstimateAsync(scenario.InitialDescription, outcome.State, finalChunks, ruling);
 
-        return ScenarioTrajectory.Completed(scenario, turns, outcome.TurnsUsed, askedMoreQuestionsThanScripted, ruling, grounding);
+        return ScenarioTrajectory.Completed(
+            scenario, turns, outcome.TurnsUsed, askedMoreQuestionsThanScripted, ruling, grounding, confidence);
     }
 }

@@ -7,6 +7,7 @@ using PokeJudge.Clarification;
 using PokeJudge.Evaluation;
 using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
+using PokeJudge.Reliability;
 using PokeJudge.Retrieval;
 
 // ---------------------------------------------------------------------------
@@ -82,6 +83,21 @@ using PokeJudge.Retrieval;
 // framing: a correct final ruling reached the wrong way should be distinguishable
 // from one reached correctly. No new AI mechanism here; this measures Milestones
 // 1-7's existing pipeline. See .project-plans/milestone-8/plan.md.
+//
+// Milestone 9 — Confidence Calibration and Reliability
+//
+// Adds ConfidenceEstimator: a new, deliberately separate LLM call producing a
+// self-reported predicted-correctness probability for each ruling -- a distinct
+// signal from Source Support (PRD SS9: "Confidence describes belief; Source
+// Support describes evidence"), never shown the grounding/Source Support result
+// so the two signals stay independently produced. Wired into both the default
+// console flow below (printed as an internal, unvalidated signal only) and
+// ScenarioEvalRunner. Adds `dotnet run -- calibrate`: reuses the same
+// evaluate pipeline and scenario selection, but compares captured confidence
+// estimates against each run's actual scored outcome via CalibrationAnalysis
+// (bucketing, Brier score, and Expected Calibration Error only when the sample
+// size actually supports it) instead of evaluate's pass/fail criteria. See
+// .project-plans/milestone-9/plan.md.
 // ---------------------------------------------------------------------------
 
 if (args.Length > 0 && args[0] == "ingest")
@@ -123,6 +139,11 @@ if (args.Length > 0 && args[0] == "evaluate")
     return await RunScenarioEval(args, apiKey, modelId);
 }
 
+if (args.Length > 0 && args[0] == "calibrate")
+{
+    return await RunCalibration(args, apiKey, modelId);
+}
+
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
 
 var defaultFlowChunks = LoadAllEmbeddedChunks();
@@ -139,8 +160,9 @@ IRetriever retriever = new VectorStoreRetriever(defaultFlowEmbeddingClient, defa
 var loop = new ClarificationLoop(llmClient, retriever);
 var rulingGenerator = new RulingGenerator(llmClient);
 var groundingValidator = new GroundingValidator(llmClient);
+var confidenceEstimator = new ConfidenceEstimator(llmClient);
 
-Console.WriteLine("=== PokeJudge AI — Milestone 7 Citations and Grounding ===\n");
+Console.WriteLine("=== PokeJudge AI — Milestone 9 Confidence Calibration and Reliability ===\n");
 Console.Write("Describe the scenario: ");
 var scenarioDescription = Console.ReadLine() ?? string.Empty;
 
@@ -222,9 +244,19 @@ var ruling = await rulingGenerator.GenerateAsync(scenarioDescription, outcome.St
 // rather than trusting it as generated (Milestone 7).
 var grounding = await groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
 
+// Milestone 9: a self-reported confidence signal, deliberately independent of the
+// grounding result above (see ConfidenceEstimator/SystemPrompts.ConfidenceEstimation).
+// Printed here labeled as internal/unvalidated for developer inspectability -- this
+// console flow is a development tool, not the judge-facing product (Milestone 10
+// builds that UI) -- and per PRD SS9, never displayed to judges until (if ever)
+// this milestone's calibration analysis validates it.
+var confidence = await confidenceEstimator.EstimateAsync(scenarioDescription, outcome.State, finalChunks, ruling);
+
 Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
 Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
 Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
+Console.WriteLine($"Self-reported confidence (internal, unvalidated, not for judge display): " +
+    $"{confidence.PredictedCorrectnessProbability}% — {confidence.Rationale}");
 Console.WriteLine($"\nExplanation: {ruling.Explanation}");
 
 if (ruling.RepairSteps.Count > 0)
@@ -604,7 +636,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             var loop = new ClarificationLoop(llmClient, retriever);
             var rulingGenerator = new RulingGenerator(llmClient);
             var groundingValidator = new GroundingValidator(llmClient);
-            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+            var confidenceEstimator = new ConfidenceEstimator(llmClient);
+            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, confidenceEstimator);
 
             var runLabel = repeatCount > 1 ? $"[{scenario.Id}] {scenario.Category} (run {run}/{repeatCount})" : $"[{scenario.Id}] {scenario.Category}";
 
@@ -613,7 +646,11 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             {
                 trajectory = await runner.RunAsync(scenario);
             }
-            catch (HttpRequestException ex)
+            // TaskCanceledException added after Milestone 9's live calibration runs hit it
+            // repeatedly (a raw HttpClient.Timeout connection stall, not a clean 429) --
+            // previously uncaught, it crashed the whole command outright instead of being
+            // reported as the same kind of infrastructure failure a 429 already is.
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
             {
                 infrastructureFailureCount++;
                 Console.WriteLine($"--- {runLabel} ---");
@@ -698,6 +735,239 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     }
 
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Milestone 9's `calibrate` command. Reuses EvalScenarioSelector and the same
+// ScenarioEvalRunner pipeline `evaluate` drives -- the only difference is what's
+// done with the captured trajectory: instead of scoring it against the
+// scenario's expected criteria, this pairs the run's self-reported confidence
+// (trajectory.Confidence) with its actual, already-established correctness
+// (ScenarioEvalScorer.Score(...).AllPassed -- ground truth this milestone
+// consumes, not redefines) and feeds the pair into CalibrationAnalysis. A run
+// that never produces a ruling/confidence (crashed, turn cap exhausted, or an
+// ExpectedToFailLoudly/ExpectedUnresolvable scenario that's never supposed to
+// reach one) is correctly excluded from the calibration set, not an error.
+// ---------------------------------------------------------------------------
+static async Task<int> RunCalibration(string[] args, string apiKey, string modelId)
+{
+    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
+    if (selectionError is not null)
+    {
+        Console.Error.WriteLine(selectionError);
+        return 1;
+    }
+
+    var chunks = LoadAllEmbeddedChunks();
+    if (chunks.Count == 0)
+    {
+        Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
+        return 1;
+    }
+
+    var countingClient = new CallCountingLlmClient(new GeminiLlmClient(apiKey, modelId));
+    ILlmClient llmClient = countingClient;
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
+    var store = CreateVectorStore(chunks);
+    IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
+
+    Console.WriteLine("=== PokeJudge AI — Milestone 9 Confidence Calibration ===\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
+
+    var observations = new List<CalibrationObservation>();
+    var infrastructureFailureCount = 0;
+
+    // Self-paces against the free-tier's 15-request-per-minute quota on generateContent calls
+    // (confirmed via GeminiLlmClient's endpoint -- retrieval's embedContent calls are billed
+    // separately and aren't paced here) -- see .project-plans/milestone-9/calibration-analysis.md
+    // SS7. Tracks real usage via countingClient rather than guessing a fixed delay per run, so
+    // cheap SufficientOnFirstTurn runs aren't slowed down more than they need to be. Window length
+    // is 62s, not 60, to stay safely past the ~54-60s retry delays actually observed live.
+    const int perMinuteQuota = 15;
+    const int windowSeconds = 62;
+    var windowCallCount = 0;
+    var windowStart = DateTime.UtcNow;
+
+    foreach (var scenario in scenarios)
+    {
+        for (var run = 1; run <= repeatCount; run++)
+        {
+            var estimatedMaxCalls = scenario.ExpectedOutcome == ExpectedTrajectoryOutcome.SufficientOnFirstTurn ? 4 : 8;
+
+            if (windowCallCount + estimatedMaxCalls > perMinuteQuota)
+            {
+                var elapsed = DateTime.UtcNow - windowStart;
+                if (elapsed.TotalSeconds < windowSeconds)
+                {
+                    var waitSeconds = windowSeconds - elapsed.TotalSeconds;
+                    Console.WriteLine(
+                        $"  [pacing] Waiting {waitSeconds:F0}s to stay under the free-tier's {perMinuteQuota}-request-per-minute quota...");
+                    await Task.Delay(TimeSpan.FromSeconds(waitSeconds));
+                }
+
+                windowCallCount = 0;
+                windowStart = DateTime.UtcNow;
+            }
+
+            var loop = new ClarificationLoop(llmClient, retriever);
+            var rulingGenerator = new RulingGenerator(llmClient);
+            var groundingValidator = new GroundingValidator(llmClient);
+            var confidenceEstimator = new ConfidenceEstimator(llmClient);
+            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, confidenceEstimator);
+
+            var runLabel = repeatCount > 1 ? $"[{scenario.Id}] (run {run}/{repeatCount})" : $"[{scenario.Id}]";
+
+            var callsBeforeRun = countingClient.CallCount;
+            ScenarioTrajectory trajectory;
+            try
+            {
+                trajectory = await runner.RunAsync(scenario);
+            }
+            // TaskCanceledException added after this milestone's live runs hit it repeatedly (a
+            // raw HttpClient.Timeout connection stall, not a clean 429) -- previously uncaught,
+            // it crashed the whole command outright instead of being reported as the same kind
+            // of infrastructure failure a 429 already is. By the time this fires, ~100s (the
+            // HttpClient timeout) has already elapsed, which is longer than the pacing window
+            // itself -- the next iteration's pacing check will see that and correctly skip an
+            // extra artificial wait.
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+            {
+                windowCallCount += countingClient.CallCount - callsBeforeRun;
+                infrastructureFailureCount++;
+                Console.WriteLine($"--- {runLabel} ---");
+                Console.WriteLine($"  [INFRASTRUCTURE FAILURE -- not counted] {ex.Message}");
+                Console.WriteLine();
+                continue;
+            }
+
+            windowCallCount += countingClient.CallCount - callsBeforeRun;
+
+            Console.WriteLine($"--- {runLabel} ---");
+
+            if (trajectory.Confidence is null)
+            {
+                Console.WriteLine("  No ruling/confidence produced this run -- excluded from the calibration set.");
+                Console.WriteLine();
+                continue;
+            }
+
+            var report = ScenarioEvalScorer.Score(trajectory);
+            var actualCorrect = report.AllPassed;
+
+            // trajectory.Grounding is always non-null alongside trajectory.Confidence (both are
+            // only ever set together, on the Completed path -- see ScenarioTrajectory.Completed).
+            var grounding = trajectory.Grounding!;
+            var citations = grounding.Assessment.Citations;
+            var explicitSupportCount = citations.Count(c => c.SupportLevel == CitationSupportLevel.ExplicitSupport);
+            var interpretationCount = citations.Count(c => c.SupportLevel == CitationSupportLevel.Interpretation);
+            var unsupportedCount = citations.Count(c => c.SupportLevel == CitationSupportLevel.Unsupported);
+
+            observations.Add(new CalibrationObservation(
+                scenario.Id, scenario.Category, trajectory.Confidence.PredictedCorrectnessProbability,
+                actualCorrect, report.Criteria, grounding.ValidatedSourceSupport, grounding.AllCitationsExist,
+                grounding.Assessment.ConflictDetected, explicitSupportCount, interpretationCount, unsupportedCount));
+
+            Console.WriteLine($"  Predicted correctness probability: {trajectory.Confidence.PredictedCorrectnessProbability}%");
+            Console.WriteLine($"  Actual outcome: {(actualCorrect ? "correct" : "incorrect")}");
+
+            // Printed only for incorrect runs -- this is exactly the detail a human needs to
+            // write plan.md step 6's "compare confidence against other reliability signals"
+            // narrative (see calibration-analysis.md), without having to re-run evaluate
+            // separately for every wrong prediction the way the drew-extra-card diagnosis did.
+            if (!actualCorrect)
+            {
+                Console.WriteLine($"  Grounding: Source Support={grounding.ValidatedSourceSupport}, " +
+                    $"citations={explicitSupportCount} explicit/{interpretationCount} interpretation/{unsupportedCount} unsupported, " +
+                    $"all citations exist={grounding.AllCitationsExist}, conflict={grounding.Assessment.ConflictDetected}");
+            }
+
+            Console.WriteLine();
+        }
+    }
+
+    if (observations.Count == 0)
+    {
+        Console.WriteLine("No usable observations were captured -- cannot run a calibration analysis.");
+        if (infrastructureFailureCount > 0)
+        {
+            Console.WriteLine($"Infrastructure failures: {infrastructureFailureCount}.");
+        }
+
+        return 0;
+    }
+
+    PrintCalibrationReport("All scenarios", observations);
+
+    var withoutKnownIssues = CalibrationAnalysis.ExcludeKnownIssues(observations);
+    if (withoutKnownIssues.Count != observations.Count)
+    {
+        Console.WriteLine();
+        if (withoutKnownIssues.Count == 0)
+        {
+            Console.WriteLine("--- Excluding known-issue scenarios (missed-prize, mulligan-not-taken) ---");
+            Console.WriteLine("(0 observations remain after exclusion -- every captured observation this run came from a known-issue scenario.)");
+        }
+        else
+        {
+            PrintCalibrationReport(
+                "Excluding known-issue scenarios (missed-prize, mulligan-not-taken -- see plan.md's addendum)",
+                withoutKnownIssues);
+        }
+    }
+
+    if (infrastructureFailureCount > 0)
+    {
+        Console.WriteLine($"\nInfrastructure failures (not counted above): {infrastructureFailureCount}.");
+    }
+
+    return 0;
+}
+
+static void PrintCalibrationReport(string label, IReadOnlyList<CalibrationObservation> observations)
+{
+    Console.WriteLine($"--- {label} ({observations.Count} observation(s)) ---");
+
+    var brier = CalibrationAnalysis.BrierScore(observations);
+    Console.WriteLine($"Brier score: {brier:F4} (0 = perfect, 1 = worst)");
+
+    var coarseBuckets = CalibrationAnalysis.Bucket(observations, bucketCount: 3);
+    Console.WriteLine("Coarse buckets (low/medium/high confidence):");
+    foreach (var bucket in coarseBuckets)
+    {
+        Console.WriteLine($"  [{bucket.LowerBound}-{bucket.UpperBound}%] n={bucket.Count}, " +
+            $"mean predicted={bucket.MeanPredictedProbability:F1}%, observed correct rate={bucket.ObservedCorrectRate:P0}");
+    }
+
+    var fineBuckets = CalibrationAnalysis.Bucket(observations, bucketCount: 10);
+    if (CalibrationAnalysis.BucketsSupportFineGrainedEce(fineBuckets))
+    {
+        var ece = CalibrationAnalysis.ExpectedCalibrationError(fineBuckets);
+        Console.WriteLine($"Expected Calibration Error (10 buckets): {ece:F4}");
+    }
+    else
+    {
+        Console.WriteLine("Expected Calibration Error not reported: insufficient per-bucket sample size " +
+            "(need 30+ observations in every non-empty bucket) for a fine-grained (10-bucket) estimate to be " +
+            "meaningful at this dataset's size -- see plan.md's sizing analysis.");
+    }
+
+    Console.WriteLine("By category:");
+    foreach (var category in CalibrationAnalysis.SummarizeByCategory(observations))
+    {
+        Console.WriteLine($"  {category.Category}: n={category.Count}, " +
+            $"mean predicted={category.MeanPredictedProbability:F1}%, observed correct rate={category.ObservedCorrectRate:P0}");
+    }
+
+    var criterionFailures = CalibrationAnalysis.SummarizeCriterionFailures(observations);
+    if (criterionFailures.Count > 0)
+    {
+        var incorrectCount = observations.Count(o => !o.ActualCorrect);
+        Console.WriteLine($"Criterion failures among the {incorrectCount} incorrect observation(s):");
+        foreach (var failure in criterionFailures)
+        {
+            Console.WriteLine($"  {failure.CriterionName}: {failure.FailureCount}");
+        }
+    }
 }
 
 static List<EmbeddedChunk> LoadAllEmbeddedChunks()

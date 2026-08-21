@@ -1,6 +1,7 @@
 namespace PokeJudge.Evaluation;
 
 using PokeJudge.Grounding;
+using PokeJudge.Reliability;
 using PokeJudge.Retrieval;
 using PokeJudge.StructuredState;
 
@@ -23,7 +24,8 @@ public sealed record ScenarioTrajectory(
     bool ThrewExpectedFailure,
     string? FailureMessage,
     RulingResult? Ruling,
-    GroundingResult? Grounding)
+    GroundingResult? Grounding,
+    ConfidenceEstimate? Confidence = null)
 {
     public static ScenarioTrajectory Failed(EvalScenario scenario, IReadOnlyList<TurnRecord> turns, string message) =>
         new(scenario, turns, ReachedSufficiency: false, TurnsUsed: turns.Count, AskedMoreQuestionsThanScripted: false,
@@ -34,9 +36,12 @@ public sealed record ScenarioTrajectory(
         new(scenario, turns, ReachedSufficiency: false, turnsUsed, askedMoreQuestionsThanScripted,
             ThrewExpectedFailure: false, FailureMessage: null, Ruling: null, Grounding: null);
 
+    // confidence defaults to null so call sites that don't care about Milestone 9's signal
+    // (existing tests, any future caller that only needs Ruling/Grounding) don't need to supply
+    // one -- ScenarioEvalRunner is the one real caller that always has a genuine value to pass.
     public static ScenarioTrajectory Completed(
         EvalScenario scenario, IReadOnlyList<TurnRecord> turns, int turnsUsed, bool askedMoreQuestionsThanScripted,
-        RulingResult ruling, GroundingResult grounding) =>
+        RulingResult ruling, GroundingResult grounding, ConfidenceEstimate? confidence = null) =>
         new(scenario, turns, ReachedSufficiency: true, turnsUsed, askedMoreQuestionsThanScripted,
-            ThrewExpectedFailure: false, FailureMessage: null, ruling, grounding);
+            ThrewExpectedFailure: false, FailureMessage: null, ruling, grounding, confidence);
 }
