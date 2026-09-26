@@ -18,7 +18,7 @@ public class ScenarioEvalScorerTests
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         expectedSections ?? new List<string> { "A1" },
         ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        ScriptedAnswers: Array.Empty<string>(),
+        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -27,7 +27,7 @@ public class ScenarioEvalScorerTests
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" },
         ExpectedTrajectoryOutcome.RequiresOneClarification,
-        ScriptedAnswers: new[] { "The marker is Asleep, but it should be Confused." },
+        FactSheet: "The marker is Asleep, but it should be Confused.", MaxClarifyingRounds: 1,
         afterAnswerSections ?? new List<string> { "A1" },
         acceptable);
 
@@ -35,7 +35,7 @@ public class ScenarioEvalScorerTests
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(),
         ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        ScriptedAnswers: Array.Empty<string>(),
+        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -43,7 +43,7 @@ public class ScenarioEvalScorerTests
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(),
         ExpectedTrajectoryOutcome.ExpectedUnresolvable,
-        ScriptedAnswers: Array.Empty<string>(),
+        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -74,7 +74,7 @@ public class ScenarioEvalScorerTests
     {
         var scenario = ExpectedFailureScenario();
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -106,7 +106,7 @@ public class ScenarioEvalScorerTests
     public void Score_ExpectedUnresolvable_TurnCapExhausted_Passes()
     {
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }) };
-        var trajectory = ScenarioTrajectory.TurnCapExhausted(ExpectedUnresolvableScenario(), turns, 4, true);
+        var trajectory = ScenarioTrajectory.TurnCapExhausted(ExpectedUnresolvableScenario(), turns, 4);
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -132,7 +132,7 @@ public class ScenarioEvalScorerTests
     {
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
         var trajectory = ScenarioTrajectory.Completed(
-            ExpectedUnresolvableScenario(), turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+            ExpectedUnresolvableScenario(), turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -147,7 +147,7 @@ public class ScenarioEvalScorerTests
     {
         var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -159,7 +159,7 @@ public class ScenarioEvalScorerTests
     {
         var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
         var turns = new List<TurnRecord> { new(new[] { Chunk("Z9") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -174,7 +174,7 @@ public class ScenarioEvalScorerTests
     {
         var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -190,7 +190,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -206,7 +206,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -220,7 +220,7 @@ public class ScenarioEvalScorerTests
         // when the scenario expected at least one clarifying round.
         var scenario = RequiresOneClarificationScenario();
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -238,7 +238,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("What happened?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -254,7 +254,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("What happened?", "Z9#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -272,7 +272,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -288,7 +288,7 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("Z9") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -304,17 +304,17 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("Z9") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
         Assert.Contains(report.Criteria, c => c.Name == "Post-answer retrieval" && c.Result == CriterionResult.Pass);
     }
 
-    // --- Answer budget ---
+    // --- Question budget ---
 
     [Fact]
-    public void Score_RequiresOneClarification_AskedMoreQuestionsThanScripted_AnswerBudgetFails()
+    public void Score_RequiresOneClarification_MoreRoundsThanAllowed_QuestionBudgetFails()
     {
         var scenario = RequiresOneClarificationScenario();
         var turns = new List<TurnRecord>
@@ -323,50 +323,50 @@ public class ScenarioEvalScorerTests
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q2?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 3, true, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 3, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
-        Assert.Contains(report.Criteria, c => c.Name == "Answer budget" && c.Result == CriterionResult.Fail);
+        Assert.Contains(report.Criteria, c => c.Name == "Question budget" && c.Result == CriterionResult.Fail);
         Assert.False(report.AllPassed);
     }
 
     [Fact]
-    public void Score_RequiresOneClarification_ResolvedWithinScriptedAnswer_AnswerBudgetPasses()
+    public void Score_RequiresOneClarification_RoundsAtTheLimit_QuestionBudgetPasses()
     {
         var scenario = RequiresOneClarificationScenario();
         var turns = new List<TurnRecord>
         {
-            new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
+            new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0"), new("Q1b?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
-        Assert.Contains(report.Criteria, c => c.Name == "Answer budget" && c.Result == CriterionResult.Pass);
+        Assert.Contains(report.Criteria, c => c.Name == "Question budget" && c.Result == CriterionResult.Pass);
     }
 
     [Fact]
-    public void Score_SufficientOnFirstTurn_AnswerBudgetCriterionOmitted()
+    public void Score_SufficientOnFirstTurn_QuestionBudgetCriterionOmitted()
     {
         var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
-        Assert.DoesNotContain(report.Criteria, c => c.Name == "Answer budget");
+        Assert.DoesNotContain(report.Criteria, c => c.Name == "Question budget");
     }
 
     [Fact]
-    public void Score_ExpectedToFailLoudly_AnswerBudgetCriterionOmitted()
+    public void Score_ExpectedToFailLoudly_QuestionBudgetCriterionOmitted()
     {
         var trajectory = ScenarioTrajectory.Failed(ExpectedFailureScenario(), new List<TurnRecord>(), "Model reported insufficient with no questions.");
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
-        Assert.DoesNotContain(report.Criteria, c => c.Name == "Answer budget");
+        Assert.DoesNotContain(report.Criteria, c => c.Name == "Question budget");
     }
 
     // --- Final Source Support ---
@@ -379,7 +379,7 @@ public class ScenarioEvalScorerTests
             AcceptableFinalSourceSupport = new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial },
         };
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Partial));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Partial));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -394,7 +394,7 @@ public class ScenarioEvalScorerTests
             AcceptableFinalSourceSupport = new HashSet<SourceSupport> { SourceSupport.Strong },
         };
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Insufficient));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Insufficient));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -406,7 +406,7 @@ public class ScenarioEvalScorerTests
     {
         var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, false, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
@@ -435,7 +435,7 @@ public class ScenarioEvalScorerTests
             AcceptableFinalSourceSupport = new HashSet<SourceSupport> { SourceSupport.Strong },
         };
         var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }) };
-        var trajectory = ScenarioTrajectory.TurnCapExhausted(scenario, turns, 4, false);
+        var trajectory = ScenarioTrajectory.TurnCapExhausted(scenario, turns, 4);
 
         var report = ScenarioEvalScorer.Score(trajectory);
 

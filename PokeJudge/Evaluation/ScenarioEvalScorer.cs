@@ -60,7 +60,7 @@ public static class ScenarioEvalScorer
         {
             criteria.Add(ScoreClarifyingQuestionMateriality(scenario, trajectory));
             criteria.Add(ScorePostAnswerRetrieval(scenario, trajectory));
-            criteria.Add(ScoreAnswerBudget(trajectory));
+            criteria.Add(ScoreQuestionBudget(scenario, trajectory));
         }
 
         if (scenario.AcceptableFinalSourceSupport is { Count: > 0 })
@@ -155,23 +155,23 @@ public static class ScenarioEvalScorer
         if (trajectory.Turns.Count < 2)
         {
             return new CriterionOutcome("Post-answer retrieval", CriterionResult.Fail,
-                "Expected a second turn after the scripted answer, but none was recorded.");
+                "Expected a second turn after the judge's answer, but none was recorded.");
         }
 
         var hit = HitsAny(scenario.InitialDescription, scenario.ExpectedMaterialSectionIdsAfterAnswer, trajectory.Turns[1].RetrievedChunks);
 
         return hit
-            ? new CriterionOutcome("Post-answer retrieval", CriterionResult.Pass, "Retrieval after the scripted answer surfaced an expected section.")
+            ? new CriterionOutcome("Post-answer retrieval", CriterionResult.Pass, "Retrieval after the judge's answer surfaced an expected section.")
             : new CriterionOutcome("Post-answer retrieval", CriterionResult.Fail,
                 $"None of the expected post-answer section(s) [{string.Join(", ", scenario.ExpectedMaterialSectionIdsAfterAnswer)}] were retrieved on turn 2.");
     }
 
-    private static CriterionOutcome ScoreAnswerBudget(ScenarioTrajectory trajectory) =>
-        trajectory.AskedMoreQuestionsThanScripted
-            ? new CriterionOutcome("Answer budget", CriterionResult.Fail,
-                "Needed more clarification than the single scripted answer provided.")
-            : new CriterionOutcome("Answer budget", CriterionResult.Pass,
-                "Resolved within the single scripted answer.");
+    private static CriterionOutcome ScoreQuestionBudget(EvalScenario scenario, ScenarioTrajectory trajectory) =>
+        trajectory.ClarifyingRounds <= scenario.MaxClarifyingRounds
+            ? new CriterionOutcome("Question budget", CriterionResult.Pass,
+                $"Asked questions in {trajectory.ClarifyingRounds} round(s), within the limit of {scenario.MaxClarifyingRounds}.")
+            : new CriterionOutcome("Question budget", CriterionResult.Fail,
+                $"Asked questions in {trajectory.ClarifyingRounds} round(s), over the limit of {scenario.MaxClarifyingRounds}.");
 
     private static CriterionOutcome ScoreFinalSourceSupport(EvalScenario scenario, ScenarioTrajectory trajectory)
     {

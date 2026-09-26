@@ -43,13 +43,18 @@ public class EvalDatasetTests
     }
 
     [Fact]
-    public void Scenarios_RequiresOneClarification_AlwaysHasAtLeastOneScriptedAnswer()
+    public void Scenarios_EveryScenarioHasAFactSheet()
+    {
+        Assert.All(EvalDataset.Scenarios, s => Assert.False(string.IsNullOrWhiteSpace(s.FactSheet), s.Id));
+    }
+
+    [Fact]
+    public void Scenarios_RequiresOneClarification_AllowsAtLeastOneRound()
     {
         foreach (var scenario in EvalDataset.Scenarios.Where(
             s => s.ExpectedOutcome == ExpectedTrajectoryOutcome.RequiresOneClarification))
         {
-            Assert.NotEmpty(scenario.ScriptedAnswers);
-            Assert.All(scenario.ScriptedAnswers, answer => Assert.False(string.IsNullOrWhiteSpace(answer)));
+            Assert.True(scenario.MaxClarifyingRounds >= 1, scenario.Id);
         }
     }
 }

@@ -607,6 +607,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     var store = CreateVectorStore(chunks);
     IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
 
+    // Same client as PokeJudge: same model, seed and pacing.
+    var judge = new SimulatedJudge(llmClient);
+
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
     if (requestsPerMinute is not null)
@@ -630,7 +633,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             var loop = new ClarificationLoop(llmClient, retriever);
             var rulingGenerator = new RulingGenerator(llmClient);
             var groundingValidator = new GroundingValidator(llmClient);
-            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, judge);
 
             var runLabel = repeatCount > 1 ? $"[{scenario.Id}] {scenario.Category} (run {run}/{repeatCount})" : $"[{scenario.Id}] {scenario.Category}";
 
@@ -657,7 +660,6 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             Console.WriteLine($"--- {runLabel} ---");
             Console.WriteLine(scenario.InitialDescription);
             Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
-            Console.WriteLine($"Asked more questions than scripted: {trajectory.AskedMoreQuestionsThanScripted}");
 
             // Eval mode was otherwise silent about what the model actually asked --
             // only the scorer's pass/fail criteria were visible. Printing the real
