@@ -17,7 +17,9 @@ public sealed class SimulatedJudge
         "You are a Pokémon TCG tournament judge standing at the table, answering questions " +
         "from an assistant about what happened. Answer ONLY from the fact sheet you are given. " +
         "Never invent, guess, or infer facts that are not stated in it. Answer briefly, in one " +
-        "or two sentences. If the fact sheet does not answer the question, set known to false.";
+        "or two sentences. If the question has several parts, answer every part the fact sheet " +
+        "covers and say which parts it doesn't. Set known to false only if the fact sheet covers " +
+        "none of the question.";
 
     private static readonly JsonElement Schema = JsonDocument.Parse("""
         {
