@@ -246,35 +246,24 @@ public static class EvalDataset
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
-        // Illegal Game State. TCGTH-7.4.1 explicitly requires a mulligan when a
-        // competitor's opening hand has no Basic Pokemon -- confirmed live. The
-        // scripted answer deliberately reveals the fact is now unverifiable, testing
-        // whether an unresolved game-state question correctly caps the final label
-        // rather than defaulting to Strong.
-        //
-        // TCGTH-3.3.1 added to ExpectedMaterialSectionIds after the Milestone 8.5
-        // zero-question-crash fix stopped this scenario from crashing and exposed its
-        // real trajectory: across 4 live runs, the model's actual first question
-        // consistently tied to TCGTH-3.3.1 (deck lists must be reviewed and put away
-        // "before either player draws their opening hand") rather than TCGTH-7.4.1
-        // alone -- retrieved because it also discusses opening-hand/game-setup timing,
-        // even though its own applicability doesn't turn on whether a mulligan was
-        // taken. The existing scripted answer ("there's no way to verify it") already
-        // resolved 3 of 4 runs cleanly once this is accounted for -- only Initial
-        // retrieval and Clarifying question materiality were failing on an
-        // authoring gap, not a real model problem. The same "real first question ties
-        // to a section other than the one authored" pattern already found for
-        // weakness-not-applied/supporter-twice/deck-under-60/ace-spec-count.
+        // Timing Questions. Step 2 (2026-09-26): replaces "mulligan-not-taken" (neither
+        // player could remember whether anyone mulliganed), which had no answerable
+        // facts. TCGTH-7.4.1 and TCGRULES-full-details-of-taking-a-mulligan say the
+        // opponent *may* draw a card per extra mulligan, during setup, after announcing
+        // how many. The description gives every material fact, so no question is
+        // expected. Partial is accepted because "the window has closed" is an inference:
+        // no passage covers claiming the draws late.
         new EvalScenario(
-            "mulligan-not-taken",
-            "Illegal Game State",
-            "Partway through a game, a judge is called over because a player realizes they don't remember " +
-            "either player mulliganing at the start, even though the game has clearly been going for several turns.",
-            new[] { "TCGTH-7.4.1", "TCGTH-3.3.1" },
-            ExpectedTrajectoryOutcome.RequiresOneClarification,
-            FactSheet: "Neither player can recall for certain whether either had a Basic Pokémon in their opening hand. There is no way to verify it now.",
-            ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGTH-7.4.1" },
-            AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Partial, SourceSupport.Insufficient }),
+            "missed-mulligan-draws",
+            "Timing Questions",
+            "Player A took two mulligans at the start of the game; Player B took none. Player B went first and has " +
+            "drawn their card for the turn, then realizes they never drew the two extra cards they were allowed for " +
+            "Player A's mulligans, and calls a judge.",
+            new[] { "TCGTH-7.4.1", "TCGRULES-full-details-of-taking-a-mulligan" },
+            ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
+            FactSheet: "Player B never announced or drew any mulligan cards during setup. Player B has made no other plays yet this turn. Player A has not played anything yet.",
+            ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+            AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
         // Tournament Procedure. PPG-5.2.1's Tardiness Clause explicitly tiers the
         // penalty by how late a competitor arrives -- confirmed live. A live 5x run

@@ -61,6 +61,19 @@ public class EvalDatasetTests
     }
 
     [Fact]
+    public void MissedMulliganDraws_ReplacesTheUnanswerableMulliganScenario()
+    {
+        Assert.DoesNotContain(EvalDataset.Scenarios, s => s.Id == "mulligan-not-taken");
+
+        var scenario = ById("missed-mulligan-draws");
+
+        Assert.Equal("Timing Questions", scenario.Category);
+        Assert.Equal(ExpectedTrajectoryOutcome.SufficientOnFirstTurn, scenario.ExpectedOutcome);
+        Assert.Contains("TCGTH-7.4.1", scenario.ExpectedMaterialSectionIds);
+        Assert.Contains("TCGRULES-full-details-of-taking-a-mulligan", scenario.ExpectedMaterialSectionIds);
+    }
+
+    [Fact]
     public void Scenarios_EveryScenarioHasAFactSheet()
     {
         Assert.All(EvalDataset.Scenarios, s => Assert.False(string.IsNullOrWhiteSpace(s.FactSheet), s.Id));
