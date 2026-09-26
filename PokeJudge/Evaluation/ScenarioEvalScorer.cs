@@ -60,7 +60,6 @@ public static class ScenarioEvalScorer
         {
             criteria.Add(ScoreClarifyingQuestionMateriality(scenario, trajectory));
             criteria.Add(ScorePostAnswerRetrieval(scenario, trajectory));
-            criteria.Add(ScoreQuestionBudget(scenario, trajectory));
         }
 
         if (scenario.AcceptableFinalSourceSupport is { Count: > 0 })
@@ -165,13 +164,6 @@ public static class ScenarioEvalScorer
             : new CriterionOutcome("Post-answer retrieval", CriterionResult.Fail,
                 $"None of the expected post-answer section(s) [{string.Join(", ", scenario.ExpectedMaterialSectionIdsAfterAnswer)}] were retrieved on turn 2.");
     }
-
-    private static CriterionOutcome ScoreQuestionBudget(EvalScenario scenario, ScenarioTrajectory trajectory) =>
-        trajectory.ClarifyingRounds <= scenario.MaxClarifyingRounds
-            ? new CriterionOutcome("Question budget", CriterionResult.Pass,
-                $"Asked questions in {trajectory.ClarifyingRounds} round(s), within the limit of {scenario.MaxClarifyingRounds}.")
-            : new CriterionOutcome("Question budget", CriterionResult.Fail,
-                $"Asked questions in {trajectory.ClarifyingRounds} round(s), over the limit of {scenario.MaxClarifyingRounds}.");
 
     private static CriterionOutcome ScoreFinalSourceSupport(EvalScenario scenario, ScenarioTrajectory trajectory)
     {

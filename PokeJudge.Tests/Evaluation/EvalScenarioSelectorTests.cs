@@ -8,7 +8,7 @@ public class EvalScenarioSelectorTests
     private static EvalScenario Scenario(string id) => new(
         id, "Category", $"Description for {id}",
         Array.Empty<string>(), ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0, ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        FactSheet: "Test facts.", ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     private static readonly IReadOnlyList<EvalScenario> All = new[]

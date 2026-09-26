@@ -73,7 +73,6 @@ public static class EvalDataset
             new[] { "TCGTH-7.4.6" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The competitor wants to keep hand-written notes about the current match during play.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
@@ -84,7 +83,6 @@ public static class EvalDataset
             new[] { "TCGTH-2.4" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The cards are home-printed copies of real cards, used in place of the originals in a sanctioned tournament.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
@@ -97,7 +95,6 @@ public static class EvalDataset
             new[] { "TCGTH-6.2", "TCGTH-6.2.2" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The opponent noticed while cutting the deck, before either player drew an opening hand. There is no sign it was deliberate.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -110,7 +107,6 @@ public static class EvalDataset
             new[] { "PPTRH-2.4" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The event is a Regional Championship. The spectator is not playing.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
@@ -121,7 +117,6 @@ public static class EvalDataset
             new[] { "PPG-4.2.2" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The competitor has received penalties for the same kind of infraction earlier in this event.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -141,7 +136,6 @@ public static class EvalDataset
             new[] { "TCGRULES-special-conditions" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The opponent's attack text says the Defending Pokémon is now Confused. The card was turned to show Asleep by mistake. No other effects applied.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGRULES-special-conditions" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -174,7 +168,6 @@ public static class EvalDataset
             Array.Empty<string>(),
             ExpectedTrajectoryOutcome.ExpectedUnresolvable,
             FactSheet: "A League Challenge. The player Knocked Out the opponent's Pokémon two turns ago and did not take a Prize card. They noticed it now.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: null),
 
@@ -188,7 +181,6 @@ public static class EvalDataset
             new[] { "PPG-5.5.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The player drew one extra card during their draw step. No card effect caused it. It was noticed later the same turn. The extra card went into their hand and can't be told apart from the rest.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.5.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -215,7 +207,6 @@ public static class EvalDataset
             new[] { "TCGRULES-full-details-of-attacking", "TCGRULES-turn-actions" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The Defending Pokémon was in the Active position when it took the damage. The attack's base damage was 60. The Defending Pokémon has a printed Weakness to that attack's type (×2), but only 60 damage was placed on it. No Abilities, Tools or other effects modified the damage.",
-            MaxClarifyingRounds: 2,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGRULES-full-details-of-attacking" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -237,7 +228,6 @@ public static class EvalDataset
             new[] { "TCGRULES-turn-actions", "PPG-4.2.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The player being ruled on (the caller's opponent) played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-4.2.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -253,7 +243,6 @@ public static class EvalDataset
             new[] { "TCGRULES-appendix-19-pok-mon-gx" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The player already used a GX attack earlier in this game with a different Pokémon-GX.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
@@ -284,7 +273,6 @@ public static class EvalDataset
             new[] { "TCGTH-7.4.1", "TCGTH-3.3.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "Neither player can recall for certain whether either had a Basic Pokémon in their opening hand. There is no way to verify it now.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGTH-7.4.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Partial, SourceSupport.Insufficient }),
 
@@ -303,7 +291,6 @@ public static class EvalDataset
             new[] { "PPG-5.2.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The competitor arrived exactly 7 minutes after the round officially started.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.2.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -324,7 +311,6 @@ public static class EvalDataset
             new[] { "TCGRULES-deck-building", "PPG-5.6.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "Both the decklist and the physical deck contain only 58 cards, two short of the required 60.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.6.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -349,7 +335,6 @@ public static class EvalDataset
             new[] { "TCGRULES-appendix-3-ace-spec-cards", "TCGTH-3.3.1", "PPG-5.6.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "Both the decklist and the physical deck contain two different ACE SPEC cards, Prime Catcher and Master Ball, and they match each other. The judge found this while reviewing the decklist, before either player drew an opening hand.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGRULES-appendix-3-ace-spec-cards", "PPG-5.6.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -363,7 +348,6 @@ public static class EvalDataset
             new[] { "PPG-5.5.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The Knocked Out Pokémon was an ordinary Pokémon, worth one Prize card. The player took two. The extra Prize card was set aside face down, separate from the hand, and can be returned.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.5.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -379,7 +363,6 @@ public static class EvalDataset
             new[] { "PPG-5.5.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "A player took a Prize card after what they believed was a Knock Out, but the Defending Pokémon still had HP remaining. It was never Knocked Out.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.5.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -393,7 +376,6 @@ public static class EvalDataset
             new[] { "PPG-5.5.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The player attached two Basic Energy cards from hand in the same turn. No card effect allowed the second attachment.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.5.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -408,7 +390,6 @@ public static class EvalDataset
             new[] { "PPG-5.5.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The competitor shuffled their discard pile into their deck without a card effect. The discard pile was small, the game hasn't progressed past the first few turns, and both competitors agree on exactly which cards were in it.",
-            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-5.5.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
@@ -423,7 +404,6 @@ public static class EvalDataset
             new[] { "PPTRH-3.3" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The person is a spectator, not playing in any event. They were standing next to the match and talking loudly about the game state.",
-            MaxClarifyingRounds: 0,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
     };

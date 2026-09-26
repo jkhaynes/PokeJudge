@@ -19,27 +19,27 @@ public class ScenarioEvalRunnerTests
     private static EvalScenario SufficientOnFirstTurnScenario() => new(
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0, ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        FactSheet: "Test facts.", ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario RequiresOneClarificationScenario() => new(
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
-        FactSheet: "The marker is Asleep, but it should be Confused.", MaxClarifyingRounds: 1,
+        FactSheet: "The marker is Asleep, but it should be Confused.",
         ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario RequiresTwoClarificationsScenario() => new(
         "supporter-twice-like", "Timing Questions", "A player thinks their opponent played two Supporter cards.",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
-        FactSheet: "Both Supporter cards resolved. Noticed three turns later.", MaxClarifyingRounds: 2,
+        FactSheet: "Both Supporter cards resolved. Noticed three turns later.",
         ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario ExpectedFailureScenario() => new(
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(), ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0, ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        FactSheet: "Test facts.", ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     // The judge gets its own stub so its answers never mix with the loop's queued results.

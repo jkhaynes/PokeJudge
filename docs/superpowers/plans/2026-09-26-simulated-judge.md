@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-26-simulated-judge-design.md`
 
+> **Amended during execution (2026-09-26):** after the live run, the per-scenario `MaxClarifyingRounds` and the "Question budget" criterion were removed; rounds are now reported, not scored (see the spec's Scoring section). The steps below that add them are superseded. The simulated judge's prompt was also changed to answer the parts of a question its fact sheet covers.
+
 ## Global Constraints
 
 - Work on branch `step-2-simulated-judge`. Build/test with `dotnet test` from the repo root (PowerShell).

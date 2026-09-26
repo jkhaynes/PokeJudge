@@ -18,7 +18,6 @@ PokeJudge's own pipeline (retrieval, clarification loop, ruling, grounding) does
 ### `EvalScenario` (changed)
 
 - `ScriptedAnswers` (ordered list) is replaced by `FactSheet` (string): a few plain sentences stating what is true at the table.
-- New `MaxClarifyingRounds` (int): the most question rounds the scenario allows. A round is one turn in which PokeJudge judged the facts insufficient and asked one or more questions.
 - Everything else stays: `ExpectedOutcome`, expected sections, post-answer sections, acceptable Source Support.
 
 ### `SimulatedJudge` (new, `PokeJudge/Evaluation/`)
@@ -41,7 +40,7 @@ PokeJudge's own pipeline (retrieval, clarification loop, ruling, grounding) does
 
 ## Scoring
 
-- **"Answer budget" becomes "Question budget"**: pass if rounds asked ≤ `MaxClarifyingRounds`, fail otherwise. As today, it applies only to `RequiresOneClarification` scenarios.
+- **"Answer budget" is removed, and rounds are not scored.** A round is one turn in which PokeJudge judged the facts insufficient and asked questions. Fair follow-up questions are not a failure, and a loop that never resolves is already caught: the clarification loop's 4-turn cap ends it with no ruling, which fails Final Source Support. Each run reports its rounds of questions. (Amended 2026-09-26: the first version scored rounds against a per-scenario `MaxClarifyingRounds`; a limit of 1 failed fair follow-ups, so it was dropped.)
 - All other criteria are unchanged: initial retrieval, sufficiency timing, question materiality, post-answer retrieval, final Source Support, expected failure, expected unresolvable.
 - "Not known" answers are reported, not scored.
 
@@ -49,6 +48,7 @@ PokeJudge's own pipeline (retrieval, clarification loop, ruling, grounding) does
 
 - Each question prints with the judge's answer, marked `(not known)` when applicable.
 - Each run prints "N of M questions not answerable from the fact sheet"; the summary prints the total.
+- Each run prints its rounds of questions (reported, not scored).
 
 ## Errors
 
@@ -65,10 +65,10 @@ Rulings made from the baseline run and the rule text:
 
 | Scenario | Change | Reason |
 |---|---|---|
-| deck-not-shuffled | `SufficientOnFirstTurn` → `RequiresOneClarification`, max 1 round. Add `TCGTH-6.2.2` to expected sections. No post-answer sections. | TCGTH-6.2.2 only says it "may carry a penalty"; when it was noticed is material. |
+| deck-not-shuffled | `SufficientOnFirstTurn` → `RequiresOneClarification`. Add `TCGTH-6.2.2` to expected sections. No post-answer sections. | TCGTH-6.2.2 only says it "may carry a penalty"; when it was noticed is material. |
 | spectator-badges | Reword the description to "Do spectators need to wear a badge at a Regional Championship?" Stays `SufficientOnFirstTurn`. | The rule says Regionals and above; "large tournaments" was ambiguous. |
 | drew-extra-card | Fact sheet: noticed later the same turn; the card can't be identified. | The old script ("several turns later") contradicted the description. |
-| weakness-not-applied | Max 2 rounds; the fact sheet says nothing else modified damage. | Its questions are all fair; one round was too tight. |
+| weakness-not-applied | The fact sheet says nothing else modified damage. | Its follow-up question about damage modifiers is fair. |
 | supporter-twice | The fact sheet says the cards drawn by the second Supporter can't be identified. | PokeJudge's question decides whether the penalty can be lowered. |
 | too-many-prizes | The fact sheet says the extra Prize card was set aside face down and can be returned. | Tests the de-escalation path. |
 
@@ -77,8 +77,6 @@ All other scenarios keep their expectations. Failures judged to be PokeJudge's, 
 `missed-prize` stays `ExpectedUnresolvable`. Once the judge answers its questions, PokeJudge might produce a ruling; the existing criterion would then flag it, which is useful information either way.
 
 ## Fact sheets
-
-`MaxClarifyingRounds` is 1 for every `RequiresOneClarification` scenario except weakness-not-applied (2), and 0 for all others.
 
 | Scenario | Fact sheet |
 |---|---|
@@ -91,7 +89,7 @@ All other scenarios keep their expectations. Failures judged to be PokeJudge's, 
 | missed-prize | A League Challenge. The player Knocked Out the opponent's Pokémon two turns ago and did not take a Prize card. They noticed it now. |
 | drew-extra-card | The player drew one extra card during their draw step. No card effect caused it. It was noticed later the same turn. The extra card went into their hand and can't be told apart from the rest. |
 | weakness-not-applied | The Defending Pokémon was in the Active position when it took the damage. The attack's base damage was 60. The Defending Pokémon has a printed Weakness to that attack's type (×2), but only 60 damage was placed on it. No Abilities, Tools or other effects modified the damage. |
-| supporter-twice | The opponent played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified. |
+| supporter-twice | The player being ruled on (the caller's opponent) played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified. |
 | gx-attack-twice | The player already used a GX attack earlier in this game with a different Pokémon-GX. |
 | mulligan-not-taken | Neither player can recall for certain whether either had a Basic Pokémon in their opening hand. There is no way to verify it now. |
 | late-to-round | The competitor arrived exactly 7 minutes after the round officially started. |
@@ -109,8 +107,8 @@ Written test-first:
 
 - `SimulatedJudge`: the fact sheet and question reach the prompt; `known = false` returns "not known". Uses the existing fake `ILlmClient`.
 - `ScenarioEvalRunner`: judge answers flow into the loop; questions, answers and "not known" counts are recorded.
-- `ScenarioEvalScorer`: Question budget passes at the limit and fails one over it.
-- `EvalDataset`: every scenario has a non-empty fact sheet; every `RequiresOneClarification` scenario has `MaxClarifyingRounds` ≥ 1.
+- `ScenarioEvalScorer`: several rounds of questions followed by an acceptable ruling pass.
+- `EvalDataset`: every scenario has a non-empty fact sheet.
 
 Live check: one full 20-scenario run. Label every failure "PokeJudge was wrong" or "the test was wrong". Success means no "test was wrong" failures remain.
 

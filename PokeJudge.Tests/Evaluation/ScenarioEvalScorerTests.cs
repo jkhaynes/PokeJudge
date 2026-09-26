@@ -18,7 +18,7 @@ public class ScenarioEvalScorerTests
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         expectedSections ?? new List<string> { "A1" },
         ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
+        FactSheet: "Test facts.",
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -27,7 +27,7 @@ public class ScenarioEvalScorerTests
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" },
         ExpectedTrajectoryOutcome.RequiresOneClarification,
-        FactSheet: "The marker is Asleep, but it should be Confused.", MaxClarifyingRounds: 1,
+        FactSheet: "The marker is Asleep, but it should be Confused.",
         afterAnswerSections ?? new List<string> { "A1" },
         acceptable);
 
@@ -35,7 +35,7 @@ public class ScenarioEvalScorerTests
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(),
         ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
+        FactSheet: "Test facts.",
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -43,7 +43,7 @@ public class ScenarioEvalScorerTests
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(),
         ExpectedTrajectoryOutcome.ExpectedUnresolvable,
-        FactSheet: "Test facts.", MaxClarifyingRounds: 0,
+        FactSheet: "Test facts.",
         ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
@@ -311,62 +311,26 @@ public class ScenarioEvalScorerTests
         Assert.Contains(report.Criteria, c => c.Name == "Post-answer retrieval" && c.Result == CriterionResult.Pass);
     }
 
-    // --- Question budget ---
+    // --- Rounds of questions ---
 
+    // Fair follow-up questions are not a failure. A loop that never gets anywhere is
+    // already caught: the loop's own turn cap ends it with no ruling.
     [Fact]
-    public void Score_RequiresOneClarification_MoreRoundsThanAllowed_QuestionBudgetFails()
+    public void Score_RequiresOneClarification_SeveralRoundsThenARuling_Passes()
     {
         var scenario = RequiresOneClarificationScenario();
         var turns = new List<TurnRecord>
         {
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }),
             new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q2?", "A1#0") }),
+            new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q3?", "A1#0") }),
             new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
         };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 3, SomeRuling(), SomeGrounding(SourceSupport.Strong));
+        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 4, SomeRuling(), SomeGrounding(SourceSupport.Strong));
 
         var report = ScenarioEvalScorer.Score(trajectory);
 
-        Assert.Contains(report.Criteria, c => c.Name == "Question budget" && c.Result == CriterionResult.Fail);
-        Assert.False(report.AllPassed);
-    }
-
-    [Fact]
-    public void Score_RequiresOneClarification_RoundsAtTheLimit_QuestionBudgetPasses()
-    {
-        var scenario = RequiresOneClarificationScenario();
-        var turns = new List<TurnRecord>
-        {
-            new(new[] { Chunk("A1") }, false, new List<ClarifyingQuestion> { new("Q?", "A1#0"), new("Q1b?", "A1#0") }),
-            new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()),
-        };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 2, SomeRuling(), SomeGrounding(SourceSupport.Strong));
-
-        var report = ScenarioEvalScorer.Score(trajectory);
-
-        Assert.Contains(report.Criteria, c => c.Name == "Question budget" && c.Result == CriterionResult.Pass);
-    }
-
-    [Fact]
-    public void Score_SufficientOnFirstTurn_QuestionBudgetCriterionOmitted()
-    {
-        var scenario = SufficientOnFirstTurnScenario(new[] { "A1" });
-        var turns = new List<TurnRecord> { new(new[] { Chunk("A1") }, true, new List<ClarifyingQuestion>()) };
-        var trajectory = ScenarioTrajectory.Completed(scenario, turns, 1, SomeRuling(), SomeGrounding(SourceSupport.Strong));
-
-        var report = ScenarioEvalScorer.Score(trajectory);
-
-        Assert.DoesNotContain(report.Criteria, c => c.Name == "Question budget");
-    }
-
-    [Fact]
-    public void Score_ExpectedToFailLoudly_QuestionBudgetCriterionOmitted()
-    {
-        var trajectory = ScenarioTrajectory.Failed(ExpectedFailureScenario(), new List<TurnRecord>(), "Model reported insufficient with no questions.");
-
-        var report = ScenarioEvalScorer.Score(trajectory);
-
-        Assert.DoesNotContain(report.Criteria, c => c.Name == "Question budget");
+        Assert.True(report.AllPassed);
     }
 
     // --- Final Source Support ---

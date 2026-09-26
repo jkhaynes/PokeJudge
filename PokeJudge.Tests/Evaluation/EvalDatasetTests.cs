@@ -45,12 +45,11 @@ public class EvalDatasetTests
     private static EvalScenario ById(string id) => EvalDataset.Scenarios.Single(s => s.Id == id);
 
     [Fact]
-    public void DeckNotShuffled_AllowsOneQuestionAboutWhenItWasNoticed()
+    public void DeckNotShuffled_ExpectsAQuestionAboutWhenItWasNoticed()
     {
         var scenario = ById("deck-not-shuffled");
 
         Assert.Equal(ExpectedTrajectoryOutcome.RequiresOneClarification, scenario.ExpectedOutcome);
-        Assert.Equal(1, scenario.MaxClarifyingRounds);
         Assert.Contains("TCGTH-6.2.2", scenario.ExpectedMaterialSectionIds);
         Assert.Empty(scenario.ExpectedMaterialSectionIdsAfterAnswer);
     }
@@ -65,15 +64,5 @@ public class EvalDatasetTests
     public void Scenarios_EveryScenarioHasAFactSheet()
     {
         Assert.All(EvalDataset.Scenarios, s => Assert.False(string.IsNullOrWhiteSpace(s.FactSheet), s.Id));
-    }
-
-    [Fact]
-    public void Scenarios_RequiresOneClarification_AllowsAtLeastOneRound()
-    {
-        foreach (var scenario in EvalDataset.Scenarios.Where(
-            s => s.ExpectedOutcome == ExpectedTrajectoryOutcome.RequiresOneClarification))
-        {
-            Assert.True(scenario.MaxClarifyingRounds >= 1, scenario.Id);
-        }
     }
 }

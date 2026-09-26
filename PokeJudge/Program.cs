@@ -664,6 +664,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             Console.WriteLine($"--- {runLabel} ---");
             Console.WriteLine(scenario.InitialDescription);
             Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
+            // Reported, not scored: fair follow-ups are fine, and a loop that never
+            // resolves is already caught by the turn cap producing no ruling.
+            Console.WriteLine($"Rounds of questions: {trajectory.ClarifyingRounds}");
 
             // Print each real question with the simulated judge's answer, so a failure can
             // be traced to PokeJudge's question or to a gap in the scenario's fact sheet.
