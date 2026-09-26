@@ -42,6 +42,25 @@ public class EvalDatasetTests
         }
     }
 
+    private static EvalScenario ById(string id) => EvalDataset.Scenarios.Single(s => s.Id == id);
+
+    [Fact]
+    public void DeckNotShuffled_AllowsOneQuestionAboutWhenItWasNoticed()
+    {
+        var scenario = ById("deck-not-shuffled");
+
+        Assert.Equal(ExpectedTrajectoryOutcome.RequiresOneClarification, scenario.ExpectedOutcome);
+        Assert.Equal(1, scenario.MaxClarifyingRounds);
+        Assert.Contains("TCGTH-6.2.2", scenario.ExpectedMaterialSectionIds);
+        Assert.Empty(scenario.ExpectedMaterialSectionIdsAfterAnswer);
+    }
+
+    [Fact]
+    public void SpectatorBadges_NamesTheEventLevelTheRuleUses()
+    {
+        Assert.Contains("Regional Championship", ById("spectator-badges").InitialDescription);
+    }
+
     [Fact]
     public void Scenarios_EveryScenarioHasAFactSheet()
     {

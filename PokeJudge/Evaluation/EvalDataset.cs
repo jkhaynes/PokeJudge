@@ -88,21 +88,25 @@ public static class EvalDataset
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong }),
 
+        // Step 2 (2026-09-26): changed from SufficientOnFirstTurn. TCGTH-6.2.2 only says
+        // poor randomization "may carry a penalty", so when it was noticed is material.
         new EvalScenario(
             "deck-not-shuffled",
             "Illegal Game State",
             "A player's deck wasn't fully shuffled before the game started -- what should happen?",
-            new[] { "TCGTH-6.2" },
-            ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
+            new[] { "TCGTH-6.2", "TCGTH-6.2.2" },
+            ExpectedTrajectoryOutcome.RequiresOneClarification,
             FactSheet: "The opponent noticed while cutting the deck, before either player drew an opening hand. There is no sign it was deliberate.",
-            MaxClarifyingRounds: 0,
+            MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
+        // Step 2 (2026-09-26): reworded from "large tournaments" -- PPTRH-2.4 names
+        // "Regional Championships ... and above", and "large" was ambiguous.
         new EvalScenario(
             "spectator-badges",
             "Tournament Procedure",
-            "Do spectators need to wear a badge at large tournaments?",
+            "Do spectators need to wear a badge at a Regional Championship?",
             new[] { "PPTRH-2.4" },
             ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
             FactSheet: "The event is a Regional Championship. The spectator is not playing.",
