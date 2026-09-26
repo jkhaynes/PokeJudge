@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build
+        run: dotnet build PokeJudge.slnx
+      # Unit tests only use test doubles, so no model API key is needed here.
+      # The scenario evaluation calls a real model and is run locally; see
+      # scripts/eval-badge.ps1 for how its result is published.
+      - name: Test
+        run: dotnet test PokeJudge.slnx --no-build

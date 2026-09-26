@@ -371,3 +371,5 @@ PokeJudge/Ingestion/Output/
 
 # Milestone 4 chunking/embeddings: derived from the same copyrighted documents.
 PokeJudge/Chunking/Output/
+# Scenario evaluation output, turned into docs/badges/eval.json by scripts/eval-badge.ps1
+eval.log
