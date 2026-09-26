@@ -621,6 +621,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     var totalPassCount = 0;
     var totalRunCount = 0;
     var infrastructureFailureCount = 0;
+    var totalQuestions = 0;
+    var totalNotKnown = 0;
 
     foreach (var scenario in scenarios)
     {
@@ -652,6 +654,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             }
 
             var report = ScenarioEvalScorer.Score(trajectory);
+            totalQuestions += trajectory.Exchanges.Count;
+            totalNotKnown += trajectory.NotKnownCount;
 
             var outcomeLabel = trajectory.ThrewExpectedFailure
                 ? "failed loudly"
@@ -661,18 +665,26 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             Console.WriteLine(scenario.InitialDescription);
             Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
 
-            // Eval mode was otherwise silent about what the model actually asked --
-            // only the scorer's pass/fail criteria were visible. Printing the real
-            // question text (mirroring the interactive console flow, which already does
-            // this) matters most when a scenario needed more clarification than
-            // scripted: without seeing the real question, there's no way to tell
-            // whether the scripted answers should have anticipated it.
+            // Print each real question with the simulated judge's answer, so a failure can
+            // be traced to PokeJudge's question or to a gap in the scenario's fact sheet.
+            // Exchanges are recorded in the order the questions were asked, turn by turn.
+            var exchangeIndex = 0;
             for (var turnIndex = 0; turnIndex < trajectory.Turns.Count; turnIndex++)
             {
                 foreach (var question in trajectory.Turns[turnIndex].Questions)
                 {
                     Console.WriteLine($"  [Turn {turnIndex + 1} question — re: {question.RelatedChunkId}] {question.Question}");
+                    if (exchangeIndex < trajectory.Exchanges.Count)
+                    {
+                        var exchange = trajectory.Exchanges[exchangeIndex++];
+                        Console.WriteLine($"    Judge: {exchange.Answer}{(exchange.Known ? "" : " (not known)")}");
+                    }
                 }
+            }
+
+            if (trajectory.Exchanges.Count > 0)
+            {
+                Console.WriteLine($"  Not answerable from the fact sheet: {trajectory.NotKnownCount} of {trajectory.Exchanges.Count} question(s)");
             }
 
             foreach (var criterion in report.Criteria)
@@ -719,6 +731,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         ? $"Result: {totalPassCount}/{totalRunCount} scenario-runs fully passed all applicable criteria " +
           $"(across {scenarios.Count} scenario(s), {repeatCount} run(s) each)."
         : $"Result: {totalPassCount}/{totalRunCount} scenarios fully passed all applicable criteria.");
+    Console.WriteLine($"Questions the fact sheets couldn't answer: {totalNotKnown} of {totalQuestions} (reported, not scored).");
 
     if (infrastructureFailureCount > 0)
     {
