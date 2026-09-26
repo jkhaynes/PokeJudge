@@ -8,6 +8,7 @@ using PokeJudge.Evaluation;
 using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
 using PokeJudge.Retrieval;
+using PokeJudge.StructuredState;
 
 // ---------------------------------------------------------------------------
 // Milestone 2 — Judge-Focused Prompting, Clarification, Structured Responses
@@ -239,42 +240,7 @@ var ruling = await rulingGenerator.GenerateAsync(scenarioDescription, outcome.St
 // rather than trusting it as generated (Milestone 7).
 var grounding = await groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
 
-Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
-Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
-Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
-Console.WriteLine($"\nExplanation: {ruling.Explanation}");
-
-if (ruling.RepairSteps.Count > 0)
-{
-    Console.WriteLine("\nRepair steps:");
-    foreach (var step in ruling.RepairSteps)
-    {
-        Console.WriteLine($"  - {step}");
-    }
-}
-
-if (ruling.PenaltyGuidance is not null)
-{
-    Console.WriteLine($"\nPenalty guidance: {ruling.PenaltyGuidance}");
-}
-
-Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
-
-Console.WriteLine("\nCitation grounding breakdown:");
-if (grounding.Assessment.Citations.Count == 0)
-{
-    Console.WriteLine("  (no citations to assess)");
-}
-foreach (var citation in grounding.Assessment.Citations)
-{
-    Console.WriteLine($"  [{citation.ChunkId}] {citation.SupportLevel}");
-}
-if (grounding.Assessment.ConflictDetected)
-{
-    Console.WriteLine("  Conflict detected among cited passages.");
-}
-Console.WriteLine($"  Deterministic checks: retrieval non-empty={grounding.RetrievalNonEmpty}, " +
-    $"all citations exist={grounding.AllCitationsExist}, facts were sufficient={grounding.FactsWereSufficient}");
+PrintRuling(ruling, grounding);
 
 return 0;
 
@@ -700,6 +666,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             {
                 Console.WriteLine(
                     $"  Model's own assessment: {trajectory.Ruling!.SourceSupport} | Validated: {trajectory.Grounding.ValidatedSourceSupport}");
+
+                // The full ruling, so a passing score can be checked against what PokeJudge actually said.
+                PrintRuling(trajectory.Ruling, trajectory.Grounding);
             }
 
             categoryResults.Add((scenario.Category, report.AllPassed));
@@ -782,6 +751,47 @@ static InMemoryVectorStore CreateVectorStore(List<EmbeddedChunk> chunks)
         Console.Error.WriteLine($"Could not build the vector store: {ex.Message}");
         throw;
     }
+}
+
+// Shared by the judge-facing flow and `evaluate`, so both show the same ruling.
+static void PrintRuling(RulingResult ruling, GroundingResult grounding)
+{
+    Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
+    Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
+    Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
+    Console.WriteLine($"\nExplanation: {ruling.Explanation}");
+
+    if (ruling.RepairSteps.Count > 0)
+    {
+        Console.WriteLine("\nRepair steps:");
+        foreach (var step in ruling.RepairSteps)
+        {
+            Console.WriteLine($"  - {step}");
+        }
+    }
+
+    if (ruling.PenaltyGuidance is not null)
+    {
+        Console.WriteLine($"\nPenalty guidance: {ruling.PenaltyGuidance}");
+    }
+
+    Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
+
+    Console.WriteLine("\nCitation grounding breakdown:");
+    if (grounding.Assessment.Citations.Count == 0)
+    {
+        Console.WriteLine("  (no citations to assess)");
+    }
+    foreach (var citation in grounding.Assessment.Citations)
+    {
+        Console.WriteLine($"  [{citation.ChunkId}] {citation.SupportLevel}");
+    }
+    if (grounding.Assessment.ConflictDetected)
+    {
+        Console.WriteLine("  Conflict detected among cited passages.");
+    }
+    Console.WriteLine($"  Deterministic checks: retrieval non-empty={grounding.RetrievalNonEmpty}, " +
+        $"all citations exist={grounding.AllCitationsExist}, facts were sufficient={grounding.FactsWereSufficient}");
 }
 
 // Single source of truth for the embedding model/dimensionality used across
