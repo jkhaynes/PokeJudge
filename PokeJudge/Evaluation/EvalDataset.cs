@@ -317,14 +317,26 @@ public static class EvalDataset
         // wording problem to keep chasing. Reclassified as RequiresOneClarification
         // to match what was actually, repeatedly observed; gx-attack-twice remains
         // the dataset's clean SufficientOnFirstTurn contrast case.
+        //
+        // Step 2 (2026-09-26): rewritten. "Before a match" didn't say which round or
+        // whether the deck had been played, and the ruling depends on both; PokeJudge's
+        // ruling also left out the penalty. Now fully specified, so no question is
+        // expected. Expected ruling: Major deck legality infraction, Game Loss
+        // (PPG-5.6.1, example d is the closest over-limit case), applied to the current
+        // game (PPG-4.1.1.3); fix the list by replacing the illegal ACE SPEC with a
+        // Basic Energy of the player's choice, then update the deck (PPG-5.6.1); rounds
+        // 1 and 2 stand (PPTRH-5.4). Partial accepted: which ACE SPEC is removed, and
+        // the example match, are interpretation.
         new EvalScenario(
             "ace-spec-count",
             "Deck/Decklist Issues",
-            "Before a match, a judge is asked to check a competitor's decklist because it appears to include two different ACE SPEC cards.",
-            new[] { "TCGRULES-appendix-3-ace-spec-cards", "TCGTH-3.3.1", "PPG-5.6.1" },
-            ExpectedTrajectoryOutcome.RequiresOneClarification,
-            FactSheet: "Both the decklist and the physical deck contain two different ACE SPEC cards, Prime Catcher and Master Ball, and they match each other. The judge found this while reviewing the decklist, before either player drew an opening hand.",
-            ExpectedMaterialSectionIdsAfterAnswer: new[] { "TCGRULES-appendix-3-ace-spec-cards", "PPG-5.6.1" },
+            "During a deck check at the start of round 3 of a Standard-format League Cup, before game 1 begins, a judge " +
+            "finds that a competitor's deck list and deck both include two different ACE SPEC cards. The competitor " +
+            "played rounds 1 and 2 with this deck unchanged, and those match slips are signed.",
+            new[] { "TCGRULES-appendix-3-ace-spec-cards", "PPG-5.6.1", "PPG-4.1.1" },
+            ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
+            FactSheet: "The two ACE SPEC cards are Prime Catcher and Master Ball, one copy each, on both the deck list and in the deck. The competitor says it was an oversight; there is no sign it was intentional.",
+            ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
         // Prize Errors. PPG-5.5.1 explicitly covers taking too many Prize cards after

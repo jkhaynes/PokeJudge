@@ -74,6 +74,17 @@ public class EvalDatasetTests
     }
 
     [Fact]
+    public void AceSpecCount_StatesWhenItWasFoundAndThatTheDeckWasAlreadyPlayed()
+    {
+        var scenario = ById("ace-spec-count");
+
+        Assert.Contains("round 3", scenario.InitialDescription);
+        Assert.Contains("rounds 1 and 2", scenario.InitialDescription);
+        Assert.Equal(ExpectedTrajectoryOutcome.SufficientOnFirstTurn, scenario.ExpectedOutcome);
+        Assert.Contains("PPG-5.6.1", scenario.ExpectedMaterialSectionIds);
+    }
+
+    [Fact]
     public void Scenarios_EveryScenarioHasAFactSheet()
     {
         Assert.All(EvalDataset.Scenarios, s => Assert.False(string.IsNullOrWhiteSpace(s.FactSheet), s.Id));
