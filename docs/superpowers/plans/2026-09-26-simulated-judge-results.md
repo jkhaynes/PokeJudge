@@ -28,6 +28,16 @@ All are PokeJudge's own mistakes; none are test errors.
 
 **missed-prize may pass for the wrong reason.** It is expected to be unresolvable (Milestone 8.5 judged the rulebooks don't cover a forgotten Prize). But PokeJudge's later questions ask whether the error influenced gameplay or left the game state unrepairable, tied to PPG-5.5.1, and the judge answers "not known" because the fact sheet doesn't say. It may be the thin fact sheet, not a rulebook gap, that keeps it from ruling.
 
+## To do next session (after the Gemini daily quota resets, midnight Pacific)
+
+The free tier allows 500 requests per model per day; a full run uses about 150, a single scenario about 5 to 25.
+
+- [ ] **Re-run the 4 scenarios that hit the quota**: prize-issue-vague, double-energy-attach, discard-shuffle-deescalate, spectator-conduct (`evaluate --only <id>`). Add their rulings to the rundown below and update the score.
+- [ ] **drew-extra-card experiment: does it resolve with more rounds?** Throwaway, not committed: temporarily raise the clarification loop's turn cap in `RunScenarioEval` from 4 to 7 (`new ClarificationLoop(llmClient, retriever, maxTurns: 7)`), run `evaluate --only drew-extra-card`, record whether it ever retrieves `PPG-5.5.1` and reaches a ruling, then revert. Expected: it keeps retrieving the `PPG-4.2.1` Supporter excerpts and repeats itself, which would confirm a retrieval problem for Step 4.
+- [ ] **Decide on missed-prize**: try adding "nothing since depended on the Prize count, and the game can be corrected" to its fact sheet and see whether PokeJudge rules (see Open question above), or leave it as is.
+- [ ] **Finish Step 2**: code review (superpowers:requesting-code-review), then open the PR (superpowers:finishing-a-development-branch). Optional: `/learning-checkpoint` before the PR.
+- [ ] **After merge**: update Step 2 in the PokeJudge improvement plan doc to match what shipped (simulated judge, no round limit, 16/20 so far).
+
 ## Full rundown
 
 Every scenario, in dataset order. For each: the scenario, the facts the simulated judge answered from, every question PokeJudge asked with the judge's answer, PokeJudge's full ruling, and the scored checks.
