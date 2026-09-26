@@ -120,7 +120,22 @@ if (args.Length > 0 && args[0] == "eval")
 
 if (args.Length > 0 && args[0] == "evaluate")
 {
-    return await RunScenarioEval(args, apiKey, modelId);
+    // Optional pacing for free-tier keys (15 requests/min), e.g.
+    //   dotnet user-secrets set Gemini:RequestsPerMinute 14 --project PokeJudge
+    int? requestsPerMinute = null;
+    var requestsPerMinuteSetting = config["Gemini:RequestsPerMinute"];
+    if (!string.IsNullOrWhiteSpace(requestsPerMinuteSetting))
+    {
+        if (!int.TryParse(requestsPerMinuteSetting, out var parsed) || parsed < 1)
+        {
+            Console.Error.WriteLine($"Gemini:RequestsPerMinute must be a positive integer, got \"{requestsPerMinuteSetting}\".");
+            return 1;
+        }
+
+        requestsPerMinute = parsed;
+    }
+
+    return await RunScenarioEval(args, apiKey, modelId, requestsPerMinute);
 }
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
@@ -564,7 +579,7 @@ static async Task<int> RunRetrievalEval(string apiKey)
 // totals, rather than crashing the whole command or silently counting as PokeJudge
 // getting the scenario wrong.
 // ---------------------------------------------------------------------------
-static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId)
+static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId, int? requestsPerMinute)
 {
     var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
     if (selectionError is not null)
@@ -581,12 +596,21 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     }
 
     ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
+    if (requestsPerMinute is { } rate)
+    {
+        llmClient = new PacedLlmClient(llmClient, rate);
+    }
+
     IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
     var store = CreateVectorStore(chunks);
     IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
 
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
+    if (requestsPerMinute is not null)
+    {
+        Console.WriteLine($"Pacing model calls to {requestsPerMinute} per minute (Gemini:RequestsPerMinute).\n");
+    }
 
     var categoryResults = new List<(string Category, bool Passed)>();
     var totalPassCount = 0;
