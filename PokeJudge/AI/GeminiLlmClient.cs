@@ -13,7 +13,8 @@ public sealed class GeminiLlmClient : ILlmClient
     private static readonly HttpClient Http = new();
 
     // Without a seed Gemini picks a random one per request, so identical inputs can
-    // produce different rulings. Temperature stays at the default 1.0: Google warns that
+    // produce different rulings. A seed is best effort: repeatable in practice, not
+    // guaranteed across Google backend changes. Temperature stays at the default 1.0: Google warns that
     // lowering it on Gemini 3 models can cause looping or degraded reasoning.
     internal const int Seed = 42;
 

@@ -9,7 +9,9 @@ public class GeminiLlmClientTests
     {
         using var schema = JsonDocument.Parse("""{ "type": "object" }""");
         var body = GeminiLlmClient.BuildRequestBody("system", "user", schema.RootElement.Clone());
-        return JsonSerializer.SerializeToElement(body).GetProperty("generationConfig");
+        // Same options JsonContent.Create uses when the client sends the request.
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        return JsonSerializer.SerializeToElement(body, options).GetProperty("generationConfig");
     }
 
     [Fact]
