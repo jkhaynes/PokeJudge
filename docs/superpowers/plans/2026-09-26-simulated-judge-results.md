@@ -23,5 +23,5 @@ deck-not-shuffled, spectator-badges, weakness-not-applied, too-many-prizes. All 
 
 ## Follow-ups
 
-- **supporter-twice fact sheet (the test was wrong):** name the player by role, e.g. "The player being ruled on (the caller's opponent) played two copies of Judge…", so "the player" in PokeJudge's questions is unambiguous.
+- **supporter-twice fact sheet (the test was wrong): fixed.** The fact sheet now says "The player being ruled on (the caller's opponent) played two copies of Judge…". Re-run alone: the judge answered both questions, PokeJudge reached a validated Strong ruling, and every criterion passed except Question budget (2 rounds, limit 1). Round 2 asks whether the second Judge's effects can be reversed, which is material to the penalty, so the remaining failure is a question-count judgment, not a test error.
 - PokeJudge's failures above go to later steps: over-asking and re-asking answered questions (Step 5, the judgment model), retrieval misses (Step 4), and the zero-questions crash.

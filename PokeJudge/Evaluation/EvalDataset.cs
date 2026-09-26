@@ -236,7 +236,7 @@ public static class EvalDataset
             "A judge is called over because a player thinks their opponent played two Supporter cards in the same turn.",
             new[] { "TCGRULES-turn-actions", "PPG-4.2.1" },
             ExpectedTrajectoryOutcome.RequiresOneClarification,
-            FactSheet: "The opponent played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified.",
+            FactSheet: "The player being ruled on (the caller's opponent) played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified.",
             MaxClarifyingRounds: 1,
             ExpectedMaterialSectionIdsAfterAnswer: new[] { "PPG-4.2.1" },
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
