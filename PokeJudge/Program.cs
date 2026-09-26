@@ -101,7 +101,9 @@ if (string.IsNullOrWhiteSpace(apiKey))
     return 1;
 }
 
-var modelId = config["Gemini:Model"] ?? "gemini-flash-lite-latest";
+// Pinned, not "-latest": Google hot-swaps the model behind that alias, which would
+// silently change behavior between eval runs.
+var modelId = config["Gemini:Model"] ?? "gemini-3.5-flash-lite";
 
 if (args.Length > 0 && args[0] == "chunk")
 {

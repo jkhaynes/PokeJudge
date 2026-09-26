@@ -12,6 +12,11 @@ public sealed class GeminiLlmClient : ILlmClient
 {
     private static readonly HttpClient Http = new();
 
+    // Without a seed Gemini picks a random one per request, so identical inputs can
+    // produce different rulings. Temperature stays at the default 1.0: Google warns that
+    // lowering it on Gemini 3 models can cause looping or degraded reasoning.
+    internal const int Seed = 42;
+
     private readonly string _apiKey;
     private readonly string _modelId;
 
@@ -27,19 +32,7 @@ public sealed class GeminiLlmClient : ILlmClient
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
-            Content = JsonContent.Create(new
-            {
-                system_instruction = new { parts = new[] { new { text = systemInstruction } } },
-                contents = new[]
-                {
-                    new { role = "user", parts = new[] { new { text = userContent } } }
-                },
-                generationConfig = new
-                {
-                    responseMimeType = "application/json",
-                    responseSchema
-                }
-            })
+            Content = JsonContent.Create(BuildRequestBody(systemInstruction, userContent, responseSchema))
         };
         request.Headers.Add("x-goog-api-key", _apiKey);
 
@@ -68,4 +61,19 @@ public sealed class GeminiLlmClient : ILlmClient
 
         return StructuredResponseParser.Parse<T>(rawJsonText);
     }
+
+    internal static object BuildRequestBody(string systemInstruction, string userContent, JsonElement responseSchema) => new
+    {
+        system_instruction = new { parts = new[] { new { text = systemInstruction } } },
+        contents = new[]
+        {
+            new { role = "user", parts = new[] { new { text = userContent } } }
+        },
+        generationConfig = new
+        {
+            responseMimeType = "application/json",
+            responseSchema,
+            seed = Seed
+        }
+    };
 }
