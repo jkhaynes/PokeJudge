@@ -7,7 +7,7 @@ Final run 2026-09-27: full 20-scenario `evaluate` with all Step 2 changes (simul
 
 ## Failures
 
-All are PokeJudge's own mistakes; none are test errors.
+All are PokeJudge's own mistakes, though drew-extra-card's fact sheet also has a gap (see Findings for later steps).
 
 | Scenario | Failed criteria | Reason | Where it's addressed |
 |---|---|---|---|
@@ -37,6 +37,8 @@ All are PokeJudge's own mistakes; none are test errors.
 - **Insufficient rulings still instruct.** The missed-prize experiment's ruling was labelled Insufficient but still said "instruct the player to take the missed Prize card now". PRD §8 says an Insufficient recommendation must not present a definitive ruling.
 - **"Not known" answers are re-asked** word for word until the turn cap (drew-extra-card).
 - **The scorer doesn't check what the ruling says.** supporter-twice passed both days, but yesterday's ruling named a Game Loss and today's only says "assess an appropriate penalty".
+- **missed-prize's expectation may be wrong** (from code review). It passes as "expected unresolvable" because the fact sheet leaves out whether the game can be repaired, which a real judge would know. With that fact, PokeJudge rules Insufficient, which is arguably the correct behaviour for a rulebook gap under PRD §8, but would fail today's expectation. Decide in Step 4 or 5: complete the fact sheet and expect an Insufficient ruling, or document that the fact sheet is deliberately thin.
+- **drew-extra-card's fact sheet is thin too** (from code review). It doesn't say whether the player did anything after drawing, which a real judge would know. Retrieval is still the main cause (turn 1 retrieval fails regardless), but adding that fact would isolate the failure to retrieval.
 - **The zero-questions crash is still open.** No scenario triggers it since mulligan-not-taken was replaced, but PokeJudge can still report "insufficient" with no questions.
 
 ## To do
