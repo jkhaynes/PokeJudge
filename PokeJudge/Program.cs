@@ -8,6 +8,7 @@ using PokeJudge.Evaluation;
 using PokeJudge.Grounding;
 using PokeJudge.Ingestion;
 using PokeJudge.Retrieval;
+using PokeJudge.StructuredState;
 
 // ---------------------------------------------------------------------------
 // Milestone 2 — Judge-Focused Prompting, Clarification, Structured Responses
@@ -75,7 +76,7 @@ using PokeJudge.Retrieval;
 //
 // Adds `dotnet run -- evaluate`: runs the real, full pipeline (the same one the
 // default flow below runs) against every hand-authored scenario in
-// Evaluation/EvalDataset.cs, with a scripted judge instead of console input.
+// Evaluation/EvalDataset.cs, with a scripted judge instead of console input (Step 2 replaced the script with SimulatedJudge).
 // ScenarioEvalScorer compares each captured trajectory against the scenario's
 // expected criteria -- retrieval quality, sufficiency timing, clarifying-question
 // materiality, and final Source Support -- per PRD SS15's trajectory-evaluation
@@ -239,42 +240,7 @@ var ruling = await rulingGenerator.GenerateAsync(scenarioDescription, outcome.St
 // rather than trusting it as generated (Milestone 7).
 var grounding = await groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
 
-Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
-Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
-Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
-Console.WriteLine($"\nExplanation: {ruling.Explanation}");
-
-if (ruling.RepairSteps.Count > 0)
-{
-    Console.WriteLine("\nRepair steps:");
-    foreach (var step in ruling.RepairSteps)
-    {
-        Console.WriteLine($"  - {step}");
-    }
-}
-
-if (ruling.PenaltyGuidance is not null)
-{
-    Console.WriteLine($"\nPenalty guidance: {ruling.PenaltyGuidance}");
-}
-
-Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
-
-Console.WriteLine("\nCitation grounding breakdown:");
-if (grounding.Assessment.Citations.Count == 0)
-{
-    Console.WriteLine("  (no citations to assess)");
-}
-foreach (var citation in grounding.Assessment.Citations)
-{
-    Console.WriteLine($"  [{citation.ChunkId}] {citation.SupportLevel}");
-}
-if (grounding.Assessment.ConflictDetected)
-{
-    Console.WriteLine("  Conflict detected among cited passages.");
-}
-Console.WriteLine($"  Deterministic checks: retrieval non-empty={grounding.RetrievalNonEmpty}, " +
-    $"all citations exist={grounding.AllCitationsExist}, facts were sufficient={grounding.FactsWereSufficient}");
+PrintRuling(ruling, grounding);
 
 return 0;
 
@@ -607,6 +573,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     var store = CreateVectorStore(chunks);
     IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
 
+    // Same client as PokeJudge: same model, seed and pacing.
+    var judge = new SimulatedJudge(llmClient);
+
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
     if (requestsPerMinute is not null)
@@ -618,6 +587,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     var totalPassCount = 0;
     var totalRunCount = 0;
     var infrastructureFailureCount = 0;
+    var totalQuestions = 0;
+    var totalNotKnown = 0;
 
     foreach (var scenario in scenarios)
     {
@@ -630,7 +601,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             var loop = new ClarificationLoop(llmClient, retriever);
             var rulingGenerator = new RulingGenerator(llmClient);
             var groundingValidator = new GroundingValidator(llmClient);
-            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator);
+            var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, judge);
 
             var runLabel = repeatCount > 1 ? $"[{scenario.Id}] {scenario.Category} (run {run}/{repeatCount})" : $"[{scenario.Id}] {scenario.Category}";
 
@@ -639,7 +610,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             {
                 trajectory = await runner.RunAsync(scenario);
             }
-            catch (HttpRequestException ex)
+            // TaskCanceledException is HttpClient's timeout.
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or SimulatedJudgeException)
             {
                 infrastructureFailureCount++;
                 Console.WriteLine($"--- {runLabel} ---");
@@ -649,6 +621,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             }
 
             var report = ScenarioEvalScorer.Score(trajectory);
+            totalQuestions += trajectory.Exchanges.Count;
+            totalNotKnown += trajectory.NotKnownCount;
 
             var outcomeLabel = trajectory.ThrewExpectedFailure
                 ? "failed loudly"
@@ -657,20 +631,30 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             Console.WriteLine($"--- {runLabel} ---");
             Console.WriteLine(scenario.InitialDescription);
             Console.WriteLine($"Turns used: {trajectory.TurnsUsed} ({outcomeLabel})");
-            Console.WriteLine($"Asked more questions than scripted: {trajectory.AskedMoreQuestionsThanScripted}");
+            // Reported, not scored: fair follow-ups are fine, and a loop that never
+            // resolves is already caught by the turn cap producing no ruling.
+            Console.WriteLine($"Rounds of questions: {trajectory.ClarifyingRounds}");
 
-            // Eval mode was otherwise silent about what the model actually asked --
-            // only the scorer's pass/fail criteria were visible. Printing the real
-            // question text (mirroring the interactive console flow, which already does
-            // this) matters most when a scenario needed more clarification than
-            // scripted: without seeing the real question, there's no way to tell
-            // whether the scripted answers should have anticipated it.
+            // Print each real question with the simulated judge's answer, so a failure can
+            // be traced to PokeJudge's question or to a gap in the scenario's fact sheet.
+            // Exchanges are recorded in the order the questions were asked, turn by turn.
+            var exchangeIndex = 0;
             for (var turnIndex = 0; turnIndex < trajectory.Turns.Count; turnIndex++)
             {
                 foreach (var question in trajectory.Turns[turnIndex].Questions)
                 {
                     Console.WriteLine($"  [Turn {turnIndex + 1} question — re: {question.RelatedChunkId}] {question.Question}");
+                    if (exchangeIndex < trajectory.Exchanges.Count)
+                    {
+                        var exchange = trajectory.Exchanges[exchangeIndex++];
+                        Console.WriteLine($"    Judge: {exchange.Answer}{(exchange.Known ? "" : " (not known)")}");
+                    }
                 }
+            }
+
+            if (trajectory.Exchanges.Count > 0)
+            {
+                Console.WriteLine($"  Not answerable from the scenario or fact sheet: {trajectory.NotKnownCount} of {trajectory.Exchanges.Count} question(s)");
             }
 
             foreach (var criterion in report.Criteria)
@@ -683,6 +667,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             {
                 Console.WriteLine(
                     $"  Model's own assessment: {trajectory.Ruling!.SourceSupport} | Validated: {trajectory.Grounding.ValidatedSourceSupport}");
+
+                // The full ruling, so a passing score can be checked against what PokeJudge actually said.
+                PrintRuling(trajectory.Ruling, trajectory.Grounding);
             }
 
             categoryResults.Add((scenario.Category, report.AllPassed));
@@ -717,6 +704,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         ? $"Result: {totalPassCount}/{totalRunCount} scenario-runs fully passed all applicable criteria " +
           $"(across {scenarios.Count} scenario(s), {repeatCount} run(s) each)."
         : $"Result: {totalPassCount}/{totalRunCount} scenarios fully passed all applicable criteria.");
+    Console.WriteLine($"Questions the scenario and fact sheet couldn't answer: {totalNotKnown} of {totalQuestions} (reported, not scored).");
 
     if (infrastructureFailureCount > 0)
     {
@@ -764,6 +752,47 @@ static InMemoryVectorStore CreateVectorStore(List<EmbeddedChunk> chunks)
         Console.Error.WriteLine($"Could not build the vector store: {ex.Message}");
         throw;
     }
+}
+
+// Shared by the judge-facing flow and `evaluate`, so both show the same ruling.
+static void PrintRuling(RulingResult ruling, GroundingResult grounding)
+{
+    Console.WriteLine($"\nRecommendation: {ruling.Recommendation}");
+    Console.WriteLine($"Model's own assessment (unvalidated): {ruling.SourceSupport} — {ruling.SourceSupportRationale}");
+    Console.WriteLine($"Validated Source Support: {grounding.ValidatedSourceSupport} — {grounding.ValidatedRationale}");
+    Console.WriteLine($"\nExplanation: {ruling.Explanation}");
+
+    if (ruling.RepairSteps.Count > 0)
+    {
+        Console.WriteLine("\nRepair steps:");
+        foreach (var step in ruling.RepairSteps)
+        {
+            Console.WriteLine($"  - {step}");
+        }
+    }
+
+    if (ruling.PenaltyGuidance is not null)
+    {
+        Console.WriteLine($"\nPenalty guidance: {ruling.PenaltyGuidance}");
+    }
+
+    Console.WriteLine($"\nCited chunk IDs: {string.Join(", ", ruling.CitedChunkIds)}");
+
+    Console.WriteLine("\nCitation grounding breakdown:");
+    if (grounding.Assessment.Citations.Count == 0)
+    {
+        Console.WriteLine("  (no citations to assess)");
+    }
+    foreach (var citation in grounding.Assessment.Citations)
+    {
+        Console.WriteLine($"  [{citation.ChunkId}] {citation.SupportLevel}");
+    }
+    if (grounding.Assessment.ConflictDetected)
+    {
+        Console.WriteLine("  Conflict detected among cited passages.");
+    }
+    Console.WriteLine($"  Deterministic checks: retrieval non-empty={grounding.RetrievalNonEmpty}, " +
+        $"all citations exist={grounding.AllCitationsExist}, facts were sufficient={grounding.FactsWereSufficient}");
 }
 
 // Single source of truth for the embedding model/dimensionality used across

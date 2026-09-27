@@ -7,7 +7,7 @@ using PokeJudge.StructuredState;
 
 // Drives the real pipeline for one hand-authored scenario -- the same
 // ClarificationLoop -> RulingGenerator -> GroundingValidator sequence Program.cs's
-// default console flow runs, just with a scripted judge instead of console input.
+// default console flow runs, just with a simulated judge instead of console input.
 // No new AI mechanism is introduced here; this is orchestration and trajectory
 // capture over what Milestones 6-7 already built.
 public sealed class ScenarioEvalRunner
@@ -15,19 +15,21 @@ public sealed class ScenarioEvalRunner
     private readonly ClarificationLoop _loop;
     private readonly RulingGenerator _rulingGenerator;
     private readonly GroundingValidator _groundingValidator;
+    private readonly SimulatedJudge _judge;
 
-    public ScenarioEvalRunner(ClarificationLoop loop, RulingGenerator rulingGenerator, GroundingValidator groundingValidator)
+    public ScenarioEvalRunner(
+        ClarificationLoop loop, RulingGenerator rulingGenerator, GroundingValidator groundingValidator, SimulatedJudge judge)
     {
         _loop = loop;
         _rulingGenerator = rulingGenerator;
         _groundingValidator = groundingValidator;
+        _judge = judge;
     }
 
     public async Task<ScenarioTrajectory> RunAsync(EvalScenario scenario)
     {
         var turns = new List<TurnRecord>();
-        var nextScriptedAnswerIndex = 0;
-        var askedMoreQuestionsThanScripted = false;
+        var exchanges = new List<JudgeExchange>();
         IReadOnlyList<ScoredChunk>? lastRetrievedChunks = null;
 
         ClarificationOutcome outcome;
@@ -35,23 +37,19 @@ public sealed class ScenarioEvalRunner
         {
             outcome = await _loop.RunAsync(
                 scenario.InitialDescription,
-                askJudge: _ =>
+                askJudge: async question =>
                 {
-                    if (nextScriptedAnswerIndex < scenario.ScriptedAnswers.Count)
+                    JudgeAnswer reply;
+                    try
                     {
-                        var answer = scenario.ScriptedAnswers[nextScriptedAnswerIndex];
-                        nextScriptedAnswerIndex++;
-                        return Task.FromResult(answer);
+                        reply = await _judge.AnswerAsync(scenario.InitialDescription, scenario.FactSheet, question.Question);
                     }
-
-                    // A scenario scripts as many answers as it expects clarifying rounds
-                    // (Milestone 8.5: previously exactly one, per PRD SS15's own
-                    // single-branch-point example -- now however many rounds the scenario
-                    // actually needs). A loop that asks beyond the scripted answers is a
-                    // real, informative outcome to record and score, not a reason to crash
-                    // the harness.
-                    askedMoreQuestionsThanScripted = true;
-                    return Task.FromResult(string.Empty);
+                    catch (Exception ex)
+                    {
+                        throw new SimulatedJudgeException(ex);
+                    }
+                    exchanges.Add(new JudgeExchange(question.Question, reply.Answer, reply.Known));
+                    return reply.Answer;
                 },
                 onAssessment: (result, chunks) =>
                 {
@@ -70,18 +68,18 @@ public sealed class ScenarioEvalRunner
             // sufficiency assessment call itself) -- catching only this specific type means
             // an unrelated structured-output failure can't be mistaken for, and silently
             // scored as, this known bug reproducing.
-            return ScenarioTrajectory.Failed(scenario, turns, ex.Message);
+            return ScenarioTrajectory.Failed(scenario, turns, ex.Message, exchanges);
         }
 
         if (!outcome.Sufficient)
         {
-            return ScenarioTrajectory.TurnCapExhausted(scenario, turns, outcome.TurnsUsed, askedMoreQuestionsThanScripted);
+            return ScenarioTrajectory.TurnCapExhausted(scenario, turns, outcome.TurnsUsed, exchanges);
         }
 
         var finalChunks = lastRetrievedChunks!;
         var ruling = await _rulingGenerator.GenerateAsync(scenario.InitialDescription, outcome.State, finalChunks);
         var grounding = await _groundingValidator.ValidateAsync(ruling, finalChunks, outcome.Sufficient);
 
-        return ScenarioTrajectory.Completed(scenario, turns, outcome.TurnsUsed, askedMoreQuestionsThanScripted, ruling, grounding);
+        return ScenarioTrajectory.Completed(scenario, turns, outcome.TurnsUsed, ruling, grounding, exchanges);
     }
 }

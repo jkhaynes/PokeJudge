@@ -19,47 +19,46 @@ public class ScenarioEvalRunnerTests
     private static EvalScenario SufficientOnFirstTurnScenario() => new(
         "notes", "Tournament Procedure", "Is a competitor allowed to keep written notes?",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-        ScriptedAnswers: Array.Empty<string>(), ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        FactSheet: "Test facts.", ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario RequiresOneClarificationScenario() => new(
         "special-condition", "Illegal Game State", "A Special Condition marker looks wrong.",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
-        ScriptedAnswers: new[] { "The marker is Asleep, but it should be Confused." },
+        FactSheet: "The marker is Asleep, but it should be Confused.",
         ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario RequiresTwoClarificationsScenario() => new(
         "supporter-twice-like", "Timing Questions", "A player thinks their opponent played two Supporter cards.",
         new List<string> { "A1" }, ExpectedTrajectoryOutcome.RequiresOneClarification,
-        ScriptedAnswers: new[]
-        {
-            "Yes, both Supporter cards were fully played and resolved.",
-            "The error was noticed three turns later, well after both effects had already taken place.",
-        },
+        FactSheet: "Both Supporter cards resolved. Noticed three turns later.",
         ExpectedMaterialSectionIdsAfterAnswer: new List<string> { "A1" },
         AcceptableFinalSourceSupport: null);
 
     private static EvalScenario ExpectedFailureScenario() => new(
         "missed-prize", "Prize Errors", "A player forgot to take a Prize card.",
         Array.Empty<string>(), ExpectedTrajectoryOutcome.ExpectedToFailLoudly,
-        ScriptedAnswers: Array.Empty<string>(), ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
+        FactSheet: "Test facts.", ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
         AcceptableFinalSourceSupport: null);
 
-    private static (ScenarioEvalRunner Runner, StubLlmClient Llm, StubRetriever Retriever) BuildRunner()
+    // The judge gets its own stub so its answers never mix with the loop's queued results.
+    private static (ScenarioEvalRunner Runner, StubLlmClient Llm, StubRetriever Retriever, StubLlmClient JudgeLlm) BuildRunner()
     {
         var llm = new StubLlmClient();
+        var judgeLlm = new StubLlmClient();
         var retriever = new StubRetriever();
         var loop = new ClarificationLoop(llm, retriever);
         var rulingGenerator = new RulingGenerator(llm);
         var groundingValidator = new GroundingValidator(llm);
-        return (new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator), llm, retriever);
+        var judge = new SimulatedJudge(judgeLlm);
+        return (new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, judge), llm, retriever, judgeLlm);
     }
 
     [Fact]
-    public async Task RunAsync_SufficientOnFirstTurn_CompletesWithoutAskingTheScriptedAnswer()
+    public async Task RunAsync_SufficientOnFirstTurn_CompletesWithoutAskingTheJudge()
     {
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, _) = BuildRunner();
         llm.Enqueue(new ClarificationResult(true, new List<ClarifyingQuestion>()));
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
@@ -70,14 +69,15 @@ public class ScenarioEvalRunnerTests
         Assert.True(trajectory.ReachedSufficiency);
         Assert.Equal(1, trajectory.TurnsUsed);
         Assert.Single(trajectory.Turns);
+        Assert.Empty(trajectory.Exchanges);
         Assert.NotNull(trajectory.Ruling);
         Assert.NotNull(trajectory.Grounding);
     }
 
     [Fact]
-    public async Task RunAsync_RequiresOneClarification_UsesTheScriptedAnswerAndReachesSufficiency()
+    public async Task RunAsync_RequiresOneClarification_AnswersFromTheJudgeAndReachesSufficiency()
     {
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, judgeLlm) = BuildRunner();
         llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("What happened?", "A1#0") }));
         llm.Enqueue(new FactExtractionResult(new List<string> { "The marker is Asleep." }, new List<string>()));
         llm.Enqueue(new ClarificationResult(true, new List<ClarifyingQuestion>()));
@@ -85,19 +85,24 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Partial, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        judgeLlm.Enqueue(new JudgeAnswer("The marker is Asleep.", true));
 
         var trajectory = await runner.RunAsync(RequiresOneClarificationScenario());
 
         Assert.True(trajectory.ReachedSufficiency);
         Assert.Equal(2, trajectory.Turns.Count);
-        Assert.False(trajectory.AskedMoreQuestionsThanScripted);
-        Assert.Contains("The marker is Asleep.", llm.UserContents[2]);
+        var exchange = Assert.Single(trajectory.Exchanges);
+        Assert.Equal("What happened?", exchange.Question);
+        Assert.Equal("The marker is Asleep.", exchange.Answer);
+        Assert.Contains("The marker is Asleep.", llm.UserContents[1]);
+        Assert.Contains("A Special Condition marker looks wrong.", judgeLlm.UserContents[0]);
+        Assert.Contains("The marker is Asleep, but it should be Confused.", judgeLlm.UserContents[0]);
     }
 
     [Fact]
-    public async Task RunAsync_RequiresTwoClarifications_ConsumesBothScriptedAnswersInOrderAndReachesSufficiency()
+    public async Task RunAsync_TwoRounds_RecordsBothExchangesInOrder()
     {
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, judgeLlm) = BuildRunner();
         llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q1?", "A1#0") }));
         llm.Enqueue(new FactExtractionResult(new List<string> { "Both Supporter cards resolved." }, new List<string>()));
         llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q2?", "A1#0") }));
@@ -108,44 +113,44 @@ public class ScenarioEvalRunnerTests
         retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        judgeLlm.Enqueue(new JudgeAnswer("Both Supporter cards resolved.", true));
+        judgeLlm.Enqueue(new JudgeAnswer("Noticed three turns later.", true));
 
         var trajectory = await runner.RunAsync(RequiresTwoClarificationsScenario());
 
         Assert.True(trajectory.ReachedSufficiency);
         Assert.Equal(3, trajectory.Turns.Count);
-        Assert.False(trajectory.AskedMoreQuestionsThanScripted);
-        Assert.Contains("Both Supporter cards resolved.", llm.UserContents[2]);
-        Assert.Contains("Noticed three turns later.", llm.UserContents[4]);
+        Assert.Equal(new[] { "Q1?", "Q2?" }, trajectory.Exchanges.Select(e => e.Question));
+        Assert.Equal(2, trajectory.ClarifyingRounds);
+        Assert.Contains("Both Supporter cards resolved.", llm.UserContents[1]);
+        Assert.Contains("Noticed three turns later.", llm.UserContents[3]);
     }
 
     [Fact]
-    public async Task RunAsync_LoopAsksMoreQuestionsThanScripted_RecordsItRatherThanCrashing()
+    public async Task RunAsync_JudgeCannotAnswer_RecordsNotKnownAndPassesItToTheLoop()
     {
-        var (runner, llm, retriever) = BuildRunner();
-        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q1?", "A1#0") }));
-        llm.Enqueue(new FactExtractionResult(new List<string>(), new List<string>()));
-        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q2?", "A1#0") }));
+        var (runner, llm, retriever, judgeLlm) = BuildRunner();
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Which turn?", "A1#0") }));
         llm.Enqueue(new FactExtractionResult(new List<string>(), new List<string>()));
         llm.Enqueue(new ClarificationResult(true, new List<ClarifyingQuestion>()));
         retriever.Enqueue(new[] { Chunk("A1") });
         retriever.Enqueue(new[] { Chunk("A1") });
-        retriever.Enqueue(new[] { Chunk("A1") });
         llm.Enqueue(new RulingResult("Rec.", "Expl.", new List<string>(), null, new List<string> { "A1#0" }, SourceSupport.Strong, "n/a"));
         llm.Enqueue(new GroundingAssessment(new List<CitationGroundingCheck> { new("A1#0", CitationSupportLevel.ExplicitSupport) }, false, "n/a"));
+        judgeLlm.Enqueue(new JudgeAnswer("Maybe turn 2?", false));
 
-        // RequiresOneClarificationScenario only scripts a single answer -- the
-        // second question here exceeds it, so it should be flagged, not silently
-        // answered with the same single scripted answer again.
         var trajectory = await runner.RunAsync(RequiresOneClarificationScenario());
 
-        Assert.True(trajectory.AskedMoreQuestionsThanScripted);
-        Assert.True(trajectory.ReachedSufficiency);
+        Assert.Equal(1, trajectory.NotKnownCount);
+        Assert.Equal(SimulatedJudge.NotKnown, trajectory.Exchanges[0].Answer);
+        Assert.Contains(SimulatedJudge.NotKnown, llm.UserContents[1]);
+        Assert.DoesNotContain("Maybe turn 2?", llm.UserContents[1]);
     }
 
     [Fact]
     public async Task RunAsync_LoopThrowsInsufficientWithNoQuestions_ReturnsAFailedTrajectoryInsteadOfPropagating()
     {
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, _) = BuildRunner();
         llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion>()));
         retriever.Enqueue(new[] { Chunk("A1") });
 
@@ -166,24 +171,41 @@ public class ScenarioEvalRunnerTests
         // InvalidOperationException, structurally identical to a malformed/null
         // structured response) would have been silently misreported as the known
         // zero-questions bug reproducing. It must now propagate instead.
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, judgeLlm) = BuildRunner();
         llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }));
         retriever.Enqueue(new[] { Chunk("A1") });
-        // No FactExtractionResult queued for the scripted answer that follows.
+        judgeLlm.Enqueue(new JudgeAnswer("An answer.", true));
+        // No FactExtractionResult queued for the judge's answer that follows.
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => runner.RunAsync(RequiresOneClarificationScenario()));
     }
 
+    // The simulated judge is eval tooling, so its failures (malformed reply, timeout)
+    // must be distinguishable from PokeJudge's own and reported as infrastructure.
+    [Fact]
+    public async Task RunAsync_SimulatedJudgeCallFails_ThrowsSimulatedJudgeException()
+    {
+        var (runner, llm, retriever, _) = BuildRunner();
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }));
+        retriever.Enqueue(new[] { Chunk("A1") });
+        // Nothing queued for the judge, so its call fails like a malformed reply.
+
+        var ex = await Assert.ThrowsAsync<SimulatedJudgeException>(
+            () => runner.RunAsync(RequiresOneClarificationScenario()));
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
+    }
+
     [Fact]
     public async Task RunAsync_NeverReachesSufficiencyWithinTurnCap_ReturnsTurnCapExhaustedWithoutCallingRulingGenerator()
     {
-        var (runner, llm, retriever) = BuildRunner();
+        var (runner, llm, retriever, judgeLlm) = BuildRunner();
         for (var i = 0; i < 4; i++)
         {
             llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }));
             llm.Enqueue(new FactExtractionResult(new List<string>(), new List<string>()));
             retriever.Enqueue(new[] { Chunk("A1") });
+            judgeLlm.Enqueue(new JudgeAnswer("An answer.", true));
         }
 
         var trajectory = await runner.RunAsync(RequiresOneClarificationScenario());
@@ -192,5 +214,6 @@ public class ScenarioEvalRunnerTests
         Assert.False(trajectory.ThrewExpectedFailure);
         Assert.Null(trajectory.Ruling);
         Assert.Equal(4, trajectory.TurnsUsed);
+        Assert.Equal(4, trajectory.Exchanges.Count);
     }
 }

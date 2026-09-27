@@ -11,8 +11,8 @@ public enum ExpectedTrajectoryOutcome
     // already materially complete.
     SufficientOnFirstTurn,
 
-    // One or more clarifying rounds are expected before sufficiency; ScriptedAnswers
-    // supplies the answers the harness gives when asked, one per round, in order.
+    // One or more clarifying rounds are expected before sufficiency; the simulated
+    // judge answers each question from the description and FactSheet.
     RequiresOneClarification,
 
     // The scenario is expected to reproduce a known, real "fail loudly" case
@@ -45,6 +45,6 @@ public sealed record EvalScenario(
     string InitialDescription,
     IReadOnlyList<string> ExpectedMaterialSectionIds,
     ExpectedTrajectoryOutcome ExpectedOutcome,
-    IReadOnlyList<string> ScriptedAnswers,
+    string FactSheet,
     IReadOnlyList<string> ExpectedMaterialSectionIdsAfterAnswer,
     IReadOnlySet<SourceSupport>? AcceptableFinalSourceSupport);
