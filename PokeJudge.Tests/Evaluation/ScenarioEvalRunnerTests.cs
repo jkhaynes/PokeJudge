@@ -95,6 +95,8 @@ public class ScenarioEvalRunnerTests
         Assert.Equal("What happened?", exchange.Question);
         Assert.Equal("The marker is Asleep.", exchange.Answer);
         Assert.Contains("The marker is Asleep.", llm.UserContents[1]);
+        Assert.Contains("A Special Condition marker looks wrong.", judgeLlm.UserContents[0]);
+        Assert.Contains("The marker is Asleep, but it should be Confused.", judgeLlm.UserContents[0]);
     }
 
     [Fact]

@@ -39,7 +39,7 @@ public sealed class ScenarioEvalRunner
                 scenario.InitialDescription,
                 askJudge: async question =>
                 {
-                    var reply = await _judge.AnswerAsync(scenario.FactSheet, question.Question);
+                    var reply = await _judge.AnswerAsync(scenario.InitialDescription, scenario.FactSheet, question.Question);
                     exchanges.Add(new JudgeExchange(question.Question, reply.Answer, reply.Known));
                     return reply.Answer;
                 },
