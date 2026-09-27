@@ -1,10 +1,9 @@
 # Step 2 live eval results
 
-Final run 2026-09-26: full 20-scenario `evaluate` with all Step 2 changes (simulated judge with the partial-answer prompt fix, reworded supporter-twice fact sheet, no round limit), pinned `gemini-3.5-flash-lite`, fixed seed, paced at 14 calls per minute.
+Final run 2026-09-27: full 20-scenario `evaluate` with all Step 2 changes (simulated judge that sees the scenario text and its fact sheet, no round limit), pinned `gemini-3.5-flash-lite`, fixed seed, paced at 14 calls per minute.
 
-**Score: 13 of the 16 scenarios that ran** (baseline with scripted answers, same model and seed: 11/20).
-**Not run:** 4 scenarios hit the Gemini free tier's daily limit of 500 requests per model (prize-issue-vague, double-energy-attach, discard-shuffle-deescalate, spectator-conduct). In the earlier full run today, the first three passed and spectator-conduct failed (see below). They need a re-run after the quota resets.
-**Not known:** 3 of 21 questions couldn't be answered from the fact sheets (reported, not scored).
+**Score: 16 of 20** (baseline with scripted answers, same model and seed: 11/20). No infrastructure failures.
+**Not known:** 7 of 27 questions couldn't be answered from the scenario or fact sheet (reported, not scored).
 
 ## Failures
 
@@ -12,37 +11,42 @@ All are PokeJudge's own mistakes; none are test errors.
 
 | Scenario | Failed criteria | Reason | Where it's addressed |
 |---|---|---|---|
-| proxy-cards | Final Source Support | Validated Partial for an explicit rule (the model itself said Strong). | Grounding validation |
-| drew-extra-card | Initial retrieval, materiality, post-answer retrieval, Source Support | Retrieval never surfaces PPG-5.5.1, so PokeJudge re-asks an answered question until the turn cap and never rules. | Step 4 (better rule text) |
-| mulligan-not-taken | Unexpected failure | After a correct answer, PokeJudge reports "insufficient" with no questions: the known Milestone 2 zero-questions crash. | Open known bug |
-| spectator-conduct (earlier run) | Sufficiency timing | Asks whether the person is a spectator; the scenario already says so. | Step 5 (judgment model) |
+| proxy-cards | Final Source Support | Validated Partial for an explicit rule (the model itself said Strong), because one of four citations was graded as interpretation. | Grounding validation |
+| drew-extra-card | Initial retrieval, materiality, post-answer retrieval, Source Support | Retrieval never surfaces `PPG-5.5.1`, so PokeJudge re-asks the same question until the turn cap and never rules. | Step 4 (better rule text) |
+| ace-spec-count | Sufficiency timing, Source Support | Asks the judge whether two ACE SPECs is a minor, major or severe infraction: a policy question, not a fact. Then rules Insufficient, honestly, because the ACE SPEC rule and `PPG-5.6.1#2` fix instructions are never retrieved. | Step 4 (better rule text) |
+| spectator-conduct | Sufficiency timing | Asks whether the person is a spectator; the scenario already says so. | Step 5 (judgment model) |
 
 ## Test fixes made during Step 2
 
-- **Simulated judge prompt:** it answered "not known" to two-part questions it could half-answer. It now answers the parts its fact sheet covers (commit `91a4138`).
+- **Simulated judge prompt:** it answered "not known" to two-part questions it could half-answer. It now answers the parts it can (commit `91a4138`).
+- **Simulated judge sees the scenario:** it only saw the fact sheet, so it answered "not known" to questions the scenario itself answers (missed-mulligan-draws: "Did Player A take two mulligans?"). The real judge described the scenario, so it now answers from both (commit `98ebc77`).
 - **supporter-twice fact sheet:** "the opponent" was ambiguous against PokeJudge's "the player"; it now says "the player being ruled on (the caller's opponent)".
+- **mulligan-not-taken replaced** by missed-mulligan-draws: neither player could remember whether anyone mulliganed, so it had no answerable facts.
+- **missed-mulligan-draws expects one question** (commit `f11d941`): the scenario says Player B never drew the cards but not whether B announced them, and `TCGTH-7.4.1` turns on the announcement, so asking is fair. Its fact sheet now also says setup completed, which a judge at the table would know. The ruling matches the confirmed correct one: Player B doesn't get the draws.
+- **ace-spec-count states the timing:** found at the start of round 3, deck played unchanged in rounds 1 and 2, so the ruling is decidable.
 - **Round limit removed:** fair follow-up questions are not a failure, and a loop that never resolves is already caught by the 4-turn cap producing no ruling. Rounds are now reported per run.
 - **Rulings printed:** `evaluate` now prints each full ruling, using the same output as the judge-facing flow, so passing scores can be checked against what PokeJudge actually said.
 
-## Open question
+## Experiments (throwaway, not committed)
 
-**missed-prize may pass for the wrong reason.** It is expected to be unresolvable (Milestone 8.5 judged the rulebooks don't cover a forgotten Prize). But PokeJudge's later questions ask whether the error influenced gameplay or left the game state unrepairable, tied to PPG-5.5.1, and the judge answers "not known" because the fact sheet doesn't say. It may be the thin fact sheet, not a rulebook gap, that keeps it from ruling.
+- **drew-extra-card with a 7-turn cap:** still no ruling. `PPG-5.5.1` was never retrieved; every turn retrieved the `PPG-4.2.1` Supporter excerpts. After the first answer, PokeJudge asked the identical question six times, getting "not known" each time. Confirms a retrieval problem for Step 4, and shows the loop doesn't accept "not known" as an answer.
+- **missed-prize with "nothing since depended on the Prize count, and the game can be corrected" added:** PokeJudge ruled after 2 rounds, labelled Insufficient with no citations, and said nothing retrieved covers a forgotten Prize. So yesterday's open question is settled: it's a rulebook gap (as Milestone 8.5 found), not only a thin fact sheet. The scenario stays as is.
 
-## To do next session (after the Gemini daily quota resets, midnight Pacific)
+## Findings for later steps
 
-The free tier allows 500 requests per model per day; a full run uses about 150, a single scenario about 5 to 25.
+- **Insufficient rulings still instruct.** The missed-prize experiment's ruling was labelled Insufficient but still said "instruct the player to take the missed Prize card now". PRD §8 says an Insufficient recommendation must not present a definitive ruling.
+- **"Not known" answers are re-asked** word for word until the turn cap (drew-extra-card).
+- **The scorer doesn't check what the ruling says.** supporter-twice passed both days, but yesterday's ruling named a Game Loss and today's only says "assess an appropriate penalty".
+- **The zero-questions crash is still open.** No scenario triggers it since mulligan-not-taken was replaced, but PokeJudge can still report "insufficient" with no questions.
 
-- [ ] **Re-run the 4 scenarios that hit the quota**: prize-issue-vague, double-energy-attach, discard-shuffle-deescalate, spectator-conduct (`evaluate --only <id>`). Add their rulings to the rundown below and update the score.
-- [ ] **Run the rewritten mulligan scenario** (`evaluate --only missed-mulligan-draws`). It replaced mulligan-not-taken after this run, so the rundown below still shows the old one. Retrieval already checks out: `TCGTH-7.4.1` and both `TCGRULES-full-details-of-taking-a-mulligan` excerpts are the top 3 search results. Correct ruling, confirmed by the user: **Player B does not get the draws** (they're optional and belong to setup, which has passed). Check the ruling against that, and swap the rundown entry.
-- [ ] **Run the rewritten ace-spec-count** (`evaluate --only ace-spec-count`). It now says the problem was found at the start of round 3 and the deck was played unchanged in rounds 1 and 2, so the rundown below shows the old version. Expected ruling (from the rulebooks, with the user agreeing it's at least a Game Loss): Major deck legality infraction, Game Loss applied to the current game (`PPG-5.6.1`, `PPG-4.1.1.3`); replace the illegal ACE SPEC on the list with a Basic Energy of the player's choice and update the deck (`PPG-5.6.1`); rounds 1 and 2 stand (`PPTRH-5.4`). Retrieval note: the top 5 search results are all `PPG-5.6.1`/`PPG-5.5.1` penalty excerpts; the ACE SPEC rule itself and the fix instructions (`PPG-5.6.1#2`) don't make the top 5, so check whether the ruling states them anyway (a possible Step 4 finding).
-- [ ] **drew-extra-card experiment: does it resolve with more rounds?** Throwaway, not committed: temporarily raise the clarification loop's turn cap in `RunScenarioEval` from 4 to 7 (`new ClarificationLoop(llmClient, retriever, maxTurns: 7)`), run `evaluate --only drew-extra-card`, record whether it ever retrieves `PPG-5.5.1` and reaches a ruling, then revert. Expected: it keeps retrieving the `PPG-4.2.1` Supporter excerpts and repeats itself, which would confirm a retrieval problem for Step 4.
-- [ ] **Decide on missed-prize**: try adding "nothing since depended on the Prize count, and the game can be corrected" to its fact sheet and see whether PokeJudge rules (see Open question above), or leave it as is.
+## To do
+
 - [ ] **Finish Step 2**: code review (superpowers:requesting-code-review), then open the PR (superpowers:finishing-a-development-branch). Optional: `/learning-checkpoint` before the PR.
-- [ ] **After merge**: update Step 2 in the PokeJudge improvement plan doc to match what shipped (simulated judge, no round limit, 16/20 so far).
+- [ ] **After merge**: update Step 2 in the PokeJudge improvement plan doc to match what shipped (simulated judge that sees the scenario, no round limit, 16/20).
 
 ## Full rundown
 
-Every scenario, in dataset order. For each: the scenario, the facts the simulated judge answered from, every question PokeJudge asked with the judge's answer, PokeJudge's full ruling, and the scored checks.
+Every scenario, in dataset order. For each: the scenario, the facts the simulated judge answered from (alongside the scenario text), every question PokeJudge asked with the judge's answer, PokeJudge's full ruling, and the scored checks.
 
 ### notes — PASS
 
@@ -50,9 +54,7 @@ Every scenario, in dataset order. For each: the scenario, the facts the simulate
 
 **Facts the simulated judge answered from:** The competitor wants to keep hand-written notes about the current match during play.
 
-**Questions** (0 round(s)):
-
-None asked.
+**Questions:** none.
 
 **Ruling:**
 
@@ -85,9 +87,7 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The cards are home-printed copies of real cards, used in place of the originals in a sanctioned tournament.
 
-**Questions** (0 round(s)):
-
-None asked.
+**Questions:** none.
 
 **Ruling:**
 
@@ -126,28 +126,32 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The opponent noticed while cutting the deck, before either player drew an opening hand. There is no sign it was deliberate.
 
-**Questions** (1 round(s)):
+**Questions** (2 round(s)):
 
 - **Turn 1** (tied to `TCGTH-6.2.2#0`): At what point was the insufficiently randomized deck discovered, and what penalty level is appropriate according to tournament policy guidelines?
-  - *Judge:* The insufficiently randomized deck was discovered while cutting the deck, before either player drew an opening hand, and there is no sign it was deliberate. The fact sheet does not state what penalty level is appropriate.
+  - *Judge:* The insufficiently randomized deck was discovered while the opponent was cutting the deck, before either player drew an opening hand. There is no penalty mentioned in the fact sheet for this situation.
+- **Turn 2** (tied to `TCGTH-6.2.2#0`): What specific penalty should be assessed for insufficiently randomizing the deck?
+  - *Judge:* A Warning penalty should be assessed for insufficiently randomizing the deck.
 
 **Ruling:**
 
 ```text
-Recommendation: It is recommended that the judge require the deck to be fully randomized and allow the match to proceed, as the issue was discovered before either player drew an opening hand and without signs of deliberation.
-Model's own assessment (unvalidated): Partial — The retrieved passages confirm that decks must be randomized at the start of a game and that insufficiently randomizing a deck is a violation, but the passages do not explicitly prescribe the exact repair steps or penalty level for this specific scenario.
-Validated Source Support: Partial — Every citation exists and none is unsupported, but at least one requires interpretation or judge discretion, or the retrieved passages conflict.
+Recommendation: It is recommended that the judge assess a Warning penalty for insufficiently randomizing the deck and instruct the players to ensure the deck is fully randomized and properly cut before beginning play.
+Model's own assessment (unvalidated): Strong — The retrieved passages establish the rules for deck randomization and state that insufficient randomization is a rules violation carrying a penalty, directly supporting the confirmed facts and recommendation.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-Explanation: Insufficiently randomizing the deck is a rules violation. However, the retrieved passages state that each competitor's deck is expected to be fully randomized at the start of each game, and the issue was caught while cutting the deck and before either player drew an opening hand, with no sign that it was deliberate.
+Explanation: Based on the confirmed facts and retrieved passages, each competitor's deck is expected to be fully randomized at the start of each game [TCGTH-6.2#0]. Insufficiently randomizing the deck is a rules violation that may carry a penalty [TCGTH-6.2.2#0]. Because the confirmed facts state that a Warning penalty should be assessed for this infraction, the judge should issue a Warning.
 
 Repair steps:
-  - Instruct the competitor to fully randomize their deck.
+  - Have the deck fully randomized properly before proceeding with the game.
 
-Cited chunk IDs: TCGTH-6.2.2#0, TCGTH-6.2#0
+Penalty guidance: A Warning penalty should be assessed for insufficiently randomizing the deck.
+
+Cited chunk IDs: TCGTH-6.2#0, TCGTH-6.2.2#0
 
 Citation grounding breakdown:
+  [TCGTH-6.2#0] ExplicitSupport
   [TCGTH-6.2.2#0] ExplicitSupport
-  [TCGTH-6.2#0] Interpretation
   Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
 ```
 
@@ -157,7 +161,7 @@ Citation grounding breakdown:
 - PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
 - PASS Clarifying question materiality: Question was tied to an expected material section (TCGTH-6.2.2#0).
 - PASS Post-answer retrieval: No post-answer section(s) specified for this scenario.
-- PASS Final Source Support: Validated Source Support (Partial) was in the acceptable set.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
 
 ### spectator-badges — PASS
 
@@ -165,9 +169,7 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The event is a Regional Championship. The spectator is not playing.
 
-**Questions** (0 round(s)):
-
-None asked.
+**Questions:** none.
 
 **Ruling:**
 
@@ -197,9 +199,7 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The competitor has received penalties for the same kind of infraction earlier in this event.
 
-**Questions** (0 round(s)):
-
-None asked.
+**Questions:** none.
 
 **Ruling:**
 
@@ -231,34 +231,29 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The opponent's attack text says the Defending Pokémon is now Confused. The card was turned to show Asleep by mistake. No other effects applied.
 
-**Questions** (3 round(s)):
+**Questions** (1 round(s)):
 
 - **Turn 1** (tied to `TCGRULES-special-conditions#0`): What attack was used that caused the Special Condition, and what text does that attack have regarding Special Conditions?
-  - *Judge:* The fact sheet does not state what attack was used. The attack text says the Defending Pokémon is now Confused.
-- **Turn 2** (tied to `TCGRULES-special-conditions#2`): Did an effect other than the attack apply the Asleep Special Condition after the attack resolved?
-  - *Judge:* No other effects applied.
-- **Turn 3** (tied to `TCGRULES-special-conditions#2`): Did the Pokémon evolve, move to the Bench, or have another Special Condition applied after the attack resolved?
-  - *Judge:* The Defending Pokémon was affected by Asleep by mistake instead of Confused, and no other effects applied.
+  - *Judge:* The scenario does not state which attack was used. The text of the attack that was used states that the Defending Pokémon is now Confused.
 
 **Ruling:**
 
 ```text
-Recommendation: I recommend that the judge correct the game state by replacing the Asleep marker with the Confused Special Condition, aligning the marker with the attack text which states the Defending Pokémon is now Confused.
-Model's own assessment (unvalidated): Strong — The retrieved passages describe Special Conditions including Confused and Asleep, and the confirmed facts directly state that Confused was the intended effect of the attack that was mistakenly marked as Asleep with no subsequent effects intervening.
-Validated Source Support: Partial — Every citation exists and none is unsupported, but at least one requires interpretation or judge discretion, or the retrieved passages conflict.
+Recommendation: It is recommended that the judge correct the game state by removing the incorrect Asleep marker and replacing it with the correct Confused special condition orientation, as supported by the text of the attack used.
+Model's own assessment (unvalidated): Partial — The retrieved passages define how Asleep and Confused are represented and what the attack text states, but the retrieved text does not explicitly prescribe a judge procedure for correcting a misapplied special condition marker during a match.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-Explanation: The confirmed facts establish that the attack text says the Defending Pokémon is now Confused, that the Defending Pokémon was affected by Asleep by mistake instead of Confused, and that no other effects applied after the attack resolved. Therefore, the incorrect Asleep marker should be replaced to match the correct application of the Confused Special Condition as dictated by the attack.
+Explanation: The confirmed facts state that the attack used causes the Defending Pokemon to be Confused. According to the retrieved rules, Confused is represented by turning the Pokémon card with the top of the card pointed toward the player, whereas Asleep is represented by turning the Pokémon card counterclockwise. Since an error was made in applying the correct special condition from the attack, the judge should ensure the correct condition is represented.
 
 Repair steps:
-  - Remove the Asleep marker (or adjust the card orientation) from the affected Pokémon.
-  - Apply the Confused Special Condition to the Pokémon (turning the card with the top pointed toward the player, as specified for Confused).
+  - Remove the incorrect Asleep marker or orientation from the Active Pokémon.
+  - Orient the Active Pokémon card with the top of the card pointed toward the player to correctly reflect the Confused Special Condition.
 
-Cited chunk IDs: TCGRULES-special-conditions#0, TCGRULES-special-conditions#2, TCGRULES-special-conditions#3
+Cited chunk IDs: TCGRULES-special-conditions#0, TCGRULES-special-conditions#3
 
 Citation grounding breakdown:
-  [TCGRULES-special-conditions#0] Interpretation
-  [TCGRULES-special-conditions#2] Interpretation
-  [TCGRULES-special-conditions#3] Interpretation
+  [TCGRULES-special-conditions#0] ExplicitSupport
+  [TCGRULES-special-conditions#3] ExplicitSupport
   Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
 ```
 
@@ -268,7 +263,7 @@ Citation grounding breakdown:
 - PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
 - PASS Clarifying question materiality: Question was tied to an expected material section (TCGRULES-special-conditions#0).
 - PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
-- PASS Final Source Support: Validated Source Support (Partial) was in the acceptable set.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
 
 ### missed-prize — PASS
 
@@ -304,13 +299,13 @@ No ruling produced (turn cap exhausted).
 **Questions** (4 round(s)):
 
 - **Turn 1** (tied to `PPG-4.2.1#1`): Can the specific card drawn extra during the draw step be identified and distinguished from the rest of the player's hand?
-  - *Judge:* No, the extra card went into their hand and cannot be told apart from the rest.
-- **Turn 2** (tied to `PPG-4.2.1#1`): Can the specific extra card drawn be identified or distinguished from the rest of the player's hand?
-  - *Judge:* No, the extra card went into their hand and cannot be told apart from the rest.
-- **Turn 3** (tied to `PPG-4.2.1#0`): What specific card or action was played erroneously after the draw step that caused the game state issue?
-  - *Judge:* No card effect caused the error; the player simply drew one extra card during their draw step without a specific card or action causing it.
-- **Turn 4** (tied to `PPG-4.2.1#0`): Can the extra card be identified in the player's hand, or are all retrieved passages concerning Supporter card infractions inapplicable here?
-  - *Judge:* The extra card went into their hand and can't be told apart from the rest. The fact sheet does not contain information about Supporter card infractions.
+  - *Judge:* No, the extra card went into the player's hand and cannot be told apart from the rest.
+- **Turn 2** (tied to `PPG-4.2.1#0`): Did the player play a second Supporter card or perform any other specific game actions (such as shuffling or drawing additional cards) after drawing the extra card during their draw step?
+  - *Judge:* Not known. (not known)
+- **Turn 3** (tied to `PPG-4.2.1#0`): Did the player play a second Supporter card or perform any other specific game actions (such as shuffling or drawing additional cards) after drawing the extra card during their draw step?
+  - *Judge:* Not known. (not known)
+- **Turn 4** (tied to `PPG-4.2.1#0`): Did the player play a second Supporter card or perform any other specific game actions (such as shuffling or drawing additional cards) after drawing the extra card during their draw step?
+  - *Judge:* Not known. (not known)
 
 **Ruling:**
 
@@ -330,21 +325,27 @@ No ruling produced (turn cap exhausted).
 
 **Facts the simulated judge answered from:** The Defending Pokémon was in the Active position when it took the damage. The attack's base damage was 60. The Defending Pokémon has a printed Weakness to that attack's type (×2), but only 60 damage was placed on it. No Abilities, Tools or other effects modified the damage.
 
-**Questions** (1 round(s)):
+**Questions** (2 round(s)):
 
 - **Turn 1** (tied to `TCGRULES-turn-actions#9`): Was the Pokémon that was Knocked Out in the Active position or on the Bench when it took the damage?
   - *Judge:* The Defending Pokémon was in the Active position when it took the damage.
 - **Turn 1** (tied to `TCGRULES-full-details-of-attacking#2`): Did the attack place damage counters directly, or did it deal damage that is subject to Weakness and Resistance?
-  - *Judge:* The attack dealt damage that is subject to Weakness and Resistance, rather than placing damage counters directly.
+  - *Judge:* Not known. (not known)
+- **Turn 2** (tied to `TCGRULES-full-details-of-attacking#2`): Did the attack place damage counters directly on the Pokémon, or did it deal damage subject to Weakness and Resistance?
+  - *Judge:* The attack dealt damage subject to Weakness, but only 60 damage was placed on the Defending Pokémon instead of accounting for the printed Weakness of times two.
 
 **Ruling:**
 
 ```text
-Recommendation: It is recommended that the judge verify whether Weakness was correctly factored into the damage calculation for the Defending Pokémon, as the rules state that damage should be increased by the amount next to the opponent's Active Pokémon's Weakness when it has Weakness to the attacker's type while in the Active position.
-Model's own assessment (unvalidated): Strong — The retrieved passages directly address how Weakness applies to Active Pokémon during damage calculation, matching the confirmed facts of the scenario.
+Recommendation: It is recommended that the judge review the attack's damage calculation to ensure the Defending Pokemon's printed Weakness of times two is correctly applied, since the Defending Pokemon was in the Active position and the attack dealt damage subject to Weakness.
+Model's own assessment (unvalidated): Strong — The retrieved passages explicitly state the rules for applying Weakness to a Defending Pokémon in the Active position when an attack deals damage subject to Weakness, directly matching the confirmed facts.
 Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-Explanation: According to the rules, when an attack does damage, the opponent's Active Pokémon takes more damage if it has Weakness to the attacker's type. Specifically, step 3 of figuring out attack damage requires increasing the damage by the amount next to the opponent's Active Pokémon's Weakness if it has Weakness to the attacking Pokémon's type.
+Explanation: According to the rules, when an attack does damage, your opponent's Active Pokemon takes more damage if it has Weakness to the attacker's type, and Weakness is increased by the amount next to the opponent's Active Pokemon's Weakness (such as times two). Since confirmed facts state that the Defending Pokémon was in the Active position when it took the damage, the attack dealt damage subject to Weakness, and the damage did not account for the printed Weakness of times two, the calculation should be adjusted to include this Weakness.
+
+Repair steps:
+  - Recalculate the attack damage by applying the Defending Pokémon's printed Weakness of times two.
+  - Adjust the game state to reflect the correct number of damage counters corresponding to the final calculated damage if the Knock Out status changes.
 
 Cited chunk IDs: TCGRULES-full-details-of-attacking#3, TCGRULES-turn-actions#9, TCGRULES-turn-actions#8
 
@@ -369,23 +370,25 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The player being ruled on (the caller's opponent) played two copies of the Supporter card Judge in the same turn. Both fully resolved before anyone noticed, and several turns have passed. The cards drawn from the second Judge can't be identified.
 
-**Questions** (2 round(s)):
+**Questions** (3 round(s)):
 
 - **Turn 1** (tied to `PPG-4.2.1#0`): Which specific Supporter cards were played by the player during the turn in question?
   - *Judge:* The player played two copies of the Supporter card Judge during the turn in question.
 - **Turn 2** (tied to `PPG-4.2.1#2`): Can the second Supporter card's effects (such as the cards drawn or any hidden information revealed/shuffled) be fully reversed and the game state restored to how it was before it was played?
-  - *Judge:* No, several turns have passed and the cards drawn from the second Judge cannot be identified, so the effects cannot be fully reversed.
+  - *Judge:* No, both cards fully resolved, several turns have passed, and the cards drawn from the second Judge cannot be identified, so it cannot be fully reversed.
+- **Turn 3** (tied to `PPG-4.2.1#4`): Which specific second Supporter card was played, and what were its exact effects on the hand and deck (e.g., shuffling the hand into the deck vs. drawing cards)?
+  - *Judge:* The second Supporter card played was a second copy of Judge, which requires both players to shuffle their hands into their decks and draw 4 cards. The parts regarding a different specific second Supporter card are not covered.
 
 **Ruling:**
 
 ```text
-Recommendation: I recommend that the judge assess a Game Loss for playing two Supporter cards in the same turn when the game state cannot be repaired and the error is caught several turns later.
-Model's own assessment (unvalidated): Partial — The retrieved passages discuss examples of playing two Supporter cards in a single turn and the resulting penalties based on game state correction, but specific details matching the exact sequence of a second Judge card played several turns prior are not explicitly detailed beyond general guidance on irreparable game states.
+Recommendation: It is recommended that no corrective action be taken regarding the game state, and that the judge assess an appropriate penalty given that the game state cannot be restored and several turns have passed.
+Model's own assessment (unvalidated): Partial — The passages discuss situations involving cards that shuffle hands and draw cards where no corrective action can be taken, but the specific penalty for a situation where several turns have passed and cards cannot be identified is not explicitly detailed beyond general principles.
 Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-Explanation: According to the retrieved passages, when an erroneous action results in a game state that is irreparably broken (such as when cards drawn cannot be identified or hands are shuffled and cannot be determined), and no corrective action can be taken, the appropriate penalty is a Game Loss because no other penalty can satisfactorily mitigate the damage done to the game state.
+Explanation: According to the retrieved passages, when a second Supporter card is played and the cards drawn or in the hand cannot be identified or restored (such as when a card like Cynthia or Judge shuffles hands and draws cards), no corrective action can be taken as the judge is unable to determine which cards were in the player's hand prior to the card being played.
 
-Penalty guidance: Game Loss
+Penalty guidance: Assess an appropriate penalty consistent with tournament policy for an irreparable game state resulting from playing a second Supporter card.
 
 Cited chunk IDs: PPG-4.2.1#4
 
@@ -408,9 +411,7 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** The player already used a GX attack earlier in this game with a different Pokémon-GX.
 
-**Questions** (0 round(s)):
-
-None asked.
+**Questions:** none.
 
 **Ruling:**
 
@@ -434,24 +435,41 @@ Citation grounding breakdown:
 - PASS Sufficiency timing: Resolved without unnecessary clarification, as expected.
 - PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
 
-### mulligan-not-taken — FAIL
+### missed-mulligan-draws — PASS
 
-**Scenario** (Illegal Game State): Partway through a game, a judge is called over because a player realizes they don't remember either player mulliganing at the start, even though the game has clearly been going for several turns.
+**Scenario** (Timing Questions): Player A took two mulligans at the start of the game; Player B took none. Player B went first and has drawn their card for the turn, then realizes they never drew the two extra cards they were allowed for Player A's mulligans, and calls a judge.
 
-**Facts the simulated judge answered from:** Neither player can recall for certain whether either had a Basic Pokémon in their opening hand. There is no way to verify it now.
+**Facts the simulated judge answered from:** Setup was completed normally and the game has started. Player B never announced or drew any mulligan cards during setup. Player B has made no other plays yet this turn. Player A has not played anything yet.
 
 **Questions** (1 round(s)):
 
-- **Turn 1** (tied to `PPG-4.2.1#0`): Did either player actually draw a mulligan during the setup of the game?
-  - *Judge:* Neither player can recall for certain whether either had a Basic Pokémon in their opening hand, and there is no way to verify it now.
+- **Turn 1** (tied to `TCGTH-7.4.1#0`): Did Player B announce how many cards they would draw for the mulligans prior to placing an Active Pokemon or beginning the game?
+  - *Judge:* Player B never announced or drew any mulligan cards during setup, so they did not announce how many cards they would draw prior to placing an Active Pokemon or beginning the game.
 
 **Ruling:**
 
-No ruling produced (failed loudly).
+```text
+Recommendation: It is recommended that the judge disallow Player B from drawing the two extra mulligan cards at this point in the game.
+Model's own assessment (unvalidated): Strong — The retrieved rules explicitly state the timing requirement that mulligan cards must be drawn and announced before placing an Active Pokémon and beginning the game, directly addressing the procedural error made by Player B.
+Validated Source Support: Partial — Every citation exists and none is unsupported, but at least one requires interpretation or judge discretion, or the retrieved passages conflict.
+
+Explanation: The retrieved passages state that cards for opponent mulligans may be drawn only once the opponent has placed an Active Pokémon, and the competitor must announce how many cards they will draw before doing so. Furthermore, the game sequence specifies that players reveal all Active and Benched Pokémon and begin the game after mulligan draws are completed. Since Player B did not announce how many cards they would draw prior to placing an Active Pokémon or beginning the game, and has already gone first and drawn their card for the turn, the opportunity to draw those cards has passed.
+
+Cited chunk IDs: TCGTH-7.4.1#0, TCGRULES-full-details-of-taking-a-mulligan#1
+
+Citation grounding breakdown:
+  [TCGTH-7.4.1#0] ExplicitSupport
+  [TCGRULES-full-details-of-taking-a-mulligan#1] Interpretation
+  Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
+```
 
 **Checks:**
 
-- **FAIL** Unexpected failure: The loop failed loudly, which this scenario did not expect: Model reported the scenario insufficient but supplied no clarifying questions. Model's rationale: "The confirmed facts state that it is unknown whether mulligans occurred, but the retrieved passages only explain how mulligans are performed and what extra card draws are permitted during setup. The retrieved text does not contain any penalty guidelines or procedural instructions for resolving a situation where players realize several turns into the game that they cannot remember if mulligans happened or were missed. Therefore, the retrieved passages are insufficient to determine a ruling."
+- PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
+- PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
+- PASS Clarifying question materiality: Question was tied to an expected material section (TCGTH-7.4.1#0).
+- PASS Post-answer retrieval: No post-answer section(s) specified for this scenario.
+- PASS Final Source Support: Validated Source Support (Partial) was in the acceptable set.
 
 ### late-to-round — PASS
 
@@ -496,33 +514,30 @@ Citation grounding breakdown:
 
 **Facts the simulated judge answered from:** Both the decklist and the physical deck contain only 58 cards, two short of the required 60.
 
-**Questions** (1 round(s)):
+**Questions** (2 round(s)):
 
 - **Turn 1** (tied to `PPG-5.6.1#2`): Does the physical deck actually contain fewer than 60 cards when counted, or is it merely suspected?
-  - *Judge:* The physical deck actually contains only 58 cards when counted, which is two short of the required 60.
+  - *Judge:* The physical deck actually contains 58 cards, which is fewer than the required 60.
+- **Turn 2** (tied to `PPG-5.6.1#6`): Does the competitor's deck list also contain fewer than 60 cards, or does the discrepancy arise from a difference between the physical deck and the deck list?
+  - *Judge:* The competitor's deck list also contains 58 cards, so there is no discrepancy between the physical deck and the deck list.
 
 **Ruling:**
 
 ```text
-Recommendation: It is recommended that the judge make the deck list legal by adding an appropriate number of Basic Energy cards of the competitor's choice, update the physical deck accordingly, and review any additional cards left in the competitor's deck box if applicable.
-Model's own assessment (unvalidated): Strong — The retrieved passages directly address the situation of a deck not containing 60 cards and explicitly prescribe the steps to make the deck legal and update the physical deck.
+Recommendation: It is recommended that the judge make the competitor's deck list legal by adding an appropriate number of Basic Energy cards of the competitor's choice, and then update the physical deck accordingly.
+Model's own assessment (unvalidated): Strong — The retrieved passage PPG-5.6.1#2 directly prescribes the exact procedure to follow when a deck list contains fewer than 60 cards.
 Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-Explanation: According to the retrieved passages, in the case that a deck list or physical deck does not contain 60 cards (classified as a major deck legality infraction), the deck list should be made legal by adding an appropriate number of Basic Energy cards of the competitor's choice, and then the physical deck should be updated accordingly. Additionally, a review of any additional cards left in the competitor's deck box may be required to ensure no infractions exist.
+Explanation: According to the retrieved passages, in the case that a deck list contains fewer than 60 cards, the deck list should be made legal by adding an appropriate number of Basic Energy cards of the competitor's choice, and the physical deck should then be updated accordingly.
 
 Repair steps:
-  - Add an appropriate number of Basic Energy cards of the competitor's choice to make the deck list legal.
+  - Add an appropriate number of Basic Energy cards of the competitor's choice to the deck list so that it totals 60 cards.
   - Update the physical deck accordingly to match the corrected deck list.
-  - Review any additional cards or a separate deck left in the competitor's deck box to ensure no infractions exist.
 
-Penalty guidance: Major: Game Loss
-
-Cited chunk IDs: PPG-5.6.1#6, PPG-5.6.1#2, PPG-5.6.1#3
+Cited chunk IDs: PPG-5.6.1#2
 
 Citation grounding breakdown:
-  [PPG-5.6.1#6] ExplicitSupport
   [PPG-5.6.1#2] ExplicitSupport
-  [PPG-5.6.1#3] ExplicitSupport
   Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
 ```
 
@@ -534,40 +549,42 @@ Citation grounding breakdown:
 - PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
 - PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
 
-### ace-spec-count — PASS
+### ace-spec-count — FAIL
 
-**Scenario** (Deck/Decklist Issues): Before a match, a judge is asked to check a competitor's decklist because it appears to include two different ACE SPEC cards.
+**Scenario** (Deck/Decklist Issues): During a deck check at the start of round 3 of a Standard-format League Cup, before game 1 begins, a judge finds that a competitor's deck list and deck both include two different ACE SPEC cards. The competitor played rounds 1 and 2 with this deck unchanged, and those match slips are signed.
 
-**Facts the simulated judge answered from:** Both the decklist and the physical deck contain two different ACE SPEC cards, Prime Catcher and Master Ball, and they match each other. The judge found this while reviewing the decklist, before either player drew an opening hand.
+**Facts the simulated judge answered from:** The two ACE SPEC cards are Prime Catcher and Master Ball, one copy each, on both the deck list and in the deck. The competitor says it was an oversight; there is no sign it was intentional.
 
 **Questions** (1 round(s)):
 
-- **Turn 1** (tied to `TCGRULES-appendix-3-ace-spec-cards#0`): Does the competitor's deck list actually list two different ACE SPEC cards, and what are their specific names?
-  - *Judge:* Yes, the decklist lists two different ACE SPEC cards, and their specific names are Prime Catcher and Master Ball.
+- **Turn 1** (tied to `PPG-5.6.1#3`): Did the competitor's deck list or deck contain two different ACE SPEC cards, and does this constitute a minor, major, or severe deck legality infraction under the retrieved penalty guidelines?
+  - *Judge:* Yes, the competitor's deck list and deck contained two different ACE SPEC cards (Prime Catcher and Master Ball). The scenario and fact sheet do not state whether this constitutes a minor, major, or severe deck legality infraction.
 
 **Ruling:**
 
 ```text
-Recommendation: It is recommended that the judge review the deck list with the competitor, as ACE SPEC cards are restricted such that a deck can include only one total ACE SPEC card, not one of each.
-Model's own assessment (unvalidated): Strong — The retrieved passage directly and explicitly addresses the ACE SPEC card rule stating that a deck can include only one total ACE SPEC card, not one of each.
-Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
+Recommendation: It is recommended that the judge evaluate the specific severity classification of this deck legality infraction using available tournament policy guidelines, as the retrieved passages do not explicitly list the presence of two different ACE SPEC cards as an example of a minor, major, or severe infraction.
+Model's own assessment (unvalidated): Insufficient — The retrieved passages do not contain specific information regarding two different ACE SPEC cards in a deck or deck list, making it impossible to determine the correct infraction level or penalty guidance solely from the provided text.
+Validated Source Support: Insufficient — At least one cited passage does not actually support the claim it was cited for.
 
-Explanation: According to the retrieved passages, ACE SPEC cards are limited to only one total ACE SPEC card per deck, meaning a deck cannot include one of each (Prime Catcher and Master Ball in this scenario).
+Explanation: The retrieved passages discuss minor, major, and severe deck legality infractions and provide various examples (such as incorrect card counts, unspecified collector numbers, extra cards, or cards not recorded on a deck list), but they do not contain text addressing two different ACE SPEC cards specifically. Therefore, the source support is insufficient to prescribe a definitive classification or penalty.
 
-Cited chunk IDs: TCGRULES-appendix-3-ace-spec-cards#0
+Cited chunk IDs: PPG-5.6.1#3, PPG-5.6.1#4, PPG-5.6.1#6, PPG-5.6.1#8, PPG-5.6.1#5
 
 Citation grounding breakdown:
-  [TCGRULES-appendix-3-ace-spec-cards#0] ExplicitSupport
+  [PPG-5.6.1#3] Unsupported
+  [PPG-5.6.1#4] Unsupported
+  [PPG-5.6.1#6] Unsupported
+  [PPG-5.6.1#8] Unsupported
+  [PPG-5.6.1#5] Unsupported
   Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
 ```
 
 **Checks:**
 
 - PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
-- PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
-- PASS Clarifying question materiality: Question was tied to an expected material section (TCGRULES-appendix-3-ace-spec-cards#0).
-- PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
-- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
+- **FAIL** Sufficiency timing: Expected immediate sufficiency, but a clarifying question was asked.
+- **FAIL** Final Source Support: Validated Source Support was Insufficient, not in the acceptable set [Strong, Partial].
 
 ### too-many-prizes — PASS
 
@@ -607,26 +624,155 @@ Citation grounding breakdown:
 - PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
 - PASS Final Source Support: Validated Source Support (Partial) was in the acceptable set.
 
-### prize-issue-vague — NOT RUN
+### prize-issue-vague — PASS
 
-**Scenario** (Prize Errors): hit the Gemini free tier's daily limit (500 requests per model), so there is no result yet. Re-run after the quota resets.
+**Scenario** (Prize Errors): A judge is called over because something seems wrong with how Prize cards were handled during the match, but nobody can immediately explain what happened.
 
-**Facts the simulated judge answers from:** A player took a Prize card after what they believed was a Knock Out, but the Defending Pokémon still had HP remaining. It was never Knocked Out.
+**Facts the simulated judge answered from:** A player took a Prize card after what they believed was a Knock Out, but the Defending Pokémon still had HP remaining. It was never Knocked Out.
 
-### double-energy-attach — NOT RUN
+**Questions** (1 round(s)):
 
-**Scenario** (Gameplay Error): hit the Gemini free tier's daily limit (500 requests per model), so there is no result yet. Re-run after the quota resets.
+- **Turn 1** (tied to `PPG-5.5.1#2`): Did a competitor take a Prize card without Knocking Out a Pokémon or take too many Prize cards after Knocking Out a Pokémon?
+  - *Judge:* A player took a Prize card after what they believed was a Knock Out, but the Defending Pokémon still had HP remaining and was never Knocked Out.
 
-**Facts the simulated judge answers from:** The player attached two Basic Energy cards from hand in the same turn. No card effect allowed the second attachment.
+**Ruling:**
 
-### discard-shuffle-deescalate — NOT RUN
+```text
+Recommendation: It is recommended that the judge evaluate the situation as a gameplay error where a competitor took a Prize card without Knocking Out a Pokémon, and apply appropriate corrective and penalty actions consistent with major gameplay errors.
+Model's own assessment (unvalidated): Strong — The retrieved passages directly define the specific action of taking a Prize card without Knocking Out a Pokémon as a gameplay error, matching the confirmed facts.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
 
-**Scenario** (Penalty Questions): hit the Gemini free tier's daily limit (500 requests per model), so there is no result yet. Re-run after the quota resets.
+Explanation: Based on the confirmed facts, the player took a Prize card after what they believed was a Knock Out, but the Defending Pokémon still had HP remaining and was never Knocked Out. According to PPG-5.5.1#2, taking a Prize card without Knocking Out a Pokémon is explicitly listed as an error (and categorized under major gameplay errors in PPG-5.5.1#1).
 
-**Facts the simulated judge answers from:** The competitor shuffled their discard pile into their deck without a card effect. The discard pile was small, the game hasn't progressed past the first few turns, and both competitors agree on exactly which cards were in it.
+Penalty guidance: Classify the infraction as a major gameplay error (taking a Prize card without Knocking Out a Pokémon) per PPG-5.5.1#1 and PPG-5.5.1#2, and apply the appropriate penalty accordingly.
 
-### spectator-conduct — NOT RUN
+Cited chunk IDs: PPG-5.5.1#1, PPG-5.5.1#2
 
-**Scenario** (Tournament Procedure): hit the Gemini free tier's daily limit (500 requests per model), so there is no result yet. Re-run after the quota resets.
+Citation grounding breakdown:
+  [PPG-5.5.1#1] ExplicitSupport
+  [PPG-5.5.1#2] ExplicitSupport
+  Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
+```
 
-**Facts the simulated judge answers from:** The person is a spectator, not playing in any event. They were standing next to the match and talking loudly about the game state.
+**Checks:**
+
+- PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
+- PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
+- PASS Clarifying question materiality: Question was tied to an expected material section (PPG-5.5.1#2).
+- PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
+
+### double-energy-attach — PASS
+
+**Scenario** (Gameplay Error): A judge is called over because a player attached two Energy cards to their Pokemon during a single turn.
+
+**Facts the simulated judge answered from:** The player attached two Basic Energy cards from hand in the same turn. No card effect allowed the second attachment.
+
+**Questions** (1 round(s)):
+
+- **Turn 1** (tied to `PPG-5.5.1#2`): Did the competitor attach more than one Energy card in a turn with or without an effect that allows this?
+  - *Judge:* The competitor attached two Basic Energy cards from their hand in the same turn without any card effect allowing the second attachment.
+
+**Ruling:**
+
+```text
+Recommendation: I recommend that the judge evaluate the game state regarding the illegal second Energy attachment and address the infraction in accordance with the tournament rules governing gameplay errors where a competitor attaches more than one Energy card in a turn without an allowing effect.
+Model's own assessment (unvalidated): Partial — The retrieved passages identify the action as a specific gameplay error and define the once-per-turn limit, but they do not explicitly detail the exact step-by-step game state repair instructions for an illegal extra Energy attachment.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
+
+Explanation: According to the retrieved passages, attaching more than one Energy card in a turn without an effect that allows this is classified as a gameplay error under PPG-5.5.1. Furthermore, the turn actions rules state that a player may only attach an Energy card once each turn.
+
+Cited chunk IDs: PPG-5.5.1#2, TCGRULES-turn-actions#1
+
+Citation grounding breakdown:
+  [PPG-5.5.1#2] ExplicitSupport
+  [TCGRULES-turn-actions#1] ExplicitSupport
+  Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
+```
+
+**Checks:**
+
+- PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
+- PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
+- PASS Clarifying question materiality: Question was tied to an expected material section (PPG-5.5.1#2).
+- PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
+
+### discard-shuffle-deescalate — PASS
+
+**Scenario** (Penalty Questions): A judge is called over because a competitor shuffled their discard pile into their deck without a card effect allowing it, and now needs a ruling on the appropriate penalty.
+
+**Facts the simulated judge answered from:** The competitor shuffled their discard pile into their deck without a card effect. The discard pile was small, the game hasn't progressed past the first few turns, and both competitors agree on exactly which cards were in it.
+
+**Questions** (1 round(s)):
+
+- **Turn 1** (tied to `PPG-5.5.1#4`): What were the contents of the discard pile, what turn of the game is it, and do both competitors agree on which exact cards were in the discard pile?
+  - *Judge:* The exact contents of the discard pile are not stated, but the game is in the first few turns, and both competitors agree on exactly which cards were in it.
+
+**Ruling:**
+
+```text
+Recommendation: I recommend that the judge de-escalate the penalty to a Warning, provided that the discard pile was minimal and the exact cards can be easily discerned by agreement of both competitors, and that the game state is repaired by retrieving the correct cards from the deck.
+Model's own assessment (unvalidated): Strong — The retrieved passages directly address the specific scenario of a competitor shuffling their discard pile into their deck without a card effect during the first few turns where both competitors agree on the contents, and explicitly prescribe a Warning and specific repair steps.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
+
+Explanation: The retrieved passages explicitly state as an example for de-escalating a penalty to a Warning when a competitor shuffles their discard pile into their deck without a card effect, provided the contents of the discard pile were minimal, the game has not progressed past the first few turns, and both competitors agree it is easily discernible which exact cards were in the minimal discard pile. Furthermore, the game state can be fixed by retrieving the correct cards from the deck and returning them to the discard pile.
+
+Repair steps:
+  - Retrieve the correct cards from the deck.
+  - Return those cards to the discard pile.
+
+Penalty guidance: A Warning should be issued to the competitor.
+
+Cited chunk IDs: PPG-5.5.1#4, PPG-5.5.1#5
+
+Citation grounding breakdown:
+  [PPG-5.5.1#4] ExplicitSupport
+  [PPG-5.5.1#5] ExplicitSupport
+  Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
+```
+
+**Checks:**
+
+- PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
+- PASS Sufficiency timing: Correctly recognized the initial scenario was incomplete.
+- PASS Clarifying question materiality: Question was tied to an expected material section (PPG-5.5.1#4).
+- PASS Post-answer retrieval: Retrieval after the judge's answer surfaced an expected section.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
+
+### spectator-conduct — FAIL
+
+**Scenario** (Tournament Procedure): A judge is called over because a spectator was standing very close to an in-progress match and talking loudly about the game state.
+
+**Facts the simulated judge answered from:** The person is a spectator, not playing in any event. They were standing next to the match and talking loudly about the game state.
+
+**Questions** (1 round(s)):
+
+- **Turn 1** (tied to `PPTRH-3.3#5`): Is the person standing close to the match and talking actually an active competitor in another event, or are they a spectator who is not actively participating in any main competitive event?
+  - *Judge:* The person is a spectator and not playing in any event. They were standing next to the match and talking loudly about the game state.
+
+**Ruling:**
+
+```text
+Recommendation: It is recommended that the judge address the spectator for failing to maintain a reasonable distance and for discussing the match in progress within earshot of the table, and instruct the spectator to move away and remain silent. If the spectator's actions are determined to disrupt tournament proceedings or cause tournament integrity issues, the judge may subject the spectator to penalties up to and including removal from the venue and suspension from Play! Pokémon events.
+Model's own assessment (unvalidated): Strong — The retrieved passages directly outline spectator responsibilities regarding maintaining distance, refraining from discussing matches within earshot, and the potential consequences for disrupting tournament proceedings.
+Validated Source Support: Strong — Every citation exists, all facts were confirmed sufficient, and every cited passage explicitly supports its claim with no conflicts.
+
+Explanation: According to spectator responsibilities, all spectators must maintain a reasonable distance from matches in progress to avoid distracting competitors and must refrain from discussing matches in progress within earshot of the table. If a spectator disrupts tournament proceedings or causes tournament integrity issues, they may be subject to penalties, up to and including removal from the venue and suspension from Play! Pokémon events.
+
+Penalty guidance: Should a spectator disrupt tournament proceedings or cause tournament integrity issues, that spectator may be subject to penalties, up to and including removal from the venue and a suspension from Play! Pokémon events.
+
+Cited chunk IDs: PPTRH-3.3#6, PPTRH-3.3#5
+
+Citation grounding breakdown:
+  [PPTRH-3.3#6] ExplicitSupport
+  [PPTRH-3.3#5] ExplicitSupport
+  Deterministic checks: retrieval non-empty=True, all citations exist=True, facts were sufficient=True
+```
+
+**Checks:**
+
+- PASS Initial retrieval: Retrieved at least one expected material section on turn 1.
+- **FAIL** Sufficiency timing: Expected immediate sufficiency, but a clarifying question was asked.
+- PASS Final Source Support: Validated Source Support (Strong) was in the acceptable set.
+
