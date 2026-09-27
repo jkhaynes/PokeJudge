@@ -68,7 +68,7 @@ public class EvalDatasetTests
         var scenario = ById("missed-mulligan-draws");
 
         Assert.Equal("Timing Questions", scenario.Category);
-        Assert.Equal(ExpectedTrajectoryOutcome.SufficientOnFirstTurn, scenario.ExpectedOutcome);
+        Assert.Equal(ExpectedTrajectoryOutcome.RequiresOneClarification, scenario.ExpectedOutcome);
         Assert.Contains("TCGTH-7.4.1", scenario.ExpectedMaterialSectionIds);
         Assert.Contains("TCGRULES-full-details-of-taking-a-mulligan", scenario.ExpectedMaterialSectionIds);
     }

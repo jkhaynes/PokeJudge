@@ -250,9 +250,11 @@ public static class EvalDataset
         // player could remember whether anyone mulliganed), which had no answerable
         // facts. TCGTH-7.4.1 and TCGRULES-full-details-of-taking-a-mulligan say the
         // opponent *may* draw a card per extra mulligan, during setup, after announcing
-        // how many. The description gives every material fact, so no question is
-        // expected. Partial is accepted because "the window has closed" is an inference:
-        // no passage covers claiming the draws late.
+        // how many. One question is expected (changed 2026-09-27 from no question): the
+        // description says B never drew the cards but not whether B announced them, and
+        // TCGTH-7.4.1 turns on the announcement, so asking is fair. Partial is accepted
+        // because "the window has closed" is an inference: no passage covers claiming the
+        // draws late.
         new EvalScenario(
             "missed-mulligan-draws",
             "Timing Questions",
@@ -260,8 +262,8 @@ public static class EvalDataset
             "drawn their card for the turn, then realizes they never drew the two extra cards they were allowed for " +
             "Player A's mulligans, and calls a judge.",
             new[] { "TCGTH-7.4.1", "TCGRULES-full-details-of-taking-a-mulligan" },
-            ExpectedTrajectoryOutcome.SufficientOnFirstTurn,
-            FactSheet: "Player B never announced or drew any mulligan cards during setup. Player B has made no other plays yet this turn. Player A has not played anything yet.",
+            ExpectedTrajectoryOutcome.RequiresOneClarification,
+            FactSheet: "Setup was completed normally and the game has started. Player B never announced or drew any mulligan cards during setup. Player B has made no other plays yet this turn. Player A has not played anything yet.",
             ExpectedMaterialSectionIdsAfterAnswer: Array.Empty<string>(),
             AcceptableFinalSourceSupport: new HashSet<SourceSupport> { SourceSupport.Strong, SourceSupport.Partial }),
 
