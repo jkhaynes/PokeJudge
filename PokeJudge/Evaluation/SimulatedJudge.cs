@@ -5,6 +5,10 @@ using PokeJudge.AI;
 
 public sealed record JudgeAnswer(string Answer, bool Known);
 
+// A failure of the eval's own judge call, never PokeJudge's: reported as infrastructure.
+public sealed class SimulatedJudgeException(Exception inner)
+    : Exception($"Simulated judge call failed: {inner.Message}", inner);
+
 // Stands in for the human judge at the table during `evaluate`: answers each of
 // PokeJudge's clarifying questions from the scenario text and its fact sheet, and only from them.
 // Replaces the old ordered script, which handed out canned answers regardless of

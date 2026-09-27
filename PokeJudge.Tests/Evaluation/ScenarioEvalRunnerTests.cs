@@ -181,6 +181,21 @@ public class ScenarioEvalRunnerTests
             () => runner.RunAsync(RequiresOneClarificationScenario()));
     }
 
+    // The simulated judge is eval tooling, so its failures (malformed reply, timeout)
+    // must be distinguishable from PokeJudge's own and reported as infrastructure.
+    [Fact]
+    public async Task RunAsync_SimulatedJudgeCallFails_ThrowsSimulatedJudgeException()
+    {
+        var (runner, llm, retriever, _) = BuildRunner();
+        llm.Enqueue(new ClarificationResult(false, new List<ClarifyingQuestion> { new("Q?", "A1#0") }));
+        retriever.Enqueue(new[] { Chunk("A1") });
+        // Nothing queued for the judge, so its call fails like a malformed reply.
+
+        var ex = await Assert.ThrowsAsync<SimulatedJudgeException>(
+            () => runner.RunAsync(RequiresOneClarificationScenario()));
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
+    }
+
     [Fact]
     public async Task RunAsync_NeverReachesSufficiencyWithinTurnCap_ReturnsTurnCapExhaustedWithoutCallingRulingGenerator()
     {

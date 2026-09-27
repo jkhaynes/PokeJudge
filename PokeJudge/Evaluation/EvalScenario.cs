@@ -12,7 +12,7 @@ public enum ExpectedTrajectoryOutcome
     SufficientOnFirstTurn,
 
     // One or more clarifying rounds are expected before sufficiency; the simulated
-    // judge answers each question from FactSheet.
+    // judge answers each question from the description and FactSheet.
     RequiresOneClarification,
 
     // The scenario is expected to reproduce a known, real "fail loudly" case

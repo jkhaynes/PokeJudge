@@ -76,7 +76,7 @@ using PokeJudge.StructuredState;
 //
 // Adds `dotnet run -- evaluate`: runs the real, full pipeline (the same one the
 // default flow below runs) against every hand-authored scenario in
-// Evaluation/EvalDataset.cs, with a scripted judge instead of console input.
+// Evaluation/EvalDataset.cs, with a scripted judge instead of console input (Step 2 replaced the script with SimulatedJudge).
 // ScenarioEvalScorer compares each captured trajectory against the scenario's
 // expected criteria -- retrieval quality, sufficiency timing, clarifying-question
 // materiality, and final Source Support -- per PRD SS15's trajectory-evaluation
@@ -610,7 +610,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             {
                 trajectory = await runner.RunAsync(scenario);
             }
-            catch (HttpRequestException ex)
+            // TaskCanceledException is HttpClient's timeout.
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or SimulatedJudgeException)
             {
                 infrastructureFailureCount++;
                 Console.WriteLine($"--- {runLabel} ---");
@@ -653,7 +654,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
 
             if (trajectory.Exchanges.Count > 0)
             {
-                Console.WriteLine($"  Not answerable from the fact sheet: {trajectory.NotKnownCount} of {trajectory.Exchanges.Count} question(s)");
+                Console.WriteLine($"  Not answerable from the scenario or fact sheet: {trajectory.NotKnownCount} of {trajectory.Exchanges.Count} question(s)");
             }
 
             foreach (var criterion in report.Criteria)
@@ -703,7 +704,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         ? $"Result: {totalPassCount}/{totalRunCount} scenario-runs fully passed all applicable criteria " +
           $"(across {scenarios.Count} scenario(s), {repeatCount} run(s) each)."
         : $"Result: {totalPassCount}/{totalRunCount} scenarios fully passed all applicable criteria.");
-    Console.WriteLine($"Questions the fact sheets couldn't answer: {totalNotKnown} of {totalQuestions} (reported, not scored).");
+    Console.WriteLine($"Questions the scenario and fact sheet couldn't answer: {totalNotKnown} of {totalQuestions} (reported, not scored).");
 
     if (infrastructureFailureCount > 0)
     {
