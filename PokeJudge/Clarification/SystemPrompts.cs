@@ -32,6 +32,13 @@ public static class SystemPrompts
         withhold a question -- ask about the missing fact anyway, or reconsider whether the scenario is
         actually sufficient given what's retrieved.
 
+        Never ask a question that has already been asked (see the questions already asked and the judge's
+        answers), even reworded, and never ask about something the scenario description or an earlier answer
+        already states. If the judge answered that something is not known, treat it as unknowable: do not ask
+        for it again. Decide from what is known -- if the ruling still depends on the unknown fact, report the
+        scenario sufficient anyway, so the ruling step can state what is unknown and label its Source Support
+        accordingly, rather than asking again.
+
         Always provide a short, concrete rationale explaining your sufficiency determination -- why the
         confirmed facts and retrieved passages were judged sufficient or not.
 

@@ -232,4 +232,29 @@ public class ClarificationLoopTests
 
         Assert.Same(chunksForTurn, observed);
     }
+
+    // A "not known" answer yields no facts, so without the question history the
+    // next turn had no record the question was asked and asked it again.
+    [Fact]
+    public async Task RunAsync_NotKnownAnswerWithNoFacts_NextAssessmentStillSeesTheQuestionAndAnswer()
+    {
+        var llm = new StubLlmClient();
+        llm.Enqueue(new ClarificationResult(false,
+            new List<ClarifyingQuestion> { new("Did the competitor see the card?", "X1#0") }));
+        llm.Enqueue(new FactExtractionResult(new List<string>(), new List<string>()));
+        llm.Enqueue(new ClarificationResult(true, new List<ClarifyingQuestion>()));
+
+        var retriever = new StubRetriever();
+        retriever.Enqueue(SomeChunks());
+        retriever.Enqueue(SomeChunks());
+
+        var loop = new ClarificationLoop(llm, retriever);
+
+        var outcome = await loop.RunAsync(ScenarioDescription, askJudge: _ => Task.FromResult("Not known."));
+
+        Assert.Equal(new[] { new AskedQuestion("Did the competitor see the card?", "Not known.") }, outcome.State.AskedQuestions);
+        // Call order: turn-1 sufficiency [0], turn-1 fact extraction [1], turn-2 sufficiency [2].
+        Assert.Contains("Did the competitor see the card?", llm.UserContents[2]);
+        Assert.Contains("Not known.", llm.UserContents[2]);
+    }
 }

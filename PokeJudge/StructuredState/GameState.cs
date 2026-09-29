@@ -9,11 +9,21 @@ public sealed class GameState
 {
     private readonly List<string> _confirmedFacts = new();
     private readonly List<string> _hypotheses = new();
+    private readonly List<AskedQuestion> _askedQuestions = new();
 
     public IReadOnlyList<string> ConfirmedFacts => _confirmedFacts;
     public IReadOnlyList<string> Hypotheses => _hypotheses;
 
+    // Every question asked and the judge's answer, verbatim. A "not known"
+    // answer adds no fact, so without this the next turn has no record the
+    // question was asked and asks it again.
+    public IReadOnlyList<AskedQuestion> AskedQuestions => _askedQuestions;
+
     public void AddConfirmedFacts(IEnumerable<string> facts) => _confirmedFacts.AddRange(facts);
 
     public void AddHypotheses(IEnumerable<string> hypotheses) => _hypotheses.AddRange(hypotheses);
+
+    public void AddAskedQuestion(string question, string answer) => _askedQuestions.Add(new AskedQuestion(question, answer));
 }
+
+public sealed record AskedQuestion(string Question, string Answer);

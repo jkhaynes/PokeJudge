@@ -156,4 +156,24 @@ public class PromptBuilderTests
 
         Assert.Contains("Issue a Warning.", prompt);
     }
+
+    [Fact]
+    public void BuildSufficiencyPrompt_NoQuestionsAskedYet_LabelsTheSectionAsNone()
+    {
+        var prompt = PromptBuilder.BuildSufficiencyPrompt("A test scenario description.", RetrievedChunks, new GameState());
+
+        Assert.Contains("Questions already asked and the judge's answers:\n(none yet)", prompt.ReplaceLineEndings("\n"));
+    }
+
+    [Fact]
+    public void BuildSufficiencyPrompt_IncludesEachQuestionAskedAndItsAnswer()
+    {
+        var state = new GameState();
+        state.AddAskedQuestion("Did the competitor see the card?", "Not known.");
+
+        var prompt = PromptBuilder.BuildSufficiencyPrompt("A test scenario description.", RetrievedChunks, state);
+
+        Assert.Contains("Did the competitor see the card?", prompt);
+        Assert.Contains("Not known.", prompt);
+    }
 }

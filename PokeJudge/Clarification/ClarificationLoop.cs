@@ -68,6 +68,7 @@ public sealed class ClarificationLoop
             foreach (var question in result.Questions)
             {
                 var answer = await askJudge(question);
+                state.AddAskedQuestion(question.Question, answer);
                 var extraction = await ExtractFactsAsync(question, answer);
 
                 state.AddConfirmedFacts(extraction.ConfirmedFacts);

@@ -30,6 +30,10 @@ public static class PromptBuilder
         AppendBulletedListOrNone(sb, state.Hypotheses);
         sb.AppendLine();
 
+        sb.AppendLine("Questions already asked and the judge's answers:");
+        AppendBulletedListOrNone(sb, state.AskedQuestions.Select(q => $"Q: {q.Question} A: {q.Answer}").ToList());
+        sb.AppendLine();
+
         sb.AppendLine("Given only the confirmed facts above and the retrieved passages, is this scenario sufficient to produce a ruling?");
 
         return sb.ToString();
