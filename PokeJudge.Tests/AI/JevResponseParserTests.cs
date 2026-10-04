@@ -4,33 +4,32 @@ using PokeJudge.AI;
 
 public class JevResponseParserTests
 {
+    // Copied from a live /v1/systemone response (2026-10-04), with p0 and p1 swapped in
+    // the answers object to prove the parser reads by key, not by position.
+    private const string LiveResponse = """
+        {"model":"jev-1.13.0","answers":{"p1":{"type":"noul","noul":0.06},"p0":{"type":"noul","noul":0.27}},"usage":{"input_tokens":449,"output_tokens":38}}
+        """;
+
     [Fact]
-    public void Parse_ObjectAnswers_ReturnsProbabilitiesInKeyOrder()
+    public void Parse_LiveResponse_ReturnsProbabilitiesInKeyOrder()
     {
-        const string json = """
-            { "model": "jev-1.13.0",
-              "p1": { "probability": 0.12 },
-              "p0": { "probability": 0.91 },
-              "usage": { "input_tokens": 900, "output_tokens": 0 } }
-            """;
-
-        var scores = JevResponseParser.Parse(json, new[] { "p0", "p1" });
-
-        Assert.Equal(new[] { 0.91, 0.12 }, scores);
+        Assert.Equal(new[] { 0.27, 0.06 }, JevResponseParser.Parse(LiveResponse, new[] { "p0", "p1" }));
     }
 
     [Fact]
-    public void Parse_BareNumberAnswers_AreAccepted()
+    public void Parse_NoAnswersObject_Throws()
     {
-        const string json = """{ "model": "jev-1.13.0", "p0": 0.4 }""";
+        const string json = """{ "model": "jev-1.13.0", "p0": { "type": "noul", "noul": 0.4 } }""";
 
-        Assert.Equal(new[] { 0.4 }, JevResponseParser.Parse(json, new[] { "p0" }));
+        var ex = Assert.Throws<InvalidOperationException>(() => JevResponseParser.Parse(json, new[] { "p0" }));
+
+        Assert.Contains("answers", ex.Message);
     }
 
     [Fact]
     public void Parse_MissingKey_ThrowsNamingIt()
     {
-        const string json = """{ "model": "jev-1.13.0", "p0": { "probability": 0.4 } }""";
+        const string json = """{ "answers": { "p0": { "type": "noul", "noul": 0.4 } } }""";
 
         var ex = Assert.Throws<InvalidOperationException>(() => JevResponseParser.Parse(json, new[] { "p0", "p1" }));
 
@@ -42,7 +41,7 @@ public class JevResponseParserTests
     [InlineData("-0.1")]
     public void Parse_ProbabilityOutsideZeroToOne_Throws(string value)
     {
-        var json = $$"""{ "p0": { "probability": {{value}} } }""";
+        var json = $$"""{ "answers": { "p0": { "type": "noul", "noul": {{value}} } } }""";
 
         var ex = Assert.Throws<InvalidOperationException>(() => JevResponseParser.Parse(json, new[] { "p0" }));
 
@@ -50,9 +49,9 @@ public class JevResponseParserTests
     }
 
     [Fact]
-    public void Parse_AnswerWithoutAProbability_Throws()
+    public void Parse_AnswerWithoutANoulProbability_Throws()
     {
-        const string json = """{ "p0": { "choice": "yes" } }""";
+        const string json = """{ "answers": { "p0": { "type": "choice", "choice": "yes" } } }""";
 
         Assert.Throws<InvalidOperationException>(() => JevResponseParser.Parse(json, new[] { "p0" }));
     }
