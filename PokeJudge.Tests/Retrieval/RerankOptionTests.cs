@@ -5,13 +5,23 @@ using PokeJudge.Retrieval;
 public class RerankOptionTests
 {
     [Fact]
-    public void Extract_NoFlag_ReturnsArgsUnchanged()
+    public void Extract_NoFlag_DefaultsToJevAndReturnsArgsUnchanged()
     {
         var (remaining, rerank, error) = RerankOption.Extract(new[] { "--only", "notes" });
 
         Assert.Null(error);
-        Assert.Null(rerank);
+        Assert.Equal(RerankOption.Jev, rerank);
         Assert.Equal(new[] { "--only", "notes" }, remaining);
+    }
+
+    [Fact]
+    public void Extract_None_TurnsRerankingOffAndRemovesTheFlag()
+    {
+        var (remaining, rerank, error) = RerankOption.Extract(new[] { "--rerank", "none", "--repeat", "3" });
+
+        Assert.Null(error);
+        Assert.Null(rerank);
+        Assert.Equal(new[] { "--repeat", "3" }, remaining);
     }
 
     [Fact]
@@ -29,8 +39,7 @@ public class RerankOptionTests
     {
         var (_, _, error) = RerankOption.Extract(new[] { "--rerank", "gemini" });
 
-        Assert.NotNull(error);
-        Assert.Contains("gemini", error);
+        Assert.Equal("Unknown reranker \"gemini\". Supported: jev, none.", error);
     }
 
     [Fact]
@@ -44,7 +53,7 @@ public class RerankOptionTests
     [Fact]
     public void Extract_FlagGivenTwice_ReturnsError()
     {
-        var (_, _, error) = RerankOption.Extract(new[] { "--rerank", "jev", "--rerank", "jev" });
+        var (_, _, error) = RerankOption.Extract(new[] { "--rerank", "none", "--rerank", "jev" });
 
         Assert.Equal("\"--rerank\" was given more than once.", error);
     }

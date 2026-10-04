@@ -1,7 +1,8 @@
 # Retrieval baseline (no reranking), 2026-10-04
 
 Task 11 of [the Jev reranking plan](2026-10-04-jev-reranking.md). This is the "before" state for Step 4's reranking
-experiment. Everything here ran on branch `claude/jev-reranking` without `--rerank`.
+experiment. Everything here ran on branch `claude/jev-reranking` without `--rerank`, when reranking was still opt-in.
+Reranking is now on by default, so reproduce these numbers with `--rerank none`.
 
 ## Read this first: which corpus this is
 

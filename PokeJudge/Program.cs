@@ -155,11 +155,23 @@ if (defaultFlowChunks.Count == 0)
     return 1;
 }
 
+var (_, defaultFlowRerank, defaultFlowRerankError) = RerankOption.Extract(args);
+if (defaultFlowRerankError is not null)
+{
+    Console.Error.WriteLine(defaultFlowRerankError);
+    return 1;
+}
+
 IEmbeddingClient defaultFlowEmbeddingClient = CreateEmbeddingClient(apiKey);
 var defaultFlowVectorStore = CreateVectorStore(defaultFlowChunks);
-IRetriever retriever = new VectorStoreRetriever(defaultFlowEmbeddingClient, defaultFlowVectorStore);
+var (retriever, defaultFlowRetrieverError) = CreateRetriever(defaultFlowEmbeddingClient, defaultFlowVectorStore, defaultFlowRerank, config);
+if (defaultFlowRetrieverError is not null)
+{
+    Console.Error.WriteLine(defaultFlowRetrieverError);
+    return 1;
+}
 
-var loop = new ClarificationLoop(llmClient, retriever);
+var loop = new ClarificationLoop(llmClient, retriever!);
 var rulingGenerator = new RulingGenerator(llmClient);
 var groundingValidator = new GroundingValidator(llmClient);
 
@@ -488,10 +500,9 @@ static async Task<int> RunSearch(string[] args, string apiKey, IConfiguration co
 
     Console.WriteLine("=== PokeJudge AI — Milestone 5 Vector Search ===\n");
     Console.WriteLine($"Query: {query}");
-    if (rerank is not null)
-    {
-        Console.WriteLine($"Reranked by: Jev ({config["Jev:CandidateCount"] ?? JevSettings.DefaultCandidateCount.ToString()} candidates)");
-    }
+    Console.WriteLine(rerank is null
+        ? "Reranked by: none (--rerank none)"
+        : $"Reranked by: Jev ({config["Jev:CandidateCount"] ?? JevSettings.DefaultCandidateCount.ToString()} candidates)");
     Console.WriteLine($"Searched {chunks.Count} chunks across all embedded documents.\n");
 
     foreach (var result in results)
@@ -513,7 +524,7 @@ static async Task<int> RunRetrievalEval(string[] args, string apiKey, IConfigura
     var (remaining, rerank, rerankError) = RerankOption.Extract(args.Skip(1).ToList());
     if (rerankError is not null || remaining.Count > 0)
     {
-        Console.Error.WriteLine(rerankError ?? "Usage: dotnet run -- eval [--rerank jev]");
+        Console.Error.WriteLine(rerankError ?? "Usage: dotnet run -- eval [--rerank jev|none]");
         return 1;
     }
 
@@ -534,10 +545,7 @@ static async Task<int> RunRetrievalEval(string[] args, string apiKey, IConfigura
     }
 
     Console.WriteLine("=== PokeJudge AI — Milestone 5 Retrieval Evaluation ===\n");
-    if (rerank is not null)
-    {
-        Console.WriteLine("Reranked by: Jev");
-    }
+    Console.WriteLine(rerank is null ? "Reranked by: none (--rerank none)" : "Reranked by: Jev");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {RetrievalEvalSet.Cases.Count} eval case(s).\n");
 
     var hits = 0;
@@ -651,7 +659,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     if (selectionError is not null)
     {
         Console.Error.WriteLine(selectionError);
-        Console.Error.WriteLine("(evaluate also accepts [--rerank jev].)");
+        Console.Error.WriteLine("(evaluate also accepts [--rerank jev|none].)");
         return 1;
     }
 
@@ -681,10 +689,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
     var judge = new SimulatedJudge(llmClient);
 
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
-    if (rerank is not null)
-    {
-        Console.WriteLine("Reranked by: Jev\n");
-    }
+    Console.WriteLine(rerank is null ? "Reranked by: none (--rerank none)\n" : "Reranked by: Jev\n");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
     if (requestsPerMinute is not null)
     {
@@ -932,7 +937,7 @@ static (IRetriever? Retriever, string? Error) CreateRetriever(
     var (jev, error) = JevSettings.Read(key => config[key]);
     if (error is not null)
     {
-        return (null, error);
+        return (null, $"{error}\nOr pass --rerank none to search without reranking.");
     }
 
     return (new RerankingRetriever(retriever, new JevRelevanceScorer(jev!.ApiKey, jev.Model), jev.CandidateCount, onReranked), null);

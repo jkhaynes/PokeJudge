@@ -108,15 +108,15 @@ dotnet run --project PokeJudge -- chunk PPG
 
 | Command | What it does |
 |---|---|
-| `dotnet run --project PokeJudge` | Interactive mode: describe a scenario, answer the questions, get a cited ruling |
-| `... -- search [--top <n>] [--rerank jev] <text>` | Show the top chunks retrieved for a query (default 5) |
-| `... -- eval [--rerank jev]` | Retrieval-only evaluation (embedding calls only, no chat model) |
+| `dotnet run --project PokeJudge [-- --rerank none]` | Interactive mode: describe a scenario, answer the questions, get a cited ruling |
+| `... -- search [--top <n>] [--rerank jev|none] <text>` | Show the top chunks retrieved for a query (default 5) |
+| `... -- eval [--rerank jev|none]` | Retrieval-only evaluation (embedding calls only, no chat model) |
 | `... -- retrieval-depth` | For each eval scenario, where its expected sections rank in the top 30 (embedding calls only) |
-| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>] [--rerank jev]` | Full scenario evaluation |
+| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>] [--rerank jev|none]` | Full scenario evaluation |
 
 Optional settings (user secrets): `Gemini:Model` and `Gemini:RequestsPerMinute`. A full `evaluate` run uses a large share of the free tier's daily request limit, so use `--only` or `--from` to run part of it.
 
-`--rerank jev` (experimental) fetches the top 30 by cosine similarity and keeps the 5 that TypeSafe's Jev model rates most likely to govern the situation. It needs `Jev:ApiKey` (`dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project PokeJudge`); `Jev:Model` (default `jev-latest`) and `Jev:CandidateCount` (default 30) are optional.
+Retrieval is reranked with Jev by default: it fetches the top 30 by cosine similarity and keeps the 5 that TypeSafe's Jev model rates most likely to govern the situation. Pass `--rerank none` to any command for plain cosine top 5. Reranking needs `Jev:ApiKey` (`dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project PokeJudge`); `Jev:Model` (default `jev-latest`) and `Jev:CandidateCount` (default 30) are optional.
 
 ## Status and roadmap
 
