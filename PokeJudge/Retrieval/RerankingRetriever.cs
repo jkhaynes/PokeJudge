@@ -14,22 +14,34 @@ public sealed class RerankingRetriever : IRetriever
     private readonly IRelevanceScorer _scorer;
     private readonly int _candidateCount;
     private readonly Action<IReadOnlyList<RerankedCandidate>>? _onReranked;
+    private readonly int? _maxPerSection;
 
+    // maxPerSection caps how many excerpts of one section reach the top K, so a
+    // section with many high-scoring excerpts can't crowd out every other rule
+    // (supporter-twice: five PPG-4.2.1 excerpts pushed TCGRULES-turn-actions to 6th).
+    // Skipped excerpts still fill any slots left when other sections run out.
     public RerankingRetriever(
         IRetriever inner,
         IRelevanceScorer scorer,
         int candidateCount,
-        Action<IReadOnlyList<RerankedCandidate>>? onReranked = null)
+        Action<IReadOnlyList<RerankedCandidate>>? onReranked = null,
+        int? maxPerSection = null)
     {
         if (candidateCount < 1)
         {
             throw new ArgumentOutOfRangeException(nameof(candidateCount), candidateCount, "Candidate count must be at least 1.");
         }
 
+        if (maxPerSection < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPerSection), maxPerSection, "Max per section must be at least 1.");
+        }
+
         _inner = inner;
         _scorer = scorer;
         _candidateCount = candidateCount;
         _onReranked = onReranked;
+        _maxPerSection = maxPerSection;
     }
 
     public async Task<IReadOnlyList<ScoredChunk>> RetrieveAsync(string queryText, int topK)
@@ -59,6 +71,34 @@ public sealed class RerankingRetriever : IRetriever
 
         _onReranked?.Invoke(reranked);
 
-        return reranked.Take(topK).Select(c => c.Chunk).ToList();
+        return SelectTop(reranked, topK).Select(c => c.Chunk).ToList();
+    }
+
+    private IEnumerable<RerankedCandidate> SelectTop(IReadOnlyList<RerankedCandidate> reranked, int topK)
+    {
+        if (_maxPerSection is not { } max)
+        {
+            return reranked.Take(topK);
+        }
+
+        var kept = new List<RerankedCandidate>();
+        var skipped = new List<RerankedCandidate>();
+        var perSection = new Dictionary<string, int>();
+        foreach (var candidate in reranked)
+        {
+            var section = candidate.Chunk.Chunk.Chunk.SectionId;
+            var count = perSection.GetValueOrDefault(section);
+            if (count < max)
+            {
+                perSection[section] = count + 1;
+                kept.Add(candidate);
+            }
+            else
+            {
+                skipped.Add(candidate);
+            }
+        }
+
+        return kept.Concat(skipped).Take(topK);
     }
 }

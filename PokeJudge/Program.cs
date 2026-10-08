@@ -941,7 +941,7 @@ static (IRetriever? Retriever, string? Error) CreateRetriever(
     }
 
     var scorer = new RetryingRelevanceScorer(new JevRelevanceScorer(jev!.ApiKey, jev.Model), onRetry: Console.Error.WriteLine);
-    return (new RerankingRetriever(retriever, scorer, jev.CandidateCount, onReranked), null);
+    return (new RerankingRetriever(retriever, scorer, jev.CandidateCount, onReranked, jev.MaxPerSection), null);
 }
 
 // Resolves to this .cs file's own directory (PokeJudge/) at compile time, so

@@ -139,4 +139,74 @@ public class RerankingRetrieverTests
         Assert.Throws<ArgumentOutOfRangeException>(
             () => new RerankingRetriever(new StubRetriever(), new StubRelevanceScorer(), candidateCount: 0));
     }
+
+    private static ScoredChunk SectionChunk(string id, double cosine) =>
+        new(new EmbeddedChunk(new TextChunk(id, id.Split('#')[0], $"Text for {id}", Source), new[] { 1f }), cosine);
+
+    // Three excerpts of section A outrank section B's only excerpt.
+    private static readonly IReadOnlyList<ScoredChunk> CrowdedCandidates = new[]
+    {
+        SectionChunk("A#0", 0.90), SectionChunk("A#1", 0.85), SectionChunk("A#2", 0.80), SectionChunk("B#0", 0.75)
+    };
+
+    [Fact]
+    public async Task RetrieveAsync_MaxPerSection_SkipsExtraExcerptsOfOneSection()
+    {
+        var inner = new StubRetriever();
+        inner.Enqueue(CrowdedCandidates);
+        var scorer = new StubRelevanceScorer();
+        scorer.Enqueue(0.9, 0.8, 0.7, 0.1);
+
+        var results = await new RerankingRetriever(inner, scorer, candidateCount: 30, maxPerSection: 2).RetrieveAsync("query", topK: 3);
+
+        Assert.Equal(new[] { "A#0", "A#1", "B#0" }, results.Select(r => r.Chunk.Chunk.ChunkId));
+    }
+
+    [Fact]
+    public async Task RetrieveAsync_MaxPerSection_FillsFromSkippedExcerptsWhenSectionsRunOut()
+    {
+        var inner = new StubRetriever();
+        inner.Enqueue(CrowdedCandidates);
+        var scorer = new StubRelevanceScorer();
+        scorer.Enqueue(0.9, 0.8, 0.7, 0.1);
+
+        var results = await new RerankingRetriever(inner, scorer, candidateCount: 30, maxPerSection: 1).RetrieveAsync("query", topK: 3);
+
+        Assert.Equal(new[] { "A#0", "B#0", "A#1" }, results.Select(r => r.Chunk.Chunk.ChunkId));
+    }
+
+    [Fact]
+    public async Task RetrieveAsync_NoMaxPerSection_KeepsRelevanceOrder()
+    {
+        var inner = new StubRetriever();
+        inner.Enqueue(CrowdedCandidates);
+        var scorer = new StubRelevanceScorer();
+        scorer.Enqueue(0.9, 0.8, 0.7, 0.1);
+
+        var results = await new RerankingRetriever(inner, scorer, candidateCount: 30).RetrieveAsync("query", topK: 3);
+
+        Assert.Equal(new[] { "A#0", "A#1", "A#2" }, results.Select(r => r.Chunk.Chunk.ChunkId));
+    }
+
+    [Fact]
+    public async Task RetrieveAsync_MaxPerSection_StillReportsEveryCandidate()
+    {
+        var inner = new StubRetriever();
+        inner.Enqueue(CrowdedCandidates);
+        var scorer = new StubRelevanceScorer();
+        scorer.Enqueue(0.9, 0.8, 0.7, 0.1);
+        IReadOnlyList<RerankedCandidate>? reported = null;
+
+        await new RerankingRetriever(inner, scorer, candidateCount: 30, onReranked: r => reported = r, maxPerSection: 1)
+            .RetrieveAsync("query", topK: 2);
+
+        Assert.Equal(new[] { "A#0", "A#1", "A#2", "B#0" }, reported!.Select(r => r.Chunk.Chunk.Chunk.ChunkId));
+    }
+
+    [Fact]
+    public void Constructor_MaxPerSectionBelowOne_Throws()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => new RerankingRetriever(new StubRetriever(), new StubRelevanceScorer(), candidateCount: 30, maxPerSection: 0));
+    }
 }
