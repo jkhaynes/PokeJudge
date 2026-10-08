@@ -16,11 +16,17 @@ public sealed class JevRelevanceScorer : IRelevanceScorer
 
     internal const string Endpoint = "https://api.typesafe.ai/v1/systemone";
 
-    // {0} is the passage id. Asks about governing the outcome, not topical overlap --
-    // the distinction cosine similarity can't make (deck-under-60's failure).
+    // {0} is the passage id. Asks whether the passage is about this situation, not
+    // topical overlap -- the distinction cosine similarity can't make (deck-under-60's
+    // failure). Tuning v4 (2026-10-08): the first wording asked only for "the outcome or
+    // the correct remedy", so a passage that names the infraction without a remedy
+    // scored low. Asking only about broken rules (v3) made plain rules questions favour
+    // penalty excerpts, so v4 names both. See
+    // docs/superpowers/plans/2026-10-07-jev-tuning-tracker.html.
     internal const string Instructions =
-        "Does passage {0} state a rule or policy that a Pokémon TCG judge would apply to decide this situation? " +
-        "Answer yes only if the passage governs the outcome or the correct remedy, not if it merely mentions related words.";
+        "Does passage {0} specifically address this situation or question: the game or tournament rule that answers " +
+        "it, the infraction it counts as, or how a judge should correct or penalize it? Answer yes for a passage about " +
+        "this specific situation or rule, not for passages that only share words with it.";
 
     private readonly string _apiKey;
     private readonly string _modelId;
