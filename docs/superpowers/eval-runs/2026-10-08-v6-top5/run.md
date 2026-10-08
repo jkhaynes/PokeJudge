@@ -72,14 +72,9 @@ Files: `evaluate.log` is the full console output (stdout and stderr). `summary.j
   `weakness-not-applied` 3 → 1, `special-condition` 3 → 1, `missed-prize` 3 → 2. With repeats varying now, a difference
   of one run per scenario is within noise.
 
-## Comparing with the top-10 run
+## Comparing with later runs
 
-Run the same command with `--top 10` (added after this run), save it next to this folder, summarize it the same way,
-then:
-
-```
-python -I tools/eval_summary.py compare docs/superpowers/eval-runs/2026-10-08-v6-top5/summary.json docs/superpowers/eval-runs/<top-10 folder>/summary.json
-```
-
-Judge the top-10 run on rulings and Source Support, not on the retrieval checks: with 10 excerpts, "received an
-expected section" passes more easily, so those checks aren't comparable across the two runs.
+This run is *before* the re-asking fix (`87aa9a9`, cherry-picked from `114f9b9` after it). The top-10 run will be
+compared against a new top-5 baseline that has the fix, not against this run; see
+[the to-do for 2026-10-09](../../plans/2026-10-09-todo.md). This run stays useful for measuring what the re-asking fix
+alone changed.
