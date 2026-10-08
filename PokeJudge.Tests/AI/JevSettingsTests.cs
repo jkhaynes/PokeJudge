@@ -13,7 +13,7 @@ public class JevSettingsTests
         var (settings, error) = JevSettings.Read(Config(("Jev:ApiKey", " key ")));
 
         Assert.Null(error);
-        Assert.Equal(new JevSettings("key", "jev-latest", 30, 4), settings);
+        Assert.Equal(new JevSettings("key", "jev-latest", 100, 4), settings);
     }
 
     [Fact]

@@ -5,7 +5,10 @@ namespace PokeJudge.AI;
 public sealed record JevSettings(string ApiKey, string Model, int CandidateCount, int MaxPerSection = JevSettings.DefaultMaxPerSection)
 {
     public const string DefaultModel = "jev-latest";
-    public const int DefaultCandidateCount = 30;
+    // Tuning v6: the deck-building rules (cosine rank 89) and the ACE SPEC rules
+    // (87) never reached Jev at 30; at 100 Jev ranks them 4th and 1st. Jev scores 100
+    // passages in one request for about 0.1-0.3 s more than 30.
+    public const int DefaultCandidateCount = 100;
 
     // At most 4 of the 5 reranked excerpts from one section, so at least one slot goes
     // to another section. Tuning v5: ace-spec-count needs 4 excerpts of PPG-5.6.1, and

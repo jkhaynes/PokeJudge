@@ -106,8 +106,8 @@
 
   <div class="legend">
     <span class="chip good">✓ 1</span><span style="align-self:center;color:var(--muted);font-size:13px">in the top 5 (the AI sees it)</span>
-    <span class="chip bad">✗ 9</span><span style="align-self:center;color:var(--muted);font-size:13px">ranked 6–30 (Jev saw it, the AI doesn't)</span>
-    <span class="chip none">—</span><span style="align-self:center;color:var(--muted);font-size:13px">not in the top 30 (unreachable)</span>
+    <span class="chip bad">✗ 9</span><span style="align-self:center;color:var(--muted);font-size:13px">ranked 6th or lower (Jev saw it, the AI doesn't)</span>
+    <span class="chip none">—</span><span style="align-self:center;color:var(--muted);font-size:13px">not among the candidates Jev scored (top 30 until v5, top 100 from v6)</span>
     <span class="chip warn">! 3–7</span><span style="align-self:center;color:var(--muted);font-size:13px">in the top 5 in some runs only</span>
     <span class="chip good changed">1–4</span><span style="align-self:center;color:var(--muted);font-size:13px">outlined = different from cosine; a range = varied across 3 runs</span>
   </div>
@@ -117,8 +117,8 @@
   <div class="card"><div class="scroll"><table class="score" id="scoreboard"></table></div></div>
 
   <div class="defs">
-    <div class="def"><b>Scenario sections in top 5</b>Needed sections from the 20 scenarios' turn-1 questions that land in the top 5 in all 3 runs. The 3 unreachable sections are left out.</div>
-    <div class="def"><b>Targets fixed</b>The 2 reachable sections cosine misses: <code>supporter-twice</code> → turn-actions (cosine 6), <code>ace-spec-count</code> → <code>PPG-5.6.1#2</code> (cosine 15).</div>
+    <div class="def"><b>Scenario sections in top 5</b>Needed sections from the 20 scenarios' turn-1 questions that land in the top 5 in all 3 runs, out of all 28. Until v5, 3 of them were never among the 30 candidates, so 25 was the most those versions could reach.</div>
+    <div class="def"><b>Targets fixed</b>The 5 sections cosine's top 5 misses: <code>supporter-twice</code> → turn-actions (cosine rank 6), <code>ace-spec-count</code> → <code>PPG-5.6.1#2</code> (15), <code>PPG-4.1.1</code> (33) and the ACE SPEC rules (87), and <code>deck-under-60</code> → deck-building rules (89).</div>
     <div class="def"><b>Controls lost</b>Sections cosine has in its top 5 that this version doesn't.</div>
     <div class="def"><b>Search-only</b>The 29 short <code>eval</code> questions, 1 run each. A miss shows as ✗ &gt;5, because <code>eval</code> doesn't print ranks below 5.</div>
     <div class="def"><b>Unstable</b>Sections in the top 5 in some of the 3 runs and out in others.</div>
@@ -128,12 +128,10 @@
 
   <h2>Scenario grid</h2>
   <p class="lede">Each scenario's turn-1 question, sent 3 times. The rank shown is the best-ranked excerpt of that section.</p>
-  <h3>Targets Jev can reach</h3>
+  <h3>Targets (sections cosine's top 5 misses)</h3>
   <div class="card"><div class="scroll"><table id="grid-target"></table></div></div>
   <h3>Controls (cosine already gets these)</h3>
   <div class="card"><div class="scroll"><table id="grid-control"></table></div></div>
-  <h3>Out of reach (not in the top 30, listed so they aren't forgotten)</h3>
-  <div class="card"><div class="scroll"><table id="grid-oor"></table></div></div>
   <p class="lede" style="margin-top:10px"><code>missed-prize</code> has no expected section (a source gap), so it isn't listed.</p>
 
   <h2>Search-only grid</h2>
@@ -166,77 +164,81 @@ const ITERATIONS = [
   { id: "v2", label: "v2", change: "Reword Jev's question: \"specifically address this kind of situation… answer no for general guidance that applies to almost every ruling\"", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.25 s", verdict: "Dropped (reverted)", verdictClass: "drop" },
   { id: "v3", label: "v3", change: "v2's question without the \"general guidance\" sentence", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.25 s", verdict: "Dropped (reverted); best on scenarios", verdictClass: "drop" },
   { id: "v4", label: "v4", change: "Question covers both kinds: \"the game or tournament rule that answers it, the infraction it counts as, or how a judge should correct or penalize it\"", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.25 s", verdict: "Keep", verdictClass: "keep" },
-  { id: "v5", label: "v5", change: "v4 plus at most 4 of the 5 kept excerpts from one section (Jev:MaxPerSection = 4)", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.25 s", verdict: "Keep (new current)", verdictClass: "keep" },
+  { id: "v5", label: "v5", change: "v4 plus at most 4 of the 5 kept excerpts from one section (Jev:MaxPerSection = 4)", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.25 s", verdict: "Keep", verdictClass: "keep" },
+  { id: "v6", label: "v6", change: "v5 with 100 candidates instead of 30 (Jev:CandidateCount = 100)", jevFailures: "0 of 89", jevRetries: "0", latency: "+0.33 s", verdict: "Keep (new current)", verdictClass: "keep" },
 ];
 
 // group: target | control | oor. Ranks: cosine is deterministic (one value); Jev iterations list 3 runs. null = not in top 30.
 const SCENARIOS = [
-  { group: "target",  scenario: "supporter-twice",      section: "TCGRULES-turn-actions",                      ranks: { cos: [6],  v0: [9, 9, 9], v1: [9, 9, 9], v2: [7, 6, 6], v3: [8, 8, 8], v4: [6, 6, 6], v5: [5, 5, 5] } },
-  { group: "target",  scenario: "ace-spec-count",       section: "PPG-5.6.1#2 (fix text)",                     ranks: { cos: [15], v0: [2, 2, 2], v1: [2, 3, 2], v2: [4, 3, 2], v3: [3, 3, 3], v4: [4, 4, 4], v5: [4, 4, 4] } },
+  { group: "target",  scenario: "supporter-twice",      section: "TCGRULES-turn-actions",                      ranks: { cos: [6],  v0: [9, 9, 9], v1: [9, 9, 9], v2: [7, 6, 6], v3: [8, 8, 8], v4: [6, 6, 6], v5: [5, 5, 5], v6: [5, 5, 5] } },
+  { group: "target",  scenario: "ace-spec-count",       section: "PPG-5.6.1#2 (fix text)",                     ranks: { cos: [15], v0: [2, 2, 2], v1: [2, 3, 2], v2: [4, 3, 2], v3: [3, 3, 3], v4: [4, 4, 4], v5: [4, 4, 4], v6: [87, 5, 87] } },
 
-  { group: "control", scenario: "notes",                section: "TCGTH-7.4.6",                                ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [2, 1, 2], v3: [1, 1, 3], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "proxy-cards",          section: "TCGTH-2.4",                                  ranks: { cos: [1], v0: [2, 2, 2], v1: [2, 2, 2], v2: [1, 1, 1], v3: [1, 1, 1], v4: [2, 2, 2], v5: [2, 2, 2] } },
-  { group: "control", scenario: "deck-not-shuffled",    section: "TCGTH-6.2",                                  ranks: { cos: [3], v0: [1, 1, 1], v1: [1, 1, 1], v2: [2, 3, 1], v3: [2, 2, 2], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "deck-not-shuffled",    section: "TCGTH-6.2.2",                                ranks: { cos: [1], v0: [11, 12, 13], v1: [11, 10, 16], v2: [1, 1, 2], v3: [1, 1, 1], v4: [2, 2, 2], v5: [2, 2, 3] } },
-  { group: "control", scenario: "spectator-badges",     section: "PPTRH-2.4",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "repeat-violations",    section: "PPG-4.2.2",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [8, 7, 9], v3: [2, 2, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "special-condition",    section: "TCGRULES-special-conditions",                ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "drew-extra-card",      section: "PPG-5.5.1",                                  ranks: { cos: [2], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "weakness-not-applied", section: "TCGRULES-full-details-of-attacking",         ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [2, 1, 1], v4: [2, 2, 2], v5: [2, 2, 2] } },
-  { group: "control", scenario: "weakness-not-applied", section: "TCGRULES-turn-actions",                      ranks: { cos: [2], v0: [2, 2, 2], v1: [2, 2, 2], v2: [2, 2, 2], v3: [1, 2, 2], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "supporter-twice",      section: "PPG-4.2.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "gx-attack-twice",      section: "TCGRULES-appendix-19-pok-mon-gx",            ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "missed-mulligan-draws", section: "TCGTH-7.4.1",                               ranks: { cos: [2], v0: [3, 3, 3], v1: [3, 3, 3], v2: [2, 3, 2], v3: [3, 3, 3], v4: [3, 3, 3], v5: [3, 3, 3] } },
-  { group: "control", scenario: "missed-mulligan-draws", section: "TCGRULES-full-details-of-taking-a-mulligan", ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "late-to-round",        section: "PPG-5.2.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "deck-under-60",        section: "PPG-5.6.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "deck-under-60",        section: "PPG-5.6.1#2 (fix text)",                     ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 2, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "ace-spec-count",       section: "PPG-5.6.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "too-many-prizes",      section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "prize-issue-vague",    section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [3, 4, 1], v1: [2, 4, 3], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "double-energy-attach", section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [2, 2, 2], v1: [2, 2, 2], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "discard-shuffle-deescalate", section: "PPG-5.5.1",                            ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
-  { group: "control", scenario: "spectator-conduct",    section: "PPTRH-3.3",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1] } },
+  { group: "control", scenario: "notes",                section: "TCGTH-7.4.6",                                ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [2, 1, 2], v3: [1, 1, 3], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "proxy-cards",          section: "TCGTH-2.4",                                  ranks: { cos: [1], v0: [2, 2, 2], v1: [2, 2, 2], v2: [1, 1, 1], v3: [1, 1, 1], v4: [2, 2, 2], v5: [2, 2, 2], v6: [2, 2, 2] } },
+  { group: "control", scenario: "deck-not-shuffled",    section: "TCGTH-6.2",                                  ranks: { cos: [3], v0: [1, 1, 1], v1: [1, 1, 1], v2: [2, 3, 1], v3: [2, 2, 2], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "deck-not-shuffled",    section: "TCGTH-6.2.2",                                ranks: { cos: [1], v0: [11, 12, 13], v1: [11, 10, 16], v2: [1, 1, 2], v3: [1, 1, 1], v4: [2, 2, 2], v5: [2, 2, 3], v6: [2, 3, 2] } },
+  { group: "control", scenario: "spectator-badges",     section: "PPTRH-2.4",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "repeat-violations",    section: "PPG-4.2.2",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [8, 7, 9], v3: [2, 2, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "special-condition",    section: "TCGRULES-special-conditions",                ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "drew-extra-card",      section: "PPG-5.5.1",                                  ranks: { cos: [2], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "weakness-not-applied", section: "TCGRULES-full-details-of-attacking",         ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [2, 1, 1], v4: [2, 2, 2], v5: [2, 2, 2], v6: [2, 2, 2] } },
+  { group: "control", scenario: "weakness-not-applied", section: "TCGRULES-turn-actions",                      ranks: { cos: [2], v0: [2, 2, 2], v1: [2, 2, 2], v2: [2, 2, 2], v3: [1, 2, 2], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "supporter-twice",      section: "PPG-4.2.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "gx-attack-twice",      section: "TCGRULES-appendix-19-pok-mon-gx",            ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "missed-mulligan-draws", section: "TCGTH-7.4.1",                               ranks: { cos: [2], v0: [3, 3, 3], v1: [3, 3, 3], v2: [2, 3, 2], v3: [3, 3, 3], v4: [3, 3, 3], v5: [3, 3, 3], v6: [3, 3, 3] } },
+  { group: "control", scenario: "missed-mulligan-draws", section: "TCGRULES-full-details-of-taking-a-mulligan", ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "late-to-round",        section: "PPG-5.2.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "deck-under-60",        section: "PPG-5.6.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "deck-under-60",        section: "PPG-5.6.1#2 (fix text)",                     ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 2, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "ace-spec-count",       section: "PPG-5.6.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [2, 2, 2] } },
+  { group: "control", scenario: "too-many-prizes",      section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "prize-issue-vague",    section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [3, 4, 1], v1: [2, 4, 3], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "double-energy-attach", section: "PPG-5.5.1",                                  ranks: { cos: [1], v0: [2, 2, 2], v1: [2, 2, 2], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "discard-shuffle-deescalate", section: "PPG-5.5.1",                            ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
+  { group: "control", scenario: "spectator-conduct",    section: "PPTRH-3.3",                                  ranks: { cos: [1], v0: [1, 1, 1], v1: [1, 1, 1], v2: [1, 1, 1], v3: [1, 1, 1], v4: [1, 1, 1], v5: [1, 1, 1], v6: [1, 1, 1] } },
 
-  { group: "oor",     scenario: "deck-under-60",        section: "TCGRULES-deck-building",                     ranks: { cos: [null], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null] } },
-  { group: "oor",     scenario: "ace-spec-count",       section: "TCGRULES-appendix-3-ace-spec-cards",         ranks: { cos: [null], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null] } },
-  { group: "oor",     scenario: "ace-spec-count",       section: "PPG-4.1.1",                                  ranks: { cos: [null], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null] } },
+  { group: "target",  scenario: "deck-under-60",        section: "TCGRULES-deck-building",                     ranks: { cos: [89], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null], v6: [4, 4, 4] } },
+  { group: "target",  scenario: "ace-spec-count",       section: "TCGRULES-appendix-3-ace-spec-cards",         ranks: { cos: [87], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null], v6: [1, 1, 1] } },
+  { group: "target",  scenario: "ace-spec-count",       section: "PPG-4.1.1",                                  ranks: { cos: [33], v0: [null, null, null], v1: [null, null, null], v2: [null, null, null], v3: [null, null, null], v4: [null, null, null], v5: [null, null, null], v6: [33, 34, 25] } },
 ];
 
 // One run each.
 const SEARCH = [
-  { section: "TCGTH-6.2", question: "A player's deck wasn't fully shuffled before the game started -- what should happen?", ranks: { cos: 3, v0: 1, v1: 1, v2: 2, v3: 2, v4: 1, v5: 1 } },
-  { section: "TCGTH-7.4.6", question: "Is a competitor allowed to keep written notes during their match?", ranks: { cos: 1, v0: 1, v1: 1, v2: 2, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGTH-2.4", question: "What happens if a card gets damaged during an event?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPTRH-2.4", question: "Do spectators need to wear a badge at large tournaments?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPTRH-4.5", question: "Can a player's match be filmed and shown live to an audience?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGTH-7.4.1", question: "What happens if a player has no Basic Pokemon in their opening hand?", ranks: { cos: 3, v0: 3, v1: 2, v2: 4, v3: 4, v4: 3, v5: 3 } },
-  { section: "PPG-4.2.2", question: "How are penalties handled for a competitor with a history of repeat violations?", ranks: { cos: 1, v0: 1, v1: 1, v2: null, v3: 2, v4: 1, v5: 1 } },
-  { section: "PPG-5.5.1", question: "A player pulled one more card off the top of their deck than they were supposed to. What penalty fits?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-5.5.1", question: "A player picked up a prize card even though none of the opponent's Pokemon had been knocked out. How serious is that?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-4.1.1", question: "If a judge gives a game loss halfway through a game, when does it actually take effect?", ranks: { cos: 4, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-4.2.1", question: "A mistake can be undone so the game ends up exactly as it should have been. Can the judge go easier on the penalty?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-5.2.1", question: "A player sat down at their table a few minutes after the round began. What penalty should they get?", ranks: { cos: 2, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-5.6.1", question: "A deck check finds the player's list adds up to only 59 cards. What's the penalty?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-3.3", question: "What does giving a player the two-prize penalty actually change about the game?", ranks: { cos: 1, v0: 1, v1: 1, v2: 5, v3: null, v4: 1, v5: 1 } },
-  { section: "PPG-5.4", question: "A player deliberately lied to a judge to gain an edge. What should happen to them?", ranks: { cos: 4, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-5.7", question: "A player keeps taking ages over every decision and their opponent is losing time. What can the judge do?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-4.4", question: "How much extra time can a judge add to a round after spending a while on a ruling?", ranks: { cos: 1, v0: 1, v1: 1, v2: 4, v3: 3, v4: 1, v5: 1 } },
-  { section: "PPG-5.3.1", question: "A player muttered a curse word while chatting with a friend between games. Is there a penalty?", ranks: { cos: 2, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "PPG-3.7", question: "If a player is thrown out of the event, do they still get the prizes they had earned?", ranks: { cos: 1, v0: 3, v1: 3, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-deck-building", question: "How many cards does a tournament deck need, and how many copies of one card can it run?", ranks: { cos: 5, v0: 5, v1: 5, v2: null, v3: null, v4: 2, v5: 3 } },
-  { section: "TCGRULES-appendix-3-ace-spec-cards", question: "Can a deck include two different ACE SPEC cards?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-turn-actions", question: "How many Supporter cards can a player use during one turn?", ranks: { cos: 1, v0: 1, v1: 1, v2: 5, v3: null, v4: 1, v5: 1 } },
-  { section: "TCGRULES-appendix-19-pok-mon-gx", question: "A player has two different Pokemon-GX. Can they use a GX attack with each one in the same game?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-full-details-of-attacking", question: "When a Pokemon attacks, in what order do you handle confusion, coin flips, choices and damage?", ranks: { cos: 1, v0: 1, v1: 1, v2: null, v3: null, v4: 1, v5: 1 } },
-  { section: "TCGRULES-full-details-of-taking-a-mulligan", question: "Only one player had to reshuffle and redraw their starting hand. How many extra cards can the other player take?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-special-conditions", question: "If a Pokemon is asleep and poisoned at once, what happens to it between turns?", ranks: { cos: 2, v0: 3, v1: 3, v2: 3, v3: 4, v4: 3, v5: 3 } },
-  { section: "TCGRULES-what-if-both-players-win-at-the-same-time", question: "Both players reached a winning condition at the same moment. Who wins?", ranks: { cos: 4, v0: 2, v1: 2, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-what-if-you-should-draw-more-cards-than-you-have", question: "A card says to draw five but there are only three cards left in the deck. Does the player lose?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
-  { section: "TCGRULES-appendix-8-radiant-pok-mon", question: "Can a deck run two different Radiant Pokemon?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1 } },
+  { section: "TCGTH-6.2", question: "A player's deck wasn't fully shuffled before the game started -- what should happen?", ranks: { cos: 3, v0: 1, v1: 1, v2: 2, v3: 2, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGTH-7.4.6", question: "Is a competitor allowed to keep written notes during their match?", ranks: { cos: 1, v0: 1, v1: 1, v2: 2, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGTH-2.4", question: "What happens if a card gets damaged during an event?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPTRH-2.4", question: "Do spectators need to wear a badge at large tournaments?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPTRH-4.5", question: "Can a player's match be filmed and shown live to an audience?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGTH-7.4.1", question: "What happens if a player has no Basic Pokemon in their opening hand?", ranks: { cos: 3, v0: 3, v1: 2, v2: 4, v3: 4, v4: 3, v5: 3, v6: 2 } },
+  { section: "PPG-4.2.2", question: "How are penalties handled for a competitor with a history of repeat violations?", ranks: { cos: 1, v0: 1, v1: 1, v2: null, v3: 2, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.5.1", question: "A player pulled one more card off the top of their deck than they were supposed to. What penalty fits?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.5.1", question: "A player picked up a prize card even though none of the opponent's Pokemon had been knocked out. How serious is that?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-4.1.1", question: "If a judge gives a game loss halfway through a game, when does it actually take effect?", ranks: { cos: 4, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-4.2.1", question: "A mistake can be undone so the game ends up exactly as it should have been. Can the judge go easier on the penalty?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.2.1", question: "A player sat down at their table a few minutes after the round began. What penalty should they get?", ranks: { cos: 2, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.6.1", question: "A deck check finds the player's list adds up to only 59 cards. What's the penalty?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-3.3", question: "What does giving a player the two-prize penalty actually change about the game?", ranks: { cos: 1, v0: 1, v1: 1, v2: 5, v3: null, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.4", question: "A player deliberately lied to a judge to gain an edge. What should happen to them?", ranks: { cos: 4, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 2 } },
+  { section: "PPG-5.7", question: "A player keeps taking ages over every decision and their opponent is losing time. What can the judge do?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-4.4", question: "How much extra time can a judge add to a round after spending a while on a ruling?", ranks: { cos: 1, v0: 1, v1: 1, v2: 4, v3: 3, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-5.3.1", question: "A player muttered a curse word while chatting with a friend between games. Is there a penalty?", ranks: { cos: 2, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "PPG-3.7", question: "If a player is thrown out of the event, do they still get the prizes they had earned?", ranks: { cos: 1, v0: 3, v1: 3, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-deck-building", question: "How many cards does a tournament deck need, and how many copies of one card can it run?", ranks: { cos: 5, v0: 5, v1: 5, v2: null, v3: null, v4: 2, v5: 3, v6: 2 } },
+  { section: "TCGRULES-appendix-3-ace-spec-cards", question: "Can a deck include two different ACE SPEC cards?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-turn-actions", question: "How many Supporter cards can a player use during one turn?", ranks: { cos: 1, v0: 1, v1: 1, v2: 5, v3: null, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-appendix-19-pok-mon-gx", question: "A player has two different Pokemon-GX. Can they use a GX attack with each one in the same game?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-full-details-of-attacking", question: "When a Pokemon attacks, in what order do you handle confusion, coin flips, choices and damage?", ranks: { cos: 1, v0: 1, v1: 1, v2: null, v3: null, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-full-details-of-taking-a-mulligan", question: "Only one player had to reshuffle and redraw their starting hand. How many extra cards can the other player take?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-special-conditions", question: "If a Pokemon is asleep and poisoned at once, what happens to it between turns?", ranks: { cos: 2, v0: 3, v1: 3, v2: 3, v3: 4, v4: 3, v5: 3, v6: 3 } },
+  { section: "TCGRULES-what-if-both-players-win-at-the-same-time", question: "Both players reached a winning condition at the same moment. Who wins?", ranks: { cos: 4, v0: 2, v1: 2, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-what-if-you-should-draw-more-cards-than-you-have", question: "A card says to draw five but there are only three cards left in the deck. Does the player lose?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
+  { section: "TCGRULES-appendix-8-radiant-pok-mon", question: "Can a deck run two different Radiant Pokemon?", ranks: { cos: 1, v0: 1, v1: 1, v2: 1, v3: 1, v4: 1, v5: 1, v6: 1 } },
 ];
 
 const NOTES = [
+  ["v6: kept, the new current version. Two rules no earlier version could reach.", "Jev now scores the top 100 by cosine instead of the top 30. The deck-building rules (cosine rank 89) land at rank 4 and the ACE SPEC rules (cosine rank 87) at rank 1 (Jev 0.85), in all 3 runs. Every other scenario section kept its v5 status, and the search-only test stayed at 29/29. Rank-1 hits went from 26 to 25 (<code>PPG-5.4</code> 1 → 2), while <code>TCGRULES-deck-building</code> and <code>TCGTH-7.4.1</code> moved up to 2. A search takes about 0.08 s longer than in v5 (2.07 s against 1.99 s per search command)."],
+  ["v6: the trade-off in ace-spec-count.", "Its top 5 is now the ACE SPEC rule plus 4 <code>PPG-5.6.1</code> excerpts. The fix text <code>PPG-5.6.1#2</code> is the 5th-best <code>PPG-5.6.1</code> excerpt, so the cap of 4 moves it to the back (rank 87). It made the top 5 in 1 of 3 runs, when it edged out <code>PPG-5.6.1#9</code> by 0.01 (0.25 against 0.24). The scenario gained the rule it most needs and lost the fix text."],
+  ["v6: still missing.", "<code>PPG-4.1.1</code> is now among the candidates (cosine rank 33), but Jev scores it about 0.06 for <code>ace-spec-count</code>, ranking it 25–34. Jev doesn't see it as relevant here, so neither a wider pool nor the cap can help. It needs either the wording or a different source of the rule."],
   ["v5: kept, the new current version. Both targets fixed.", "At most 4 of the 5 kept excerpts can come from one section, so at least one slot always goes to another section. <code>supporter-twice</code>'s <code>TCGRULES-turn-actions</code> moved from 6 to 5 in all 3 runs, taking the slot the fifth <code>PPG-4.2.1</code> excerpt had. <code>ace-spec-count</code> keeps its fix text, because 4 is exactly the number of <code>PPG-5.6.1</code> excerpts it needs. That's 25 of 25 reachable sections in the top 5, no control lost, and the search-only test unchanged at 29/29 with 26 at rank 1."],
   ["v5: caveat.", "The cap of 4 was picked from the replay because it suits these two scenarios. The rule behind it (\"always show at least one other section\") is general, but only these two cases support it. A rules question whose answer is the 5th excerpt of one section would now lose that excerpt. None of the 29 search-only questions did. The ranks were cross-checked against the 5 results <code>search</code> actually returned."],
   ["v4: kept.", "The question is now: <em>\"Does passage {0} specifically address this situation or question: the game or tournament rule that answers it, the infraction it counts as, or how a judge should correct or penalize it? Answer yes for a passage about this specific situation or rule, not for passages that only share words with it.\"</em> It's the first version that's at least as good as v1 on every measure."],
@@ -362,7 +364,6 @@ function renderSearch() {
 renderScoreboard();
 renderGrid("target", "grid-target");
 renderGrid("control", "grid-control");
-renderGrid("oor", "grid-oor");
 renderSearch();
 document.getElementById("changed-only").addEventListener("change", renderSearch);
 document.getElementById("notes").innerHTML = NOTES.map(([h, b]) => `<div class="note"><b>${h}</b> ${b}</div>`).join("");
