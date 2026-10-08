@@ -112,7 +112,7 @@ dotnet run --project PokeJudge -- chunk PPG
 | `... -- search [--top <n>] [--rerank jev|none] <text>` | Show the top chunks retrieved for a query (default 5) |
 | `... -- eval [--rerank jev|none]` | Retrieval-only evaluation (embedding calls only, no chat model) |
 | `... -- retrieval-depth` | For each eval scenario, where its expected sections rank in the top 30 (embedding calls only) |
-| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>] [--rerank jev|none]` | Full scenario evaluation |
+| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>] [--rerank jev|none] [--top <n>]` | Full scenario evaluation (`--top`: excerpts the AI reads per turn, default 5) |
 
 Optional settings (user secrets): `Gemini:Model` and `Gemini:RequestsPerMinute`. A full `evaluate` run uses a large share of the free tier's daily request limit, so use `--only` or `--from` to run part of it.
 

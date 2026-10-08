@@ -655,11 +655,18 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         return 1;
     }
 
-    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(remaining, EvalDataset.Scenarios);
+    var (selectorArgs, topK, topError) = TopOption.Extract(remaining);
+    if (topError is not null)
+    {
+        Console.Error.WriteLine(topError);
+        return 1;
+    }
+
+    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(selectorArgs, EvalDataset.Scenarios);
     if (selectionError is not null)
     {
         Console.Error.WriteLine(selectionError);
-        Console.Error.WriteLine("(evaluate also accepts [--rerank jev|none].)");
+        Console.Error.WriteLine("(evaluate also accepts [--rerank jev|none] and [--top <n>].)");
         return 1;
     }
 
@@ -690,7 +697,8 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
 
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
     Console.WriteLine(rerank is null ? "Reranked by: none (--rerank none)\n" : "Reranked by: Jev\n");
-    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.");
+    Console.WriteLine($"The AI reads the top {topK} excerpts per turn (--top).\n");
     if (requestsPerMinute is not null)
     {
         Console.WriteLine($"Pacing model calls to {requestsPerMinute} per minute (Gemini:RequestsPerMinute).\n");
@@ -711,7 +719,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         {
             // Fresh loop/generator/validator per run -- no mutable state should leak
             // between independent runs, scenario or repeat alike.
-            var loop = new ClarificationLoop(llmClient, retriever!);
+            var loop = new ClarificationLoop(llmClient, retriever!, topK: topK);
             var rulingGenerator = new RulingGenerator(llmClient);
             var groundingValidator = new GroundingValidator(llmClient);
             var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, judge);
