@@ -47,4 +47,18 @@ public class GameStateTests
         Assert.Equal(new[] { "fact 1", "fact 2" }, state.ConfirmedFacts);
         Assert.Equal(new[] { "hypothesis 1" }, state.Hypotheses);
     }
+
+    [Fact]
+    public void AddAskedQuestion_RecordsQuestionsAndAnswersInOrder()
+    {
+        var state = new GameState();
+
+        state.AddAskedQuestion("Was a Pokemon Knocked Out?", "Yes.");
+        state.AddAskedQuestion("Did they see the card?", "Not known.");
+
+        Assert.Equal(
+            new[] { new AskedQuestion("Was a Pokemon Knocked Out?", "Yes."), new AskedQuestion("Did they see the card?", "Not known.") },
+            state.AskedQuestions);
+        Assert.Empty(state.ConfirmedFacts);
+    }
 }

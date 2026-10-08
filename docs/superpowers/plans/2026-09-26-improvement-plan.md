@@ -140,6 +140,14 @@ A ruling can only be as good as the rules the AI is shown, so the next step is t
 
 **How we'll check it.** First grow the search-only test from 7 questions to about 30. It's free to run and shows how often the right rule is found. Then run the full 20-scenario test with each option and compare scores against cost.
 
+**Result of the first try: reranking with Jev (a variant of option A).** Search the top 30, let Jev pick the best 5. [Full results](2026-10-04-jev-reranking-results.md).
+
+- Not adopted. Only 1 of the 4 missing-rule scenarios got every rule it needs, and it already did before reranking. One scenario that used to work ("deck not shuffled") lost a rule it needs.
+- Three of the missing rules aren't in the top 30 at all, so no reranker can reach them. The fourth (the one-Supporter-per-turn rule, ranked 6th) was there, and Jev still ranked it out of the top 5.
+- Jev did rank better on the short search-only questions: 24 of 29 at rank 1 instead of 20. It added only about 0.24 seconds per search.
+- Jev was unavailable for 13 of 60 test runs, and it made retrieval vary between identical runs.
+- Next: option B or C, since the misses are rules the search can't find at all.
+
 ## Step 5: The right model for each job
 
 PokeJudge uses one AI model for every step today, but the steps are not equally hard; paying for a strong model only where judgment matters should give the same or better accuracy for less money.

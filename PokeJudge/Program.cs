@@ -113,12 +113,17 @@ if (args.Length > 0 && args[0] == "chunk")
 
 if (args.Length > 0 && args[0] == "search")
 {
-    return await RunSearch(args, apiKey);
+    return await RunSearch(args, apiKey, config);
 }
 
 if (args.Length > 0 && args[0] == "eval")
 {
-    return await RunRetrievalEval(apiKey);
+    return await RunRetrievalEval(args, apiKey, config);
+}
+
+if (args.Length > 0 && args[0] == "retrieval-depth")
+{
+    return await RunRetrievalDepth(apiKey);
 }
 
 if (args.Length > 0 && args[0] == "evaluate")
@@ -138,7 +143,7 @@ if (args.Length > 0 && args[0] == "evaluate")
         requestsPerMinute = parsed;
     }
 
-    return await RunScenarioEval(args, apiKey, modelId, requestsPerMinute);
+    return await RunScenarioEval(args, apiKey, modelId, requestsPerMinute, config);
 }
 
 ILlmClient llmClient = new GeminiLlmClient(apiKey, modelId);
@@ -150,11 +155,23 @@ if (defaultFlowChunks.Count == 0)
     return 1;
 }
 
+var (_, defaultFlowRerank, defaultFlowRerankError) = RerankOption.Extract(args);
+if (defaultFlowRerankError is not null)
+{
+    Console.Error.WriteLine(defaultFlowRerankError);
+    return 1;
+}
+
 IEmbeddingClient defaultFlowEmbeddingClient = CreateEmbeddingClient(apiKey);
 var defaultFlowVectorStore = CreateVectorStore(defaultFlowChunks);
-IRetriever retriever = new VectorStoreRetriever(defaultFlowEmbeddingClient, defaultFlowVectorStore);
+var (retriever, defaultFlowRetrieverError) = CreateRetriever(defaultFlowEmbeddingClient, defaultFlowVectorStore, defaultFlowRerank, config);
+if (defaultFlowRetrieverError is not null)
+{
+    Console.Error.WriteLine(defaultFlowRetrieverError);
+    return 1;
+}
 
-var loop = new ClarificationLoop(llmClient, retriever);
+var loop = new ClarificationLoop(llmClient, retriever!);
 var rulingGenerator = new RulingGenerator(llmClient);
 var groundingValidator = new GroundingValidator(llmClient);
 
@@ -437,15 +454,23 @@ static async Task<int> RunChunking(string[] args, string apiKey)
 // no vector database (see .project-plans/milestone-5/plan.md for why that's
 // the right choice at this scale).
 // ---------------------------------------------------------------------------
-static async Task<int> RunSearch(string[] args, string apiKey)
+static async Task<int> RunSearch(string[] args, string apiKey, IConfiguration config)
 {
-    if (args.Length < 2)
+    var (remaining, rerank, rerankError) = RerankOption.Extract(args.Skip(1).ToList());
+    if (rerankError is not null)
     {
-        Console.Error.WriteLine("Usage: dotnet run -- search <query text>");
+        Console.Error.WriteLine(rerankError);
         return 1;
     }
 
-    var query = string.Join(" ", args.Skip(1));
+    var (searchArgs, parseError) = SearchArgsParser.Parse(remaining);
+    if (parseError is not null)
+    {
+        Console.Error.WriteLine(parseError);
+        return 1;
+    }
+
+    var query = searchArgs!.Query;
     var chunks = LoadAllEmbeddedChunks();
 
     if (chunks.Count == 0)
@@ -455,12 +480,29 @@ static async Task<int> RunSearch(string[] args, string apiKey)
     }
 
     IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
-    var queryVectors = await embeddingClient.EmbedBatchAsync(new[] { query });
     var store = CreateVectorStore(chunks);
-    var results = store.Search(queryVectors[0], topK: 5);
+    var (retriever, retrieverError) = CreateRetriever(embeddingClient, store, rerank, config, onReranked: candidates =>
+    {
+        Console.WriteLine($"Jev scored {candidates.Count} candidate(s):");
+        foreach (var c in candidates)
+        {
+            Console.WriteLine($"  [{c.Relevance:F3}] {c.Chunk.Chunk.Chunk.ChunkId} (cosine rank {c.CosineRank}, {c.Chunk.Score:F4})");
+        }
+        Console.WriteLine();
+    });
+    if (retrieverError is not null)
+    {
+        Console.Error.WriteLine(retrieverError);
+        return 1;
+    }
+
+    var results = await retriever!.RetrieveAsync(query, searchArgs.TopK);
 
     Console.WriteLine("=== PokeJudge AI — Milestone 5 Vector Search ===\n");
     Console.WriteLine($"Query: {query}");
+    Console.WriteLine(rerank is null
+        ? "Reranked by: none (--rerank none)"
+        : $"Reranked by: Jev ({config["Jev:CandidateCount"] ?? JevSettings.DefaultCandidateCount.ToString()} candidates)");
     Console.WriteLine($"Searched {chunks.Count} chunks across all embedded documents.\n");
 
     foreach (var result in results)
@@ -477,8 +519,15 @@ static async Task<int> RunSearch(string[] args, string apiKey)
 // the same in-process vector store -- deterministic hit/miss checking with
 // zero chat/completion model calls, demonstrating retrieval quality is
 // measurable independent of generation quality.
-static async Task<int> RunRetrievalEval(string apiKey)
+static async Task<int> RunRetrievalEval(string[] args, string apiKey, IConfiguration config)
 {
+    var (remaining, rerank, rerankError) = RerankOption.Extract(args.Skip(1).ToList());
+    if (rerankError is not null || remaining.Count > 0)
+    {
+        Console.Error.WriteLine(rerankError ?? "Usage: dotnet run -- eval [--rerank jev|none]");
+        return 1;
+    }
+
     var chunks = LoadAllEmbeddedChunks();
     if (chunks.Count == 0)
     {
@@ -488,18 +537,22 @@ static async Task<int> RunRetrievalEval(string apiKey)
 
     IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
     var store = CreateVectorStore(chunks);
-
-    var queries = RetrievalEvalSet.Cases.Select(c => c.Query).ToList();
-    var queryVectors = await embeddingClient.EmbedBatchAsync(queries);
+    var (retriever, retrieverError) = CreateRetriever(embeddingClient, store, rerank, config);
+    if (retrieverError is not null)
+    {
+        Console.Error.WriteLine(retrieverError);
+        return 1;
+    }
 
     Console.WriteLine("=== PokeJudge AI — Milestone 5 Retrieval Evaluation ===\n");
+    Console.WriteLine(rerank is null ? "Reranked by: none (--rerank none)" : "Reranked by: Jev");
     Console.WriteLine($"Searching across {chunks.Count} chunks. {RetrievalEvalSet.Cases.Count} eval case(s).\n");
 
     var hits = 0;
     for (var i = 0; i < RetrievalEvalSet.Cases.Count; i++)
     {
         var evalCase = RetrievalEvalSet.Cases[i];
-        var results = store.Search(queryVectors[i], topK: 5);
+        var results = await retriever!.RetrieveAsync(evalCase.Query, SearchArgsParser.DefaultTopK);
         var evalResult = RetrievalEvaluator.Evaluate(evalCase, results);
 
         if (evalResult.Hit)
@@ -520,6 +573,52 @@ static async Task<int> RunRetrievalEval(string apiKey)
 
     Console.WriteLine($"Result: {hits}/{RetrievalEvalSet.Cases.Count} hit within top 5.");
 
+    return 0;
+}
+
+// Step 4 diagnostic: for each scenario, where do its expected sections rank in the
+// top 30 for the turn-1 description? Rerankable (ranks 6-30) means a top-30 reranker
+// can promote it; OutOfReach means no reranker over 30 candidates can.
+static async Task<int> RunRetrievalDepth(string apiKey)
+{
+    const int depth = JevSettings.DefaultCandidateCount;
+    var topK = SearchArgsParser.DefaultTopK;
+    var chunks = LoadAllEmbeddedChunks();
+    if (chunks.Count == 0)
+    {
+        Console.Error.WriteLine("No chunked/embedded documents found. Run `ingest` and `chunk` first.");
+        return 1;
+    }
+
+    IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
+    var store = CreateVectorStore(chunks);
+    var scenarios = EvalDataset.Scenarios;
+    var vectors = await embeddingClient.EmbedBatchAsync(scenarios.Select(s => s.InitialDescription).ToList());
+
+    Console.WriteLine($"=== PokeJudge AI — Retrieval Depth (top {depth}, AI sees top {topK}) ===\n");
+    var counts = new Dictionary<SectionReach, int>();
+
+    for (var i = 0; i < scenarios.Count; i++)
+    {
+        var results = store.Search(vectors[i], depth);
+        Console.WriteLine($"[{scenarios[i].Id}] rank {topK} cutoff: {results.ElementAtOrDefault(topK - 1)?.Chunk.Chunk.ChunkId ?? "(none)"}");
+
+        if (scenarios[i].ExpectedMaterialSectionIds.Count == 0)
+        {
+            Console.WriteLine("    (no expected sections)");
+        }
+
+        foreach (var rank in SectionRankFinder.Find(scenarios[i].ExpectedMaterialSectionIds, results, topK))
+        {
+            counts[rank.Reach] = counts.GetValueOrDefault(rank.Reach) + 1;
+            Console.WriteLine($"    {rank.SectionId}: {(rank.Rank is { } r ? $"rank {r}" : $"not in top {depth}")} ({rank.Reach})");
+        }
+        Console.WriteLine();
+    }
+
+    Console.WriteLine($"Sections in top {topK}: {counts.GetValueOrDefault(SectionReach.InTopK)}, " +
+        $"rerankable: {counts.GetValueOrDefault(SectionReach.Rerankable)}, " +
+        $"out of reach: {counts.GetValueOrDefault(SectionReach.OutOfReach)}");
     return 0;
 }
 
@@ -547,12 +646,27 @@ static async Task<int> RunRetrievalEval(string apiKey)
 // totals, rather than crashing the whole command or silently counting as PokeJudge
 // getting the scenario wrong.
 // ---------------------------------------------------------------------------
-static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId, int? requestsPerMinute)
+static async Task<int> RunScenarioEval(string[] args, string apiKey, string modelId, int? requestsPerMinute, IConfiguration config)
 {
-    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(args.Skip(1).ToList(), EvalDataset.Scenarios);
+    var (remaining, rerank, rerankError) = RerankOption.Extract(args.Skip(1).ToList());
+    if (rerankError is not null)
+    {
+        Console.Error.WriteLine(rerankError);
+        return 1;
+    }
+
+    var (selectorArgs, topK, topError) = TopOption.Extract(remaining);
+    if (topError is not null)
+    {
+        Console.Error.WriteLine(topError);
+        return 1;
+    }
+
+    var (scenarios, repeatCount, selectionError) = EvalScenarioSelector.Select(selectorArgs, EvalDataset.Scenarios);
     if (selectionError is not null)
     {
         Console.Error.WriteLine(selectionError);
+        Console.Error.WriteLine("(evaluate also accepts [--rerank jev|none] and [--top <n>].)");
         return 1;
     }
 
@@ -571,13 +685,20 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
 
     IEmbeddingClient embeddingClient = CreateEmbeddingClient(apiKey);
     var store = CreateVectorStore(chunks);
-    IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
+    var (retriever, retrieverError) = CreateRetriever(embeddingClient, store, rerank, config);
+    if (retrieverError is not null)
+    {
+        Console.Error.WriteLine(retrieverError);
+        return 1;
+    }
 
     // Same client as PokeJudge: same model, seed and pacing.
     var judge = new SimulatedJudge(llmClient);
 
     Console.WriteLine("=== PokeJudge AI — Milestone 8 Scenario Evaluation ===\n");
-    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.\n");
+    Console.WriteLine(rerank is null ? "Reranked by: none (--rerank none)\n" : "Reranked by: Jev\n");
+    Console.WriteLine($"Searching across {chunks.Count} chunks. {scenarios!.Count} scenario(s), {repeatCount} run(s) each.");
+    Console.WriteLine($"The AI reads the top {topK} excerpts per turn (--top).\n");
     if (requestsPerMinute is not null)
     {
         Console.WriteLine($"Pacing model calls to {requestsPerMinute} per minute (Gemini:RequestsPerMinute).\n");
@@ -598,7 +719,7 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
         {
             // Fresh loop/generator/validator per run -- no mutable state should leak
             // between independent runs, scenario or repeat alike.
-            var loop = new ClarificationLoop(llmClient, retriever);
+            var loop = new ClarificationLoop(llmClient, retriever!, topK: topK);
             var rulingGenerator = new RulingGenerator(llmClient);
             var groundingValidator = new GroundingValidator(llmClient);
             var runner = new ScenarioEvalRunner(loop, rulingGenerator, groundingValidator, judge);
@@ -641,6 +762,9 @@ static async Task<int> RunScenarioEval(string[] args, string apiKey, string mode
             var exchangeIndex = 0;
             for (var turnIndex = 0; turnIndex < trajectory.Turns.Count; turnIndex++)
             {
+                var retrieved = trajectory.Turns[turnIndex].RetrievedChunks;
+                Console.WriteLine($"  [Turn {turnIndex + 1} retrieved] {string.Join(", ", retrieved.Select(c => $"{c.Chunk.Chunk.ChunkId} ({c.Score:F4})"))}");
+
                 foreach (var question in trajectory.Turns[turnIndex].Questions)
                 {
                     Console.WriteLine($"  [Turn {turnIndex + 1} question — re: {question.RelatedChunkId}] {question.Question}");
@@ -802,6 +926,31 @@ static void PrintRuling(RulingResult ruling, GroundingResult grounding)
 // at one call site but not the others.
 static IEmbeddingClient CreateEmbeddingClient(string apiKey) =>
     new GeminiEmbeddingClient(apiKey, "gemini-embedding-001", outputDimensionality: 768);
+
+// Single place a reranker is attached, so search, eval and evaluate rerank identically.
+// Returns an error (never throws) for a missing Jev key, so the command can exit 1.
+static (IRetriever? Retriever, string? Error) CreateRetriever(
+    IEmbeddingClient embeddingClient,
+    InMemoryVectorStore store,
+    string? rerank,
+    IConfiguration config,
+    Action<IReadOnlyList<RerankedCandidate>>? onReranked = null)
+{
+    IRetriever retriever = new VectorStoreRetriever(embeddingClient, store);
+    if (rerank != RerankOption.Jev)
+    {
+        return (retriever, null);
+    }
+
+    var (jev, error) = JevSettings.Read(key => config[key]);
+    if (error is not null)
+    {
+        return (null, $"{error}\nOr pass --rerank none to search without reranking.");
+    }
+
+    var scorer = new RetryingRelevanceScorer(new JevRelevanceScorer(jev!.ApiKey, jev.Model), onRetry: Console.Error.WriteLine);
+    return (new RerankingRetriever(retriever, scorer, jev.CandidateCount, onReranked, jev.MaxPerSection), null);
+}
 
 // Resolves to this .cs file's own directory (PokeJudge/) at compile time, so
 // output paths (ingestion, chunking) are anchored to the project regardless of

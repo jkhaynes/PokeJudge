@@ -1,0 +1,3555 @@
+{
+  "log": "evaluate.log",
+  "totals": {
+    "passed": 36,
+    "completedRuns": 60,
+    "topK": 5
+  },
+  "scenarioPasses": {
+    "notes": 3,
+    "proxy-cards": 3,
+    "deck-not-shuffled": 0,
+    "spectator-badges": 3,
+    "repeat-violations": 0,
+    "special-condition": 1,
+    "missed-prize": 2,
+    "drew-extra-card": 0,
+    "weakness-not-applied": 1,
+    "supporter-twice": 3,
+    "gx-attack-twice": 3,
+    "missed-mulligan-draws": 0,
+    "late-to-round": 3,
+    "deck-under-60": 3,
+    "ace-spec-count": 0,
+    "too-many-prizes": 2,
+    "prize-issue-vague": 3,
+    "double-energy-attach": 3,
+    "discard-shuffle-deescalate": 3,
+    "spectator-conduct": 0
+  },
+  "runs": [
+    {
+      "scenario": "notes",
+      "category": "Tournament Procedure",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-7.4.6#0",
+          "PPTRH-3.2#6",
+          "PPTRH-3.2#5",
+          "TCGTH-7.4.6#1",
+          "PPTRH-3.2#4"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-7.4.6#0"
+      ],
+      "recommendation": "It is recommended that the judge inform the competitor that they are permitted to take written notes during their match, provided they follow all relevant guidelines such as starting with a blank sheet, being timely, and not using devices that send or receive messages.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-3.2",
+        "TCGTH-7.4.6"
+      ]
+    },
+    {
+      "scenario": "notes",
+      "category": "Tournament Procedure",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-7.4.6#0",
+          "PPTRH-3.2#6",
+          "PPTRH-3.2#5",
+          "TCGTH-7.4.6#1",
+          "PPTRH-3.2#4"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-7.4.6#0"
+      ],
+      "recommendation": "It is recommended that the judge inform the competitor that they are permitted to take written notes during their match, provided they follow all relevant guidelines such as starting with a blank sheet, being timely, and not using devices that send or receive messages.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-3.2",
+        "TCGTH-7.4.6"
+      ]
+    },
+    {
+      "scenario": "notes",
+      "category": "Tournament Procedure",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-7.4.6#0",
+          "PPTRH-3.2#6",
+          "PPTRH-3.2#5",
+          "TCGTH-7.4.6#1",
+          "PPTRH-3.2#4"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-7.4.6#0"
+      ],
+      "recommendation": "It is recommended that the judge inform the competitor that they are permitted to take written notes during their match, provided they follow all relevant guidelines such as starting with a blank sheet, being timely, and not using devices that send or receive messages.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-3.2",
+        "TCGTH-7.4.6"
+      ]
+    },
+    {
+      "scenario": "proxy-cards",
+      "category": "Deck/Decklist Issues",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-2#0",
+          "TCGTH-2.4#1",
+          "TCGTH-2.4#0",
+          "PPG-5.6.1#8",
+          "TCGTH-2.1#0"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-2#0",
+        "TCGTH-2.4#0"
+      ],
+      "recommendation": "It is recommended to inform the player that they cannot use home-printed proxy cards during a sanctioned tournament. Only genuine Pokémon Trading Card Game cards may be used, with the sole exception of official proxy cards issued by a Judge or Organizer under specific circumstances involving damaged cards.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGTH-2",
+        "TCGTH-2.1",
+        "TCGTH-2.4"
+      ]
+    },
+    {
+      "scenario": "proxy-cards",
+      "category": "Deck/Decklist Issues",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-2#0",
+          "TCGTH-2.4#1",
+          "TCGTH-2.4#0",
+          "PPG-5.6.1#8",
+          "TCGTH-2.1#0"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-2#0",
+        "TCGTH-2.4#0"
+      ],
+      "recommendation": "It is recommended to inform the player that they cannot use home-printed proxy cards during a sanctioned tournament. Only genuine Pokémon Trading Card Game cards may be used, with the sole exception of official proxy cards issued by a Judge or Organizer under specific circumstances involving damaged cards.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGTH-2",
+        "TCGTH-2.1",
+        "TCGTH-2.4"
+      ]
+    },
+    {
+      "scenario": "proxy-cards",
+      "category": "Deck/Decklist Issues",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-2#0",
+          "TCGTH-2.4#1",
+          "TCGTH-2.4#0",
+          "TCGTH-2.1#0",
+          "PPG-5.6.1#8"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGTH-2#0",
+        "TCGTH-2.4#0",
+        "TCGTH-2.4#1"
+      ],
+      "recommendation": "It is recommended that the judge disallow home-printed proxy cards. Only genuine Pokémon Trading Card Game cards may be used at Play! Pokémon events, unless a proxy card has been officially issued by a Judge or Organizer due to a card becoming damaged during the tournament.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGTH-2",
+        "TCGTH-2.1",
+        "TCGTH-2.4"
+      ]
+    },
+    {
+      "scenario": "deck-not-shuffled",
+      "category": "Illegal Game State",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2.1#0",
+          "TCGTH-7.4.5#1"
+        ],
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "TCGTH-6.2.1#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.4#1",
+          "question": "Was the insufficient randomization done intentionally to engineer greater access to a card or cards as covered under PPG-5.4?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Partial",
+      "cited": [
+        "TCGTH-6.2.2#0",
+        "PPG-5.4#1"
+      ],
+      "recommendation": "It is recommended that the judge treat insufficiently randomizing the deck as a rules violation and apply an appropriate penalty, as there is no sign it was deliberate under PPG-5.4.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.4",
+        "TCGTH-6.2",
+        "TCGTH-6.2.1",
+        "TCGTH-6.2.2",
+        "TCGTH-7.4.5"
+      ]
+    },
+    {
+      "scenario": "deck-not-shuffled",
+      "category": "Illegal Game State",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2.1#0",
+          "TCGTH-7.4.5#1"
+        ],
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "TCGTH-6.2.1#0",
+          "PPG-5.4#1",
+          "PPG-4.1#0"
+        ],
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.1#0",
+          "TCGTH-6.2.2#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2#1"
+        ],
+        [
+          "TCGTH-6.2.1#0",
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.4#1",
+          "question": "Was the insufficient randomization done intentionally to engineer greater access to a card or cards as covered under PPG-5.4?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGTH-6.2.1#0",
+          "question": "Has a judge been called to shuffle the deck following the insufficient randomization, or has the game already proceeded past the start of the game without intervention?"
+        },
+        {
+          "turn": 3,
+          "about": "TCGTH-6.2.1#0",
+          "question": "Has a Judge been called over to shuffle the deck in question following the opponent's observation that the deck was not fully randomized?"
+        },
+        {
+          "turn": 4,
+          "about": "TCGTH-6.2.1#0",
+          "question": "Did either competitor request that a Judge shuffle the deck because they felt it was insufficiently randomized?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-4.1",
+        "PPG-5.4",
+        "TCGTH-6.2",
+        "TCGTH-6.2.1",
+        "TCGTH-6.2.2",
+        "TCGTH-7.4.5"
+      ]
+    },
+    {
+      "scenario": "deck-not-shuffled",
+      "category": "Illegal Game State",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2.1#0",
+          "TCGTH-7.4.5#1"
+        ],
+        [
+          "TCGTH-6.2#0",
+          "TCGTH-6.2.2#0",
+          "TCGTH-6.2.1#0",
+          "PPG-5.4#1",
+          "TCGTH-6.2#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.4#1",
+          "question": "Was the insufficient randomization done intentionally to engineer greater access to a card or cards as covered under PPG-5.4?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Partial",
+      "cited": [
+        "TCGTH-6.2.2#0",
+        "PPG-5.4#1"
+      ],
+      "recommendation": "It is recommended that the judge treat insufficiently randomizing the deck as a rules violation and apply an appropriate penalty, as there is no sign it was deliberate under PPG-5.4.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.4",
+        "TCGTH-6.2",
+        "TCGTH-6.2.1",
+        "TCGTH-6.2.2",
+        "TCGTH-7.4.5"
+      ]
+    },
+    {
+      "scenario": "spectator-badges",
+      "category": "Tournament Procedure",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-2.4#0",
+          "PPTRH-3.3#1",
+          "PPTRH-3.1#0",
+          "PPTRH-3.3#5",
+          "PPTRH-2.4#1"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-2.4#0"
+      ],
+      "recommendation": "It is recommended that the judge inform the individual that spectators, like all attendees at a Regional Championship, are required to wear their badge in a visible location during the entirety of their attendance at the event.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-2.4",
+        "PPTRH-3.1",
+        "PPTRH-3.3"
+      ]
+    },
+    {
+      "scenario": "spectator-badges",
+      "category": "Tournament Procedure",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-2.4#0",
+          "PPTRH-3.1#0",
+          "PPTRH-3.3#1",
+          "PPTRH-3.3#5",
+          "PPTRH-2.4#1"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-2.4#0"
+      ],
+      "recommendation": "It is recommended to advise that spectators at a Regional Championship are required to wear their badge in a visible location during the entirety of their attendance at the event.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-2.4",
+        "PPTRH-3.1",
+        "PPTRH-3.3"
+      ]
+    },
+    {
+      "scenario": "spectator-badges",
+      "category": "Tournament Procedure",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-2.4#0",
+          "PPTRH-3.1#0",
+          "PPTRH-3.3#1",
+          "PPTRH-3.3#5",
+          "PPTRH-2.4#1"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-2.4#0"
+      ],
+      "recommendation": "It is recommended to advise that spectators at a Regional Championship are required to wear their badge in a visible location during the entirety of their attendance at the event.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPTRH-2.4",
+        "PPTRH-3.1",
+        "PPTRH-3.3"
+      ]
+    },
+    {
+      "scenario": "repeat-violations",
+      "category": "Penalty Questions",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-4.2.2#0",
+          "PPG-7#1",
+          "PPG-5.6.1#9",
+          "PPTRH-7.6#1",
+          "PPG-6#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-2.1#2",
+          "PPG-5.6.1#9",
+          "PPTRH-7.3#3"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPG-5.6.1#9",
+          "PPTRH-7.3#1",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-5.6.1#9",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has been repeated, and what type of tournament is this occurring at?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-4.2.2#0",
+          "question": "What specific infraction is being repeated?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-4.2.2#0",
+          "question": "What specific infraction has the competitor repeatedly committed?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has the competitor repeatedly committed?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-2.1",
+        "PPG-4.2.2",
+        "PPG-5.6.1",
+        "PPG-6",
+        "PPG-7",
+        "PPTRH-7.3",
+        "PPTRH-7.6"
+      ]
+    },
+    {
+      "scenario": "repeat-violations",
+      "category": "Penalty Questions",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-4.2.2#0",
+          "PPG-7#1",
+          "PPG-5.6.1#9",
+          "PPTRH-7.6#1",
+          "PPG-6#0"
+        ],
+        [
+          "PPTRH-7.3#1",
+          "PPG-4.2.2#0",
+          "PPG-2.1#2",
+          "PPG-5.6.1#9",
+          "PPTRH-7.3#3"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPG-5.6.1#9",
+          "PPTRH-7.3#1",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-5.6.1#9",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has been repeated, and what type of tournament is this occurring at?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-4.2.2#0",
+          "question": "What specific infraction has the competitor repeated?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-4.2.2#0",
+          "question": "What specific infraction has the competitor repeated?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has the competitor repeated?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-2.1",
+        "PPG-4.2.2",
+        "PPG-5.6.1",
+        "PPG-6",
+        "PPG-7",
+        "PPTRH-7.3",
+        "PPTRH-7.6"
+      ]
+    },
+    {
+      "scenario": "repeat-violations",
+      "category": "Penalty Questions",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-4.2.2#0",
+          "PPG-7#1",
+          "PPG-5.6.1#9",
+          "PPTRH-7.6#1",
+          "PPG-6#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-2.1#2",
+          "PPG-5.6.1#9",
+          "PPTRH-7.5#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-5.6.1#9",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ],
+        [
+          "PPG-4.2.2#0",
+          "PPTRH-7.3#1",
+          "PPG-5.6.1#9",
+          "PPG-2.1#2",
+          "PPG-6#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has been repeated, and what type of tournament is this occurring at?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-4.2.2#0",
+          "question": "What specific infraction has the competitor repeated?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has the competitor repeated?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.6.1#9",
+          "question": "What specific infraction has the competitor repeated?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-2.1",
+        "PPG-4.2.2",
+        "PPG-5.6.1",
+        "PPG-6",
+        "PPG-7",
+        "PPTRH-7.3",
+        "PPTRH-7.5",
+        "PPTRH-7.6"
+      ]
+    },
+    {
+      "scenario": "special-condition",
+      "category": "Discretion Required",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-special-conditions#2",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#3",
+          "TCGRULES-special-conditions#0",
+          "PPG-5.1.1#1"
+        ],
+        [
+          "TCGRULES-special-conditions#2",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#3",
+          "TCGRULES-special-conditions#0",
+          "TCGRULES-turn-actions#12"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.4#1",
+          "question": "Did a competitor arbitrarily adjust the Special Conditions or damage counters on the Pokémon in play?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-special-conditions#2"
+      ],
+      "recommendation": "I recommend that the judge correct the orientation of the Pokémon card to properly reflect the Confused condition that was actually caused by the attack.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.1.1",
+        "PPG-5.4",
+        "TCGRULES-special-conditions",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "special-condition",
+      "category": "Discretion Required",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-special-conditions#2",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#3",
+          "PPG-5.1.1#1",
+          "TCGRULES-special-conditions#0"
+        ],
+        [
+          "TCGRULES-special-conditions#2",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#3",
+          "PPG-5.1.1#1",
+          "PPG-5.1.1#2"
+        ],
+        [
+          "TCGRULES-special-conditions#2",
+          "TCGRULES-special-conditions#3",
+          "TCGRULES-special-conditions#0",
+          "PPG-5.4#1",
+          "TCGRULES-turn-actions#12"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-special-conditions#2",
+          "question": "Was the Active Pokémon moved to the Bench, evolved, or subjected to another Special Condition that could have replaced or cleared the Asleep condition, or was the marker arbitrarily adjusted?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGRULES-special-conditions#2",
+          "question": "Was the Active Pokemon subjected to another Special Condition previously or subsequently?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.4#1",
+          "question": "Did a competitor arbitrarily adjust the Special Conditions or damage counters on Pokémon in play?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Partial",
+      "cited": [
+        "TCGRULES-special-conditions#3"
+      ],
+      "recommendation": "I recommend that the judge correct the game state so that the Active Pokemon is marked as Confused rather than Asleep, aligning with the attack text since the card was turned to show Asleep by mistake and no other effects or arbitrary adjustments occurred.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.1.1",
+        "PPG-5.4",
+        "TCGRULES-special-conditions",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "special-condition",
+      "category": "Discretion Required",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-special-conditions#2",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#3",
+          "TCGRULES-special-conditions#0",
+          "PPG-5.1.1#1"
+        ],
+        [
+          "TCGRULES-special-conditions#2",
+          "TCGTH-2.4#1",
+          "TCGRULES-special-conditions#3",
+          "PPG-5.4#1",
+          "TCGRULES-special-conditions#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.4#1",
+          "question": "Did a competitor arbitrarily adjust the Special Conditions or damage counters on the Pokémon in play?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-special-conditions#0",
+        "TCGRULES-special-conditions#2",
+        "TCGRULES-special-conditions#3"
+      ],
+      "recommendation": "It is recommended that the judge correct the orientation of the card to reflect the correct Special Condition of Confused, as a card was turned to show Asleep by mistake and no competitor arbitrarily adjusted the Special Conditions.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.1.1",
+        "PPG-5.4",
+        "TCGRULES-special-conditions",
+        "TCGTH-2.4"
+      ]
+    },
+    {
+      "scenario": "missed-prize",
+      "category": "Prize Errors",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Did the player fail to take a Prize card after a Knock Out, and how long has this error remained unnoticed to influence gameplay?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#1",
+          "question": "Can the game state be completely reset or offset through corrective action without irreversible confusion, or has the error remained unnoticed for long enough to have influenced subsequent gameplay?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed long enough to have influenced subsequent gameplay or resulted in irreversible confusion to the game state?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, resulting in irreversible confusion or a state that cannot be completely reset?"
+        }
+      ],
+      "criteria": {
+        "Expected unresolvable": "PASS"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "missed-prize",
+      "category": "Prize Errors",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#1",
+          "TCGRULES-turn-actions#10",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#11"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "What specific gameplay error occurred that needs to be evaluated under the penalty guidelines?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the missed Prize card error remained unnoticed for long enough to have influenced subsequent gameplay, or can the game state still be easily reset or rectified?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the missed Prize card error remained unnoticed long enough to have influenced gameplay?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#0",
+          "question": "Can the game state be fixed or reset completely with little effort, or does it result in some irreversible confusion to the game state?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the missed Prize card error remained unnoticed long enough to have influenced subsequent gameplay, resulting in irreversible confusion or illicit access to knowledge?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#0",
+          "question": "Can the game state be fixed or reset completely with little effort, or has it resulted in an irreversible confusion that cannot be completely reset?"
+        }
+      ],
+      "criteria": {
+        "Expected unresolvable": "PASS"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "missed-prize",
+      "category": "Prize Errors",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "TCGRULES-turn-actions#13",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Did the player fail to take a Prize card after a Knock Out, and how long has this error remained unnoticed to influence gameplay?"
+        }
+      ],
+      "criteria": {
+        "Expected unresolvable": "FAIL"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#1",
+        "PPG-5.5.1#0"
+      ],
+      "recommendation": "It is recommended that the judge evaluate the error based on the fact that it has remained unnoticed for two turns, which may classify it as a major gameplay error since errors that have remained unnoticed for long enough to have influenced gameplay may be classified as major.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "drew-extra-card",
+      "category": "Gameplay Error",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5#0",
+          "PPG-5.4#1"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#2",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-4.2.1#1",
+          "PPG-5.5.1#2",
+          "PPG-4.2.1#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#2",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Can the correct card still be identified and was the error noted before the competitor saw the face of the card?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the card before the error was noted?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the card before the error was noted?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#4",
+          "question": "Was the error noted while the correct card could still be identified and before the competitor saw the face of the card?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-4.2.1",
+        "PPG-5.4",
+        "PPG-5.5",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "drew-extra-card",
+      "category": "Gameplay Error",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-5.5#0",
+          "PPG-4.1#0",
+          "PPG-5.4#1"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-2.3#1"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-5.5.1#2"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-5.5.1#2"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Can the correct extra card still be identified and did the competitor see the face of the card?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the card?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the card when it was drawn?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the drawn extra card?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-2.3",
+        "PPG-4.1",
+        "PPG-4.2.1",
+        "PPG-5.4",
+        "PPG-5.5",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "drew-extra-card",
+      "category": "Gameplay Error",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#1",
+          "PPG-5.4#1",
+          "PPG-4.1#0",
+          "PPG-5.5#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#0",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#4",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-5.4#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Can the exact card that was drawn extra still be identified, and has the competitor seen the face of the card?"
+        },
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or can the extra card be completely identified and reversed?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#4",
+          "question": "Has the competitor seen the face of the extra card they drew?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the extra card when it was drawn?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#4",
+          "question": "Did the competitor see the face of the extra card when it was drawn?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-4.1",
+        "PPG-4.2.1",
+        "PPG-5.4",
+        "PPG-5.5",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "weakness-not-applied",
+      "category": "Attack Resolution",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-appendix-21-dual-type-pok-mon#0",
+          "TCGRULES-full-details-of-attacking#2"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-glossary#2",
+          "TCGRULES-glossary#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-turn-actions#9",
+          "question": "Is the Pokémon that was Knocked Out currently in the Active position or on the Bench?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-turn-actions#9",
+        "TCGRULES-full-details-of-attacking#3",
+        "TCGRULES-turn-actions#8"
+      ],
+      "recommendation": "It is recommended that the judge verify whether Weakness was applied during the damage calculation, as the confirmed facts state that the Defending Pokémon was in the Active position when it took damage, and rules require applying Weakness to an opponent's Active Pokémon if it has Weakness to the attacker's type.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "TCGRULES-appendix-21-dual-type-pok-mon",
+        "TCGRULES-full-details-of-attacking",
+        "TCGRULES-glossary",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "weakness-not-applied",
+      "category": "Attack Resolution",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-appendix-21-dual-type-pok-mon#0",
+          "TCGRULES-glossary#1"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-appendix-21-dual-type-pok-mon#0",
+          "TCGRULES-full-details-of-attacking#2"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-full-details-of-attacking#2",
+          "TCGRULES-glossary#2"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-glossary#2",
+          "TCGRULES-full-details-of-attacking#2"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-turn-actions#9",
+          "question": "Was the Pokémon that took the damage in the Active position or on the Bench when the attack was used?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGRULES-full-details-of-attacking#2",
+          "question": "Was the damage dealt by an attack or by placing damage counters from an effect?"
+        },
+        {
+          "turn": 3,
+          "about": "TCGRULES-turn-actions#9",
+          "question": "Is the Pokémon that took the damage currently in the Active position or on the Bench, and does it have Weakness to the attacking Pokémon's type?"
+        },
+        {
+          "turn": 4,
+          "about": "TCGRULES-turn-actions#9",
+          "question": "What is the specific value or multiplier of the Defending Pokémon's printed Weakness?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "TCGRULES-appendix-21-dual-type-pok-mon",
+        "TCGRULES-full-details-of-attacking",
+        "TCGRULES-glossary",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "weakness-not-applied",
+      "category": "Attack Resolution",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-full-details-of-attacking#2",
+          "TCGRULES-glossary#1"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-glossary#2",
+          "TCGRULES-full-details-of-attacking#2"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#2",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-full-details-of-attacking#4"
+        ],
+        [
+          "TCGRULES-turn-actions#9",
+          "TCGRULES-full-details-of-attacking#3",
+          "TCGRULES-full-details-of-attacking#2",
+          "TCGRULES-turn-actions#8",
+          "TCGRULES-full-details-of-attacking#4"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-turn-actions#9",
+          "question": "Was the Pokémon that was Knocked Out in the Active position or on the Bench when it took the damage?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGRULES-full-details-of-attacking#2",
+          "question": "Was the damage dealt by placing damage counters (which are not affected by Weakness) or via standard attack damage calculation?"
+        },
+        {
+          "turn": 3,
+          "about": "TCGRULES-full-details-of-attacking#2",
+          "question": "Did the attack specify placing damage counters directly, or did it deal standard attack damage subject to Weakness and Resistance?"
+        },
+        {
+          "turn": 4,
+          "about": "TCGRULES-full-details-of-attacking#2",
+          "question": "Did the attack deal standard damage or instruct you to place damage counters directly on the Pokémon?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "TCGRULES-full-details-of-attacking",
+        "TCGRULES-glossary",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "supporter-twice",
+      "category": "Timing Questions",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-4.2.1#4",
+          "PPG-4.2.1#3",
+          "TCGRULES-turn-actions#3"
+        ],
+        [
+          "TCGRULES-turn-actions#3",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-4.2.1#4",
+          "PPG-2.2#0",
+          "PPG-4.2.1#3"
+        ],
+        [
+          "PPG-4.2.1#4",
+          "PPG-4.2.1#3",
+          "TCGRULES-turn-actions#3",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-4.2.1#0",
+          "question": "Which specific Supporter cards were played in the turn, and what were the exact effects resolved (such as drawing cards or shuffling hands)?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-4.2.1#4",
+          "question": "Can the judge determine which cards were in the player's hand prior to the second Supporter being played?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-4.2.1#4"
+      ],
+      "recommendation": "I recommend that no corrective action be taken regarding the game state, as the judge is unable to determine which cards were in the player's hand prior to the second Supporter being played, and that a Game Loss be assessed to the player who played the second Supporter card.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.2",
+        "PPG-4.2.1",
+        "TCGRULES-parts-of-a-turn",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "supporter-twice",
+      "category": "Timing Questions",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#4",
+          "PPG-4.2.1#3",
+          "PPG-4.2.1#0",
+          "TCGRULES-turn-actions#3"
+        ],
+        [
+          "PPG-4.2.1#0",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#4",
+          "PPG-4.2#0",
+          "PPG-4.2.1#3"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-4.2.1#1",
+          "question": "Can the game state be reversed such that it mirrors one in which the second Supporter card had never been played?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Partial",
+      "cited": [
+        "PPG-4.2.1#0",
+        "PPG-4.2.1#1",
+        "PPG-4.2.1#3",
+        "PPG-4.2.1#4",
+        "PPG-4.2#0"
+      ],
+      "recommendation": "It is recommended that you evaluate the infraction considering that several turns have passed and the game state cannot be reversed, noting that if an action results in a game state that is irreparably broken, the most appropriate course may be to escalate the penalty, while bearing in mind that no corrective action can be taken if cards drawn cannot be identified or restored.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-4.2",
+        "PPG-4.2.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "supporter-twice",
+      "category": "Timing Questions",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#0",
+          "PPG-4.2.1#3",
+          "PPG-4.2.1#4",
+          "TCGRULES-turn-actions#3"
+        ],
+        [
+          "PPG-4.2.1#4",
+          "TCGRULES-turn-actions#3",
+          "PPG-4.2.1#0",
+          "PPG-4.2.1#1",
+          "PPG-4.2.1#3"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-4.2.1#0",
+          "question": "Which specific Supporter cards were played in the same turn, and what actions (such as drawing cards, discarding cards from an opponent's hand, or shuffling cards into the deck) were taken as a result?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-4.2.1#4",
+        "TCGRULES-turn-actions#3"
+      ],
+      "recommendation": "Recommend assessing a Game Loss to the player who played the two Supporter cards, as the game state cannot be corrected when hands are shuffled into the deck after the second Supporter card.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-4.2.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "gx-attack-twice",
+      "category": "Timing Questions",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-19-pok-mon-gx#0",
+          "TCGRULES-glossary#4",
+          "TCGTH-6.3.1#1",
+          "TCGRULES-glossary#5",
+          "TCGRULES-appendix-9-pok-mon-vstar#0"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-appendix-19-pok-mon-gx#0",
+        "TCGRULES-glossary#4"
+      ],
+      "recommendation": "It is recommended that the judge inform the player they cannot use a second GX attack. A player is restricted to using only one GX attack during an entire game, regardless of how many Pokémon-GX they play.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "TCGRULES-appendix-19-pok-mon-gx",
+        "TCGRULES-appendix-9-pok-mon-vstar",
+        "TCGRULES-glossary",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "gx-attack-twice",
+      "category": "Timing Questions",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-19-pok-mon-gx#0",
+          "TCGRULES-glossary#4",
+          "TCGRULES-glossary#5",
+          "TCGTH-6.3.1#1",
+          "TCGRULES-appendix-9-pok-mon-vstar#0"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-appendix-19-pok-mon-gx#0",
+        "TCGRULES-glossary#4"
+      ],
+      "recommendation": "It is recommended that the judge inform the player they cannot use a second GX attack later in the game.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "TCGRULES-appendix-19-pok-mon-gx",
+        "TCGRULES-appendix-9-pok-mon-vstar",
+        "TCGRULES-glossary",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "gx-attack-twice",
+      "category": "Timing Questions",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 1,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-19-pok-mon-gx#0",
+          "TCGRULES-glossary#4",
+          "TCGTH-6.3.1#1",
+          "TCGRULES-glossary#5",
+          "TCGRULES-appendix-9-pok-mon-vstar#0"
+        ]
+      ],
+      "questions": [],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "TCGRULES-appendix-19-pok-mon-gx#0",
+        "TCGRULES-glossary#4"
+      ],
+      "recommendation": "It is recommended that the judge inform the player they cannot use a second GX attack. A player is restricted to using only one GX attack during an entire game, regardless of how many Pokémon-GX they play.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "TCGRULES-appendix-19-pok-mon-gx",
+        "TCGRULES-appendix-9-pok-mon-vstar",
+        "TCGRULES-glossary",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "missed-mulligan-draws",
+      "category": "Timing Questions",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#1"
+        ],
+        [
+          "TCGTH-7.4.1#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-setting-up-to-play#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "TCGTH-7.4.1#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGRULES-setting-up-to-play#0",
+          "PPG-5.5.1#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw before Player A placed an Active Pokémon, or did the game already proceed past setup?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for the mulligans before Player A placed an Active Pokemon?"
+        },
+        {
+          "turn": 3,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for the mulligans before Player A placed an Active Pokémon?"
+        },
+        {
+          "turn": 4,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for Player A's mulligans before Player A placed an Active Pokémon?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-full-details-of-taking-a-mulligan",
+        "TCGRULES-setting-up-to-play",
+        "TCGTH-7.4.1"
+      ]
+    },
+    {
+      "scenario": "missed-mulligan-draws",
+      "category": "Timing Questions",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#1"
+        ],
+        [
+          "TCGTH-7.4.1#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGRULES-setting-up-to-play#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "TCGTH-7.4.1#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-setting-up-to-play#0",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "PPG-5.5.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw before Player A placed an Active Pokémon, or did the game already proceed past setup?"
+        },
+        {
+          "turn": 2,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for the mulligans before Player A placed an Active Pokemon?"
+        },
+        {
+          "turn": 3,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for Player A's mulligans before Player A placed an Active Pokémon?"
+        },
+        {
+          "turn": 4,
+          "about": "TCGTH-7.4.1#0",
+          "question": "Did Player B announce how many cards they would draw for Player A's mulligans before Player A placed an Active Pokémon?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-full-details-of-taking-a-mulligan",
+        "TCGRULES-setting-up-to-play",
+        "TCGTH-7.4.1"
+      ]
+    },
+    {
+      "scenario": "missed-mulligan-draws",
+      "category": "Timing Questions",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#1"
+        ],
+        [
+          "TCGRULES-full-details-of-taking-a-mulligan#1",
+          "TCGRULES-full-details-of-taking-a-mulligan#0",
+          "TCGTH-7.4.1#0",
+          "PPG-5.5.1#0",
+          "PPG-5.5.1#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Did Player B actually draw the cards, or were they merely forgotten entirely?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "FAIL",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Insufficient",
+      "validatedSupport": "Partial",
+      "cited": [
+        "TCGRULES-full-details-of-taking-a-mulligan#0",
+        "TCGRULES-full-details-of-taking-a-mulligan#1",
+        "TCGTH-7.4.1#0"
+      ],
+      "recommendation": "It is recommended that the judge allows Player B to draw the two cards for Player A's mulligans now, or proceed with the game without drawing them, as the retrieved passages do not explicitly prescribe a mandatory penalty or specific repair action for forgotten mulligan card draws once the game has started.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-full-details-of-taking-a-mulligan",
+        "TCGTH-7.4.1"
+      ]
+    },
+    {
+      "scenario": "late-to-round",
+      "category": "Tournament Procedure",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.2.1#1",
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-5.2#1"
+        ],
+        [
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-2.2#0",
+          "PPG-5.2#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.2.1#0",
+          "question": "How many minutes late did the competitor arrive for their match?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.2.1#0"
+      ],
+      "recommendation": "It is recommended that the judge assess a Major tardiness infraction resulting in a Game Loss for arriving 7 minutes late to the match.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.2",
+        "PPG-5.2",
+        "PPG-5.2.1",
+        "TCGTH-7.4.4"
+      ]
+    },
+    {
+      "scenario": "late-to-round",
+      "category": "Tournament Procedure",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.2.1#1",
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-5.2#1"
+        ],
+        [
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-5.2#1",
+          "PPG-2.2#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.2.1#0",
+          "question": "How many minutes late did the competitor arrive for their match?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.2.1#0"
+      ],
+      "recommendation": "It is recommended that the judge treat the competitor's 7-minute tardiness as Major tardiness, resulting in a Game Loss penalty, because the competitor arrived between 5 to 10 minutes late.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.2",
+        "PPG-5.2",
+        "PPG-5.2.1",
+        "TCGTH-7.4.4"
+      ]
+    },
+    {
+      "scenario": "late-to-round",
+      "category": "Tournament Procedure",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.2.1#1",
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-5.2#1"
+        ],
+        [
+          "PPG-5.2.1#0",
+          "TCGTH-7.4.4#0",
+          "PPG-5.2#0",
+          "PPG-5.2#1",
+          "PPG-2.2#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.2.1#0",
+          "question": "How many minutes late did the competitor arrive for their match?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.2.1#0"
+      ],
+      "recommendation": "It is recommended that the judge treat the competitor's 7-minute tardiness as Major tardiness, resulting in a Game Loss penalty, because the competitor arrived between 5 to 10 minutes late.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.2",
+        "PPG-5.2",
+        "PPG-5.2.1",
+        "TCGTH-7.4.4"
+      ]
+    },
+    {
+      "scenario": "deck-under-60",
+      "category": "Deck/Decklist Issues",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "TCGRULES-deck-building#0",
+          "PPG-5.6.1#0"
+        ],
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "PPG-5.6.1#0",
+          "TCGTH-3.2#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#2",
+          "question": "Does the physical deck actually contain fewer than 60 cards, or does the deck list contain fewer than 60 cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.6.1#2",
+        "PPG-5.6.1#6"
+      ],
+      "recommendation": "It is recommended that the judge make the deck list and physical deck legal by adding an appropriate number of Basic Energy cards of the competitor's choice until both contain 60 cards, and then update the physical deck accordingly.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGRULES-deck-building",
+        "TCGTH-3.2",
+        "TCGTH-4"
+      ]
+    },
+    {
+      "scenario": "deck-under-60",
+      "category": "Deck/Decklist Issues",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "TCGRULES-deck-building#0",
+          "PPG-5.6.1#0"
+        ],
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "PPG-5.6.1#0",
+          "TCGTH-3.2#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#2",
+          "question": "Does the physical deck actually contain fewer than 60 cards, or does the deck list contain fewer than 60 cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.6.1#2",
+        "PPG-5.6.1#6"
+      ],
+      "recommendation": "It is recommended that the judge make the deck list and physical deck legal by adding an appropriate number of Basic Energy cards of the competitor's choice until both contain 60 cards, and then update the physical deck accordingly.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGRULES-deck-building",
+        "TCGTH-3.2",
+        "TCGTH-4"
+      ]
+    },
+    {
+      "scenario": "deck-under-60",
+      "category": "Deck/Decklist Issues",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "TCGRULES-deck-building#0",
+          "PPG-5.6.1#0"
+        ],
+        [
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-4#0",
+          "PPG-5.6.1#0",
+          "TCGTH-3.2#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#2",
+          "question": "Does the physical deck actually contain fewer than 60 cards, or does the deck list contain fewer than 60 cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.6.1#2",
+        "PPG-5.6.1#6"
+      ],
+      "recommendation": "It is recommended that the judge make the deck list and physical deck legal by adding an appropriate number of Basic Energy cards of the competitor's choice until both contain 60 cards, and then update the physical deck accordingly.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGRULES-deck-building",
+        "TCGTH-3.2",
+        "TCGTH-4"
+      ]
+    },
+    {
+      "scenario": "ace-spec-count",
+      "category": "Deck/Decklist Issues",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-3-ace-spec-cards#0",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#9",
+          "PPG-5.6.1#6"
+        ],
+        [
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#2",
+          "TCGTH-2#0"
+        ],
+        [
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#9",
+          "PPG-4.1#0"
+        ],
+        [
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#2",
+          "PPG-2.3#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.6.1#0",
+          "question": "Did the deck list contain two different ACE SPEC cards, or did the physical deck contain two different ACE SPEC cards, or both?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.6.1#8",
+          "question": "Was the inclusion of two different ACE SPEC cards in the deck list and physical deck determined to be intentional or providing an unfair competitive advantage, or does it fall under a specific category of severity under PPG-5.6.1?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.6.1#6",
+          "question": "Does the inclusion of two different ACE SPEC cards constitute a major deck legality infraction under PPG-5.6.1 or result in an opportunity for a competitor to gain an advantage?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.6.1#6",
+          "question": "Did the inclusion of two different ACE SPEC cards result in an opportunity for the competitor to gain an advantage, or does it fall under a specific category of severity under PPG-5.6.1?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-2.3",
+        "PPG-4.1",
+        "PPG-5.6.1",
+        "TCGRULES-appendix-3-ace-spec-cards",
+        "TCGTH-2"
+      ]
+    },
+    {
+      "scenario": "ace-spec-count",
+      "category": "Deck/Decklist Issues",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-3-ace-spec-cards#0",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#9"
+        ],
+        [
+          "TCGRULES-appendix-3-ace-spec-cards#0",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#2",
+          "TCGTH-3.2#1"
+        ],
+        [
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#2",
+          "PPG-5.6.1#6",
+          "TCGTH-3.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-appendix-3-ace-spec-cards#0",
+          "question": "What are the specific ACE SPEC cards found in the competitor's deck and deck list, and how many copies of each are present?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.6.1#8",
+          "question": "Did the competitor intentionally include multiple ACE SPEC cards, or was this determined to be an error without intent?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.6.1#0"
+      ],
+      "recommendation": "It is recommended that the judge address the deck legality issue by ensuring the physical deck and deck list conform to tournament legality rules, and determine the appropriate penalty based on the deck legality infraction guidelines.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGRULES-appendix-3-ace-spec-cards",
+        "TCGTH-3.1",
+        "TCGTH-3.2"
+      ]
+    },
+    {
+      "scenario": "ace-spec-count",
+      "category": "Deck/Decklist Issues",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "TCGRULES-appendix-3-ace-spec-cards#0",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#9"
+        ],
+        [
+          "TCGRULES-appendix-3-ace-spec-cards#0",
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#2",
+          "TCGTH-3.2#1"
+        ],
+        [
+          "PPG-5.6.1#0",
+          "PPG-5.6.1#8",
+          "PPG-5.6.1#6",
+          "PPG-5.6.1#2",
+          "TCGTH-3.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "TCGRULES-appendix-3-ace-spec-cards#0",
+          "question": "What are the specific ACE SPEC cards found in the competitor's deck and deck list, and how many copies of each are present?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.6.1#8",
+          "question": "Did the competitor intentionally include multiple ACE SPEC cards, or was this determined to be an error without intent?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.6.1#0"
+      ],
+      "recommendation": "It is recommended that the judge address the deck legality issue by ensuring the physical deck is made to match the deck list priority, resolving the illegal inclusion of multiple ACE SPEC cards according to deck legality procedures.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.6.1",
+        "TCGRULES-appendix-3-ace-spec-cards",
+        "TCGTH-3.1",
+        "TCGTH-3.2"
+      ]
+    },
+    {
+      "scenario": "too-many-prizes",
+      "category": "Prize Errors",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#10",
+          "PPG-3.3#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "PPG-3.3#0",
+          "TCGRULES-turn-actions#13"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Was the Pokémon that was Knocked Out a Multi-Prize Pokémon (such as a Pokémon ex or Pokémon V) that would allow taking multiple Prize cards, or was it a single-Prize Pokémon?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or has it been caught immediately?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or was it caught and rectified immediately?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Partial",
+      "cited": [
+        "PPG-5.5.1#0",
+        "PPG-5.5.1#1"
+      ],
+      "recommendation": "It is recommended that the judge treat this infraction as a Minor gameplay error resulting in a Warning, given that the error was caught and rectified immediately and did not influence gameplay.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-3.3",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "too-many-prizes",
+      "category": "Prize Errors",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#10",
+          "PPG-3.3#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "PPG-3.3#0",
+          "TCGRULES-turn-actions#13"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#10",
+          "TCGRULES-turn-actions#13"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Was the Pokémon that was Knocked Out a Multi-Prize Pokémon (such as a Pokémon ex or Pokémon V) that would allow taking multiple Prize cards, or was it a single-Prize Pokémon?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or has it been caught immediately?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or was it caught and rectified immediately?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#0",
+        "PPG-5.5.1#1"
+      ],
+      "recommendation": "It is recommended that the judge treat this as a minor gameplay error, issuing a Warning, since the error was caught and rectified immediately and did not influence gameplay.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-3.3",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "too-many-prizes",
+      "category": "Prize Errors",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 4,
+      "stopReason": "turn cap exhausted",
+      "retrieved": [
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#10",
+          "PPG-3.3#0"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-3.3#0",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "PPG-3.3#0",
+          "TCGRULES-turn-actions#13",
+          "TCGRULES-turn-actions#10"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#1",
+          "question": "Was the Pokémon that was Knocked Out a Multi-Prize Pokémon (such as a Pokémon ex or Pokémon V) that would allow taking multiple Prize cards, or was it a single-Prize Pokémon?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced gameplay, or has it been caught immediately?"
+        },
+        {
+          "turn": 3,
+          "about": "PPG-5.5.1#1",
+          "question": "Did the error remain unnoticed for long enough to have influenced subsequent gameplay, or was it caught and addressed immediately?"
+        },
+        {
+          "turn": 4,
+          "about": "PPG-5.5.1#1",
+          "question": "Has the error remained unnoticed for long enough to have influenced subsequent gameplay?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "FAIL"
+      },
+      "modelSupport": null,
+      "validatedSupport": null,
+      "cited": [],
+      "recommendation": null,
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-3.3",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "prize-issue-vague",
+      "category": "Prize Errors",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-4.1.1#2"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did a competitor take a Prize card without Knocking Out a Pokémon or take too many Prize cards after Knocking Out a Pokémon?"
+        },
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#0",
+          "question": "Did a competitor fail to set up Prize cards at the beginning of the game?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#1",
+        "PPG-5.5.1#2",
+        "PPG-5.5.1#0",
+        "TCGRULES-turn-actions#10",
+        "TCGRULES-turn-actions#13"
+      ],
+      "recommendation": "I recommend that the judge investigate the incorrect Prize card acquisition where the competitor took a Prize card without a Pokémon being Knocked Out, classify the error based on its impact and whether it resulted in illicit card access or irreversible confusion to the game state, and apply the appropriate procedural remedy or penalty.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-4.1.1",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "prize-issue-vague",
+      "category": "Prize Errors",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-4.1.1#2"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did a competitor take a Prize card without Knocking Out a Pokémon or take too many Prize cards after Knocking Out a Pokémon?"
+        },
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#0",
+          "question": "Did a competitor fail to set up Prize cards at the beginning of the game?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#1",
+        "PPG-5.5.1#2",
+        "PPG-5.5.1#0",
+        "TCGRULES-turn-actions#10",
+        "TCGRULES-turn-actions#13"
+      ],
+      "recommendation": "I recommend that the judge investigate the incorrect Prize card acquisition where the competitor took a Prize card without a Pokémon being Knocked Out, classify the error based on its impact and whether it resulted in illicit card access or irreversible confusion to the game state, and apply the appropriate procedural remedy or penalty.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-4.1.1",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "prize-issue-vague",
+      "category": "Prize Errors",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#2",
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#0",
+          "PPG-4.1.1#2"
+        ],
+        [
+          "PPG-5.5.1#1",
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#10",
+          "PPG-5.5.1#0",
+          "TCGRULES-turn-actions#13"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did a competitor take a Prize card without Knocking Out a Pokémon or take too many Prize cards after Knocking Out a Pokémon?"
+        },
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#0",
+          "question": "Did a competitor fail to set up Prize cards at the beginning of the game?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#1",
+        "PPG-5.5.1#2",
+        "PPG-5.5.1#0",
+        "TCGRULES-turn-actions#10",
+        "TCGRULES-turn-actions#13"
+      ],
+      "recommendation": "I recommend that the judge investigate the incorrect Prize card acquisition where the competitor took a Prize card without a Pokémon being Knocked Out, classify the error based on its impact and whether it resulted in illicit card access or irreversible confusion to the game state, and apply the appropriate procedural remedy or penalty.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-4.1.1",
+        "PPG-5.5.1",
+        "TCGRULES-turn-actions"
+      ]
+    },
+    {
+      "scenario": "double-energy-attach",
+      "category": "Gameplay Error",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "TCGRULES-turn-actions#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the competitor attach more than one Energy card in a turn with or without an effect that allows this?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the attached Energy cards include any Special Energy cards, or were both Basic Energy cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#2",
+        "TCGRULES-turn-actions#1",
+        "TCGRULES-parts-of-a-turn#0"
+      ],
+      "recommendation": "I recommend that the judge address the extra Energy attachment by having the incorrectly attached Energy card returned to the player's hand, provided it can be clearly identified.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-parts-of-a-turn",
+        "TCGRULES-turn-actions",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "double-energy-attach",
+      "category": "Gameplay Error",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "TCGRULES-turn-actions#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the competitor attach more than one Energy card in a turn with or without an effect that allows this?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the attached Energy cards include any Special Energy cards, or were both Basic Energy cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#2",
+        "TCGRULES-turn-actions#1",
+        "TCGRULES-parts-of-a-turn#0"
+      ],
+      "recommendation": "I recommend that the judge address the extra Energy attachment by having the incorrectly attached Energy card returned to the player's hand, provided it can be clearly identified.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-parts-of-a-turn",
+        "TCGRULES-turn-actions",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "double-energy-attach",
+      "category": "Gameplay Error",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 3,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "TCGRULES-turn-actions#0",
+          "PPG-5.5.1#0"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ],
+        [
+          "PPG-5.5.1#2",
+          "TCGRULES-turn-actions#1",
+          "TCGRULES-parts-of-a-turn#0",
+          "PPG-5.5.1#0",
+          "TCGTH-6.3.1#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the competitor attach more than one Energy card in a turn with or without an effect that allows this?"
+        },
+        {
+          "turn": 2,
+          "about": "PPG-5.5.1#2",
+          "question": "Did the attached Energy cards include any Special Energy cards, or were both Basic Energy cards?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Partial",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#2",
+        "TCGRULES-turn-actions#1",
+        "TCGRULES-parts-of-a-turn#0"
+      ],
+      "recommendation": "I recommend that the judge address the extra Energy attachment by having the incorrectly attached Energy card returned to the player's hand, provided it can be clearly identified.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-5.5.1",
+        "TCGRULES-parts-of-a-turn",
+        "TCGRULES-turn-actions",
+        "TCGTH-6.3.1"
+      ]
+    },
+    {
+      "scenario": "discard-shuffle-deescalate",
+      "category": "Penalty Questions",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-5.5.1#2",
+          "PPG-2.3#1"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-5.5.1#2",
+          "PPG-4.2#1"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Were the contents of the discard pile minimal, has the game not progressed past the first few turns, and do both competitors agree it is easily discernible which exact cards were in the discard pile?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#4",
+        "PPG-5.5.1#5"
+      ],
+      "recommendation": "It is recommended to de-escalate the penalty for shuffling the discard pile into the deck to a Warning, and to repair the game state by retrieving the correct cards from the deck and returning them to the discard pile.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.3",
+        "PPG-4.2",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "discard-shuffle-deescalate",
+      "category": "Penalty Questions",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-5.5.1#2",
+          "PPG-2.3#1"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-4.2#1",
+          "PPG-4.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Were the contents of the discard pile minimal, has the game not progressed past the first few turns, and do both competitors agree it is easily discernible which exact cards were in the discard pile?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#4",
+        "PPG-5.5.1#5"
+      ],
+      "recommendation": "It is recommended to de-escalate the penalty to a Warning, given that the contents of the discard pile were minimal, the game has not progressed past the first few turns, and both competitors agree on exactly which cards were in the discard pile.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.3",
+        "PPG-4.1",
+        "PPG-4.2",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "discard-shuffle-deescalate",
+      "category": "Penalty Questions",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-5.5.1#2",
+          "PPG-2.3#1"
+        ],
+        [
+          "PPG-5.5.1#4",
+          "PPG-5.5.1#3",
+          "PPG-5.5.1#5",
+          "PPG-4.2#1",
+          "PPG-5.5.1#2"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPG-5.5.1#4",
+          "question": "Were the contents of the discard pile minimal, has the game not progressed past the first few turns, and do both competitors agree it is easily discernible which exact cards were in the discard pile?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "PASS",
+        "Clarifying question materiality": "PASS",
+        "Post-answer retrieval": "PASS",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPG-5.5.1#4",
+        "PPG-5.5.1#5"
+      ],
+      "recommendation": "It is recommended to de-escalate the penalty for the competitor shuffling their discard pile into their deck to a Warning.",
+      "jevRetries": 0,
+      "passed": true,
+      "sectionsRetrieved": [
+        "PPG-2.3",
+        "PPG-4.2",
+        "PPG-5.5.1"
+      ]
+    },
+    {
+      "scenario": "spectator-conduct",
+      "category": "Tournament Procedure",
+      "run": 1,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPG-5.3.1#0",
+          "PPG-5.3#0",
+          "PPTRH-3.1#1"
+        ],
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPTRH-3.1#0",
+          "PPG-5.3#0",
+          "PPG-5.3.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPTRH-3.3#5",
+          "question": "Was the individual standing close and talking loudly a competitor who has dropped or been eliminated, or a non-competitor spectator?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-3.3#5",
+        "PPTRH-3.3#6"
+      ],
+      "recommendation": "It is recommended that the judge instruct the spectator to step back to a reasonable distance from the match and refrain from discussing the match in progress within earshot of the table. If the behavior continues or is deemed to disrupt tournament proceedings or cause tournament integrity issues, the judge should consider applying penalties up to and including removal from the venue and suspension.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.3",
+        "PPG-5.3.1",
+        "PPTRH-3.1",
+        "PPTRH-3.3"
+      ]
+    },
+    {
+      "scenario": "spectator-conduct",
+      "category": "Tournament Procedure",
+      "run": 2,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPG-5.3.1#0",
+          "PPG-5.3#0",
+          "PPTRH-3.1#1"
+        ],
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPTRH-3.1#0",
+          "PPG-5.3#0",
+          "PPG-5.3.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPTRH-3.3#5",
+          "question": "Was the individual standing close and talking loudly a competitor who has dropped or been eliminated, or a non-competitor spectator?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-3.3#5",
+        "PPTRH-3.3#6"
+      ],
+      "recommendation": "It is recommended that the judge instruct the spectator to step back to a reasonable distance from the match and refrain from discussing the match in progress within earshot of the table. If the behavior continues or is deemed to disrupt tournament proceedings or cause tournament integrity issues, the judge should consider applying penalties up to and including removal from the venue and suspension.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.3",
+        "PPG-5.3.1",
+        "PPTRH-3.1",
+        "PPTRH-3.3"
+      ]
+    },
+    {
+      "scenario": "spectator-conduct",
+      "category": "Tournament Procedure",
+      "run": 3,
+      "infrastructureFailure": null,
+      "turns": 2,
+      "stopReason": "reached sufficiency",
+      "retrieved": [
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPG-5.3.1#0",
+          "PPG-5.3#0",
+          "PPTRH-3.2#4"
+        ],
+        [
+          "PPTRH-3.3#5",
+          "PPTRH-3.3#6",
+          "PPTRH-3.1#0",
+          "PPG-5.3#0",
+          "PPG-5.3.1#0"
+        ]
+      ],
+      "questions": [
+        {
+          "turn": 1,
+          "about": "PPTRH-3.3#5",
+          "question": "Is the individual standing close and talking loudly a spectator or a competitor?"
+        }
+      ],
+      "criteria": {
+        "Initial retrieval": "PASS",
+        "Sufficiency timing": "FAIL",
+        "Final Source Support": "PASS"
+      },
+      "modelSupport": "Strong",
+      "validatedSupport": "Strong",
+      "cited": [
+        "PPTRH-3.3#5",
+        "PPTRH-3.3#6"
+      ],
+      "recommendation": "It is recommended that the judge instruct the spectator to maintain a reasonable distance from the match and refrain from discussing the match in progress within earshot of the table. If the spectator's actions are determined to disrupt tournament proceedings or cause tournament integrity issues, the judge or tournament staff may consider penalties up to and including removal from the venue and suspension.",
+      "jevRetries": 0,
+      "passed": false,
+      "sectionsRetrieved": [
+        "PPG-5.3",
+        "PPG-5.3.1",
+        "PPTRH-3.1",
+        "PPTRH-3.2",
+        "PPTRH-3.3"
+      ]
+    }
+  ]
+}

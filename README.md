@@ -108,12 +108,15 @@ dotnet run --project PokeJudge -- chunk PPG
 
 | Command | What it does |
 |---|---|
-| `dotnet run --project PokeJudge` | Interactive mode: describe a scenario, answer the questions, get a cited ruling |
-| `... -- search <text>` | Show the top 5 chunks retrieved for a query |
-| `... -- eval` | Retrieval-only evaluation (embedding calls only, no chat model) |
-| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>]` | Full scenario evaluation |
+| `dotnet run --project PokeJudge [-- --rerank none]` | Interactive mode: describe a scenario, answer the questions, get a cited ruling |
+| `... -- search [--top <n>] [--rerank jev|none] <text>` | Show the top chunks retrieved for a query (default 5) |
+| `... -- eval [--rerank jev|none]` | Retrieval-only evaluation (embedding calls only, no chat model) |
+| `... -- retrieval-depth` | For each eval scenario, where its expected sections rank in the top 30 (embedding calls only) |
+| `... -- evaluate [--only <id>] [--from <id>] [--repeat <n>] [--rerank jev|none] [--top <n>]` | Full scenario evaluation (`--top`: excerpts the AI reads per turn, default 5) |
 
 Optional settings (user secrets): `Gemini:Model` and `Gemini:RequestsPerMinute`. A full `evaluate` run uses a large share of the free tier's daily request limit, so use `--only` or `--from` to run part of it.
+
+Retrieval is reranked with Jev by default: it fetches the top 100 by cosine similarity and keeps the 5 that TypeSafe's Jev model rates most likely to govern the situation. Pass `--rerank none` to any command for plain cosine top 5. Reranking needs `Jev:ApiKey` (`dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project PokeJudge`); `Jev:Model` (default `jev-latest`), `Jev:CandidateCount` (default 100) and `Jev:MaxPerSection` (default 4, the most excerpts of one section among the 5 kept) are optional. A temporary Jev failure (5xx, 429 or a network error) is retried up to 3 times, after waits of 1, 2 and 4 seconds, with one line on stderr per retry.
 
 ## Status and roadmap
 
