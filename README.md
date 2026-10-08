@@ -116,7 +116,7 @@ dotnet run --project PokeJudge -- chunk PPG
 
 Optional settings (user secrets): `Gemini:Model` and `Gemini:RequestsPerMinute`. A full `evaluate` run uses a large share of the free tier's daily request limit, so use `--only` or `--from` to run part of it.
 
-Retrieval is reranked with Jev by default: it fetches the top 30 by cosine similarity and keeps the 5 that TypeSafe's Jev model rates most likely to govern the situation. Pass `--rerank none` to any command for plain cosine top 5. Reranking needs `Jev:ApiKey` (`dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project PokeJudge`); `Jev:Model` (default `jev-latest`) and `Jev:CandidateCount` (default 30) are optional.
+Retrieval is reranked with Jev by default: it fetches the top 30 by cosine similarity and keeps the 5 that TypeSafe's Jev model rates most likely to govern the situation. Pass `--rerank none` to any command for plain cosine top 5. Reranking needs `Jev:ApiKey` (`dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project PokeJudge`); `Jev:Model` (default `jev-latest`) and `Jev:CandidateCount` (default 30) are optional. A temporary Jev failure (5xx, 429 or a network error) is retried up to 3 times, after waits of 1, 2 and 4 seconds, with one line on stderr per retry.
 
 ## Status and roadmap
 

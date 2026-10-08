@@ -47,15 +47,17 @@ public sealed class JevRelevanceScorer : IRelevanceScorer
         var httpResponse = await Http.SendAsync(request);
         if (!httpResponse.IsSuccessStatusCode)
         {
-            var errorBody = await httpResponse.Content.ReadAsStringAsync();
-            throw new HttpRequestException(
-                $"Jev API request failed ({(int)httpResponse.StatusCode} {httpResponse.StatusCode}): {errorBody}");
+            throw RequestFailed(httpResponse.StatusCode, await httpResponse.Content.ReadAsStringAsync());
         }
 
         var responseBody = await httpResponse.Content.ReadAsStringAsync();
 
         return JevResponseParser.Parse(responseBody, QuestionKeys(candidates.Count));
     }
+
+    // Carries the status code so RetryingRelevanceScorer can tell a 503 from a bad key.
+    internal static HttpRequestException RequestFailed(System.Net.HttpStatusCode status, string body) =>
+        new($"Jev API request failed ({(int)status} {status}): {body}", null, status);
 
     internal static IReadOnlyList<string> QuestionKeys(int count) =>
         Enumerable.Range(0, count).Select(i => $"p{i}").ToList();

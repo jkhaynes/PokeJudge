@@ -55,4 +55,13 @@ public class JevRelevanceScorerTests
     {
         Assert.Equal(new[] { "p0", "p1", "p2" }, JevRelevanceScorer.QuestionKeys(3));
     }
+
+    [Fact]
+    public void RequestFailed_CarriesTheStatusCodeAndBody()
+    {
+        var failure = JevRelevanceScorer.RequestFailed(System.Net.HttpStatusCode.ServiceUnavailable, "{\"detail\":\"model_unavailable\"}");
+
+        Assert.Equal(System.Net.HttpStatusCode.ServiceUnavailable, failure.StatusCode);
+        Assert.Equal("Jev API request failed (503 ServiceUnavailable): {\"detail\":\"model_unavailable\"}", failure.Message);
+    }
 }
