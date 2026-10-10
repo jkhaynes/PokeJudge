@@ -148,6 +148,19 @@ A ruling can only be as good as the rules the AI is shown, so the next step is t
 - Jev was unavailable for 13 of 60 test runs, and it made retrieval vary between identical runs.
 - Next: option B or C, since the misses are rules the search can't find at all.
 
+**Result of the second try: option A itself, 10 excerpts instead of 5 (2026-10-10).** Jev was tuned first (100
+candidates, a reworded question, at most 4 excerpts per section; see the
+[tuning tracker](2026-10-07-jev-tuning-tracker.html)), which got every needed rule to the AI except one. Then the full
+test ran with the AI reading 10 excerpts, against the same setup at 5. [Top 5](../eval-runs/2026-10-09-v6-top5-reask-fix/run.md),
+[top 10](../eval-runs/2026-10-10-v6-top10-reask-fix/run.md).
+
+- Kept at 5. Top 10 passed 42 of 60 test runs against 45, asked 48 questions instead of 38, and ended 4 rulings with
+  Insufficient Source Support instead of 1.
+- The extra 5 excerpts were mostly general rules. The AI turned some of them into unneeded questions ("spectator or
+  competitor?"), and identical runs started giving different results again.
+- One scenario improved ("deck under 60" now asks its expected question first), not enough to outweigh the rest.
+- 15 to 20 excerpts wasn't tried: with tuned reranking the needed rules already arrive at 5, so more would add noise.
+
 ## Step 5: The right model for each job
 
 PokeJudge uses one AI model for every step today, but the steps are not equally hard; paying for a strong model only where judgment matters should give the same or better accuracy for less money.
