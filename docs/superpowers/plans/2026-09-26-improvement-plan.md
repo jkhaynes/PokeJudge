@@ -13,7 +13,7 @@ The first two steps are free and make every later measurement trustworthy, so th
 | 1 | Make answers repeatable | Pin the model version and send a fixed seed (done) | A few lines of code | Free | The same question gives the same answer every time |
 | 2 | Fix the test | Correct wrong expectations; add a simulated judge that answers questions (done) | A few days | Free to a few cents | The score reflects PokeJudge, not flaws in the test |
 | 3 | Make fewer AI calls | Merge two calls into one; skip checks code can already do | 1 to 2 days | Free | About 25 to 40% cheaper and faster per ruling |
-| 4 | Better rule text | Retrieve more rule text, or test giving the AI the whole rulebook | 1 to 3 days | Free to $0.30 per scenario | Fewer rulings built on the wrong rules |
+| 4 | Better rule text | Retrieve more rule text, or test giving the AI the whole rulebook | 1 to 3 days | Free to $0.30 per scenario | Fewer rulings built on the wrong rules (Jev reranking adopted, 5 excerpts kept) |
 | 5 | Right model for each job | Cheap model for simple steps, strong model for judgment | 1 day | Pennies | Same or better accuracy for less money |
 | 6 | Choose where to run it | Pick Gemini, a local model, or Claude based on steps 1 to 5 | Hours | $0 to $5 per full test | A clear price per ruling, with evidence behind it |
 
@@ -147,6 +147,29 @@ A ruling can only be as good as the rules the AI is shown, so the next step is t
 - Jev did rank better on the short search-only questions: 24 of 29 at rank 1 instead of 20. It added only about 0.24 seconds per search.
 - Jev was unavailable for 13 of 60 test runs, and it made retrieval vary between identical runs.
 - Next: option B or C, since the misses are rules the search can't find at all.
+
+**Result of the second try: option A itself, 10 excerpts instead of 5 (2026-10-10).** Jev was tuned first (100
+candidates, a reworded question, at most 4 excerpts per section; see the
+[tuning tracker](2026-10-07-jev-tuning-tracker.html)), which got every needed rule to the AI except one. Then the full
+test ran with the AI reading 10 excerpts, against the same setup at 5. [Top 5](../eval-runs/2026-10-09-v6-top5-reask-fix/run.md),
+[top 10](../eval-runs/2026-10-10-v6-top10-reask-fix/run.md).
+
+- Kept at 5. Top 10 passed 42 of 60 test runs against 45, asked 48 questions instead of 38, and ended 4 rulings with
+  Insufficient Source Support instead of 1.
+- The extra 5 excerpts were mostly general rules. The AI turned some of them into unneeded questions ("spectator or
+  competitor?"), and identical runs started giving different results again.
+- One scenario improved ("deck under 60" now asks its expected question first), not enough to outweigh the rest.
+- 15 to 20 excerpts wasn't tried: with tuned reranking the needed rules already arrive at 5, so more would add noise.
+
+**Decision: tuned Jev reranking stays on by default (2026-10-10).** The first try's "not adopted" was for Jev as first
+built. After tuning, the full test met the reranking spec's adoption rule: 3 of the 4 missing-rule scenarios get every
+rule they need, no scenario that used to work loses one, it adds about 0.33 seconds per search, and retries ride out
+Jev's outages. With the re-asking fix, the full test passes 45 of 60 runs. (Plain search scored 39 of 60 before
+this step, but without that fix, so the two aren't directly comparable.) `--rerank none` still gives plain search.
+
+**What's left in this step.** The misses now are the AI's choice of question, not missing rules, plus one rule search
+still can't reach (`PPG-4.1.1` for "ACE SPEC count"). Options B and C stay open for that one, but no longer for the
+scenarios that started this step.
 
 ## Step 5: The right model for each job
 
