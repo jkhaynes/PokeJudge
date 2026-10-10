@@ -5,6 +5,13 @@ Task 12 of [the Jev reranking plan](2026-10-04-jev-reranking.md). The "before" n
 branch, and the only difference was reranking: `--rerank none` for the baseline, Jev (the default since `045ffbe`)
 here. Jev rescored the top 30 cosine results and kept 5.
 
+> **Update, 2026-10-10: adopted after tuning.** This verdict is for Jev as first built. Tuning (100 candidates, a
+> reworded question, at most 4 excerpts per section, retries) got every needed section to the AI except `PPG-4.1.1`, and
+> the full test then met the adoption rule below except the search-only clause, which can't be met (rank-1 hits rose
+> to 25). Jev stays on by default. See the [tuning tracker](2026-10-07-jev-tuning-tracker.html), the
+> [v6 run](../eval-runs/2026-10-08-v6-top5/run.md) and the [baseline with the re-asking fix](../eval-runs/2026-10-09-v6-top5-reask-fix/run.md)
+> (45/60).
+
 ## Verdict: don't adopt
 
 | Adoption rule | Result | Holds? |
